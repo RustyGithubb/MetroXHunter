@@ -22,7 +22,10 @@ void UMXHCheatManager::_FindCheatFunctionsClasses()
 		if ( It->HasAnyClassFlags( CLASS_Abstract ) ) continue;
 		
 		//  Filter out any skeleton blueprints
-		if ( It->GetName().RemoveFromStart( "SKEL" ) ) continue;
+		//if ( It->GetName().RemoveFromStart( "SKEL" ) ) continue;
+
+		//  Filter out any non-blueprints classes
+		if ( !It->GetName().RemoveFromStart( "BP_" ) ) continue;
 
 		//  Add to array
 		CheatFunctionClasses.Add( *It );
