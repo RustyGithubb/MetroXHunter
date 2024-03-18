@@ -20,12 +20,14 @@ public:
 
 
 public:
+	//  TODO: Remove if not necessary
 	UPROPERTY( BlueprintReadOnly )
 	TArray<TSubclassOf<UCheatFunction>> CheatFunctionClasses;
 	UPROPERTY( BlueprintReadOnly )
 	TArray<UCheatFunction*> CheatFunctions;
 
 private:
+	//  TODO: Rename the function if CheatFunctionsClasses gets removed
 	void _FindCheatFunctionsClasses();
 
 };
