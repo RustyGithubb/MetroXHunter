@@ -1,6 +1,6 @@
-#include "Cheats/MXHCheatManager.h"
+#include "MXHCheatManager.h"
 
-#include "CheatFunction.h"
+#include "MXHCheatFunction.h"
 
 void UMXHCheatManager::InitCheatManager()
 {
@@ -20,7 +20,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 		UClass* Class = *It;
 
 		//  Filter out non-subclasses
-		if ( !Class->IsChildOf<UCheatFunction>() ) continue;
+		if ( !Class->IsChildOf<UMXHCheatFunction>() ) continue;
 
 		//  Filter out the base class
 		if ( Class->HasAnyClassFlags( CLASS_Abstract ) ) continue;
@@ -43,10 +43,10 @@ void UMXHCheatManager::ReloadCheatFunctions()
 }
 
 void UMXHCheatManager::_InstantiateCheatFunction(
-	const TSubclassOf<UCheatFunction>& Class
+	const TSubclassOf<UMXHCheatFunction>& Class
 )
 {
-	auto CheatFunction = NewObject<UCheatFunction>( this, Class );
+	auto CheatFunction = NewObject<UMXHCheatFunction>( this, Class );
 	CheatFunction->Init( this );
 	CheatFunctions.Add( CheatFunction );
 }

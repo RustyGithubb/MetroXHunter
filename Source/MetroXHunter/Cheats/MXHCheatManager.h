@@ -4,7 +4,7 @@
 #include "GameFramework/CheatManager.h"
 #include "MXHCheatManager.generated.h"
 
-class UCheatFunction;
+class UMXHCheatFunction;
 
 /**
  * 
@@ -21,9 +21,9 @@ public:
 
 public:
 	UPROPERTY( BlueprintReadOnly )
-	TArray<UCheatFunction*> CheatFunctions;
+	TArray<UMXHCheatFunction*> CheatFunctions;
 
 private:
-	void _InstantiateCheatFunction( const TSubclassOf<UCheatFunction>& Class );
+	void _InstantiateCheatFunction( const TSubclassOf<UMXHCheatFunction>& Class );
 
 };
