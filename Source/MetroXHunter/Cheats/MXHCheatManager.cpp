@@ -2,6 +2,8 @@
 
 #include "MXHCheatFunction.h"
 
+#include <AssetRegistry/AssetRegistryModule.h>
+
 void UMXHCheatManager::InitCheatManager()
 {
 	ReloadCheatFunctions();
@@ -13,6 +15,10 @@ void UMXHCheatManager::ReloadCheatFunctions()
 {
 	//  Clear current array
 	CheatFunctions.Empty();
+
+	//  NOTE: Force load the assets before iterating over the UClasses, otherwise, 
+	//  they are not findable
+	_ForceLoadAssetsAtPath( TEXT( "/Game/Cheats/Functions/" ) );
 
 	//  Iterate over all UClass to find our subclasses
 	for ( TObjectIterator<UClass> It; It; ++It )
@@ -40,6 +46,32 @@ void UMXHCheatManager::ReloadCheatFunctions()
 
 	UE_LOG( LogTemp, Log, TEXT( "Total of %d Cheat Functions" ),
 		CheatFunctions.Num() );
+}
+
+void UMXHCheatManager::_ForceLoadAssetsAtPath( FName Path )
+{
+	//  Load asset registry module
+	FName ModuleName( "AssetRegistry" );
+	auto& AssetRegistryModule = 
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>( ModuleName );
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
+	//  Scan path
+	TArray<FString> Paths;
+	Paths.Add( Path.ToString() );
+	AssetRegistry.ScanPathsSynchronous( Paths );
+
+	//  Get assets in path
+	TArray<FAssetData> Assets;
+	AssetRegistry.GetAssetsByPath( Path, Assets, true );
+
+	//  Force loading all assets
+	for ( const auto& AssetData : Assets )
+	{
+		auto Asset = AssetData.GetAsset();
+		UE_LOG( LogTemp, Log, TEXT( "Force Load Asset: %s" ), 
+			*Asset->GetPathName() );
+	}
 }
 
 void UMXHCheatManager::_InstantiateCheatFunction(
