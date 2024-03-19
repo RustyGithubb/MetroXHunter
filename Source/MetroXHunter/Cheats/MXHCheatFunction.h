@@ -28,8 +28,6 @@ struct FMXHCheatFunctionActionParams
 
 class UMXHCheatManager;
 
-//  TODO: Add Category meta to UPROPERTYs
-
 /**
  * 
  */
@@ -54,13 +52,13 @@ public:
 	UWorld* GetWorld() const override;
 
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	FText Name;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	FText Category;
 	/*UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	EMXHCheatFunctionType Type = EMXHCheatFunctionType::Action;*/
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	bool IsTogglable = false;
 
 	UPROPERTY( BlueprintReadOnly )
@@ -79,16 +77,16 @@ public:
 	EMXHCheatFunctionType GetFunctionType() const override { return EMXHCheatFunctionType::Float; }
 
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="CheatFunction|FloatParameter" )
 	float MinValue = 0.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter" )
 	float MaxValue = 1.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter" )
 	bool ShouldSnap = true;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, meta=( EditCondition="ShouldSnap == true" ))
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter", meta=( EditCondition="ShouldSnap == true" ))
 	float SnapStep = 0.1f;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter" )
 	float Value = 0.0f;
 };
 
