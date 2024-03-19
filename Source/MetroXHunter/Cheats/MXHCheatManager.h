@@ -24,6 +24,8 @@ public:
 	TArray<UMXHCheatFunction*> CheatFunctions;
 
 private:
+	//  TODO: Move this function in an utility class so it's available anywhere
+	void _ForceLoadAssetsAtPath( FName Path );
 	void _InstantiateCheatFunction( const TSubclassOf<UMXHCheatFunction>& Class );
 
 };
