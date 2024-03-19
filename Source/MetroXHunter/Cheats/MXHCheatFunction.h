@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "CheatFunction.generated.h"
+#include "MXHCheatFunction.generated.h"
 
 class UMXHCheatManager;
 
@@ -10,7 +10,7 @@ class UMXHCheatManager;
  * 
  */
 UCLASS( Abstract, Blueprintable, BlueprintType )
-class METROXHUNTER_API UCheatFunction : public UObject
+class METROXHUNTER_API UMXHCheatFunction : public UObject
 {
 	GENERATED_BODY()
 	
