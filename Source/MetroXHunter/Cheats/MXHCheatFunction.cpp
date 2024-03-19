@@ -9,6 +9,16 @@ void UMXHCheatFunction::Init( UMXHCheatManager* _CheatManager )
 	OnInit();
 }
 
+void UMXHCheatFunction::Cheat( FMXHCheatFunctionActionParams Params )
+{
+	if ( IsTogglable )
+	{
+		IsToggled = Params.IsToggled;
+	}
+
+	OnCheat();
+}
+
 void UMXHCheatFunction::OnInit_Implementation() {}
 
 void UMXHCheatFunction::OnCheat_Implementation() {}
