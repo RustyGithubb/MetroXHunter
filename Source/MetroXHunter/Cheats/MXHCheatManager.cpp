@@ -1,44 +1,52 @@
 #include "Cheats/MXHCheatManager.h"
 
+#include "CheatFunction.h"
+
 void UMXHCheatManager::InitCheatManager()
 {
-	_FindCheatFunctionsClasses();
+	ReloadCheatFunctions();
 
 	Super::InitCheatManager();
 }
 
-void UMXHCheatManager::_FindCheatFunctionsClasses()
+void UMXHCheatManager::ReloadCheatFunctions()
 {
 	//  Clear current array
-	CheatFunctionClasses.Empty();
+	CheatFunctions.Empty();
 
 	//  Iterate over all UClass to find our subclasses
 	for ( TObjectIterator<UClass> It; It; ++It )
 	{
+		UClass* Class = *It;
+
 		//  Filter out non-subclasses
-		if ( !It->IsChildOf<UCheatFunction>() ) continue;
+		if ( !Class->IsChildOf<UCheatFunction>() ) continue;
 
 		//  Filter out the base class
-		if ( It->HasAnyClassFlags( CLASS_Abstract ) ) continue;
-		
+		if ( Class->HasAnyClassFlags( CLASS_Abstract ) ) continue;
+
 		//  Filter out any skeleton blueprints
 		//if ( It->GetName().RemoveFromStart( "SKEL" ) ) continue;
 
 		//  Filter out any non-blueprints classes
-		if ( !It->GetName().RemoveFromStart( "BP_" ) ) continue;
-
-		//  Add to array
-		CheatFunctionClasses.Add( *It );
+		if ( !Class->GetName().RemoveFromStart( "BP_" ) ) continue;
 
 		//  Instantiate cheat function
-		auto CheatFunction = NewObject<UCheatFunction>( this, *It );
-		CheatFunction->Init( this );
-		CheatFunctions.Add( CheatFunction );
+		_InstantiateCheatFunction( Class );
 
-		UE_LOG( LogTemp, Log, TEXT( "New Cheat Function: %s" ), 
+		UE_LOG( LogTemp, Log, TEXT( "New Cheat Function: %s" ),
 			*It->GetName() );
 	}
 
-	UE_LOG( LogTemp, Log, TEXT( "Total of %d Cheat Functions" ), 
-		CheatFunctionClasses.Num() );
+	UE_LOG( LogTemp, Log, TEXT( "Total of %d Cheat Functions" ),
+		CheatFunctions.Num() );
+}
+
+void UMXHCheatManager::_InstantiateCheatFunction(
+	const TSubclassOf<UCheatFunction>& Class
+)
+{
+	auto CheatFunction = NewObject<UCheatFunction>( this, Class );
+	CheatFunction->Init( this );
+	CheatFunctions.Add( CheatFunction );
 }
