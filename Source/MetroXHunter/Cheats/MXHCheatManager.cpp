@@ -18,7 +18,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 
 	//  NOTE: Force load the assets before iterating over the UClasses, otherwise, 
 	//  they are not findable
-	_ForceLoadAssetsAtPath( CheatFunctionAssetsPath );
+	ForceLoadAssetsAtPath( CheatFunctionAssetsPath );
 
 	//  Iterate over all UClass to find our subclasses
 	for ( TObjectIterator<UClass> It; It; ++It )
@@ -38,7 +38,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 		if ( !Class->GetName().RemoveFromStart( "BP_" ) ) continue;
 
 		//  Instantiate cheat function
-		_InstantiateCheatFunction( Class );
+		InstantiateCheatFunction( Class );
 
 		UE_LOG( LogTemp, Log, TEXT( "New Cheat Function: %s" ),
 			*It->GetName() );
@@ -48,7 +48,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 		CheatFunctions.Num() );
 }
 
-void UMXHCheatManager::_ForceLoadAssetsAtPath( FName Path )
+void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 {
 	//  Load asset registry module
 	FName ModuleName( "AssetRegistry" );
@@ -74,7 +74,7 @@ void UMXHCheatManager::_ForceLoadAssetsAtPath( FName Path )
 	}
 }
 
-void UMXHCheatManager::_InstantiateCheatFunction(
+void UMXHCheatManager::InstantiateCheatFunction(
 	const TSubclassOf<UMXHCheatFunction>& Class
 )
 {
