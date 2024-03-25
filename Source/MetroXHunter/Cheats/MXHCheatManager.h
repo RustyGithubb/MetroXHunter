@@ -20,6 +20,9 @@ public:
 	void ReloadCheatFunctions();
 
 public:
+	UPROPERTY( EditAnywhere, BlueprintReadOnly )
+	FName CheatFunctionAssetsPath = TEXT( "/Game/Cheats/Functions/" );
+
 	UPROPERTY( BlueprintReadOnly )
 	TArray<UMXHCheatFunction*> CheatFunctions;
 

@@ -18,7 +18,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 
 	//  NOTE: Force load the assets before iterating over the UClasses, otherwise, 
 	//  they are not findable
-	_ForceLoadAssetsAtPath( TEXT( "/Game/Cheats/Functions/" ) );
+	_ForceLoadAssetsAtPath( CheatFunctionAssetsPath );
 
 	//  Iterate over all UClass to find our subclasses
 	for ( TObjectIterator<UClass> It; It; ++It )
