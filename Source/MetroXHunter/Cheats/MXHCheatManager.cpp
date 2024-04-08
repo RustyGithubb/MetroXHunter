@@ -1,6 +1,7 @@
 #include "MXHCheatManager.h"
 
 #include "MXHCheatFunction.h"
+#include "MXHUtilityLibrary.h"
 
 #include <AssetRegistry/AssetRegistryModule.h>
 
@@ -40,12 +41,17 @@ void UMXHCheatManager::ReloadCheatFunctions()
 		//  Instantiate cheat function
 		InstantiateCheatFunction( Class );
 
-		UE_LOG( LogTemp, Log, TEXT( "New Cheat Function: %s" ),
-			*It->GetName() );
+		UMXHUtilityLibrary::LogMessage(
+			TEXT( "New Cheat Function: %s" ),
+			*It->GetName() 
+		);
 	}
 
-	UE_LOG( LogTemp, Log, TEXT( "Total of %d Cheat Functions" ),
-		CheatFunctions.Num() );
+	UMXHUtilityLibrary::LogMessage(
+		TEXT( "Total of %d Cheat Functions" ),
+		CheatFunctions.Num()
+	);
+
 	//  Sort functions first by category and second by name
 	CheatFunctions.Sort(
 		[&]( const UMXHCheatFunction& a, const UMXHCheatFunction& b ) {
@@ -67,7 +73,7 @@ void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 {
 	//  Load asset registry module
 	FName ModuleName( "AssetRegistry" );
-	auto& AssetRegistryModule = 
+	auto& AssetRegistryModule =
 		FModuleManager::LoadModuleChecked<FAssetRegistryModule>( ModuleName );
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
@@ -84,8 +90,10 @@ void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 	for ( const auto& AssetData : Assets )
 	{
 		auto Asset = AssetData.GetAsset();
-		UE_LOG( LogTemp, Log, TEXT( "Force Load Asset: %s" ), 
-			*Asset->GetPathName() );
+		UMXHUtilityLibrary::LogMessage(
+			TEXT( "Force Load Asset: %s" ),
+			*Asset->GetPathName() 
+		);
 	}
 }
 
@@ -96,4 +104,13 @@ void UMXHCheatManager::InstantiateCheatFunction(
 	auto CheatFunction = NewObject<UMXHCheatFunction>( this, Class );
 	CheatFunction->Init( this );
 	CheatFunctions.Add( CheatFunction );
+
+	//  Warn of un-registered category
+	if ( !PriorityByCategory.Contains( CheatFunction->Category.ToString() ) )
+	{
+		UMXHUtilityLibrary::PrintError(
+			TEXT( "Cheat Function '%s' using un-registered category '%s', please update your CheatManager!" ),
+			*CheatFunction->Name.ToString(), *CheatFunction->Category.ToString()
+		);
+	}
 }
