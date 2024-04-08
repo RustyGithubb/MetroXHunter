@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "MXHBlueprintFunctionLibrary.generated.h"
+#include "MXHUtilityLibrary.generated.h"
 
 /**
  * 
