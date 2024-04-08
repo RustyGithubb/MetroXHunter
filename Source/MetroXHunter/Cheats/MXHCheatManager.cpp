@@ -46,6 +46,21 @@ void UMXHCheatManager::ReloadCheatFunctions()
 
 	UE_LOG( LogTemp, Log, TEXT( "Total of %d Cheat Functions" ),
 		CheatFunctions.Num() );
+	//  Sort functions first by category and second by name
+	CheatFunctions.Sort(
+		[&]( const UMXHCheatFunction& a, const UMXHCheatFunction& b ) {
+			const FString CategoryA = a.Category.ToString();
+			const FString CategoryB = b.Category.ToString();
+
+			if ( CategoryA == CategoryB
+			  || !PriorityByCategory.Contains( CategoryA ) || !PriorityByCategory.Contains( CategoryB ) )
+			{
+				return a.Name.ToString() < b.Name.ToString();
+			}
+
+			return PriorityByCategory[CategoryA] < PriorityByCategory[CategoryB];
+		}
+	);
 }
 
 void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
