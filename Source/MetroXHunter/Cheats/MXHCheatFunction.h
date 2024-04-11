@@ -10,6 +10,7 @@ enum class EMXHCheatFunctionType : uint8
 	Action,
 	Float,
 	Int,
+	Selection,
 };
 
 USTRUCT( BlueprintType )
@@ -103,6 +104,22 @@ public:
 	int MinValue = 0;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	int MaxValue = 1;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	int Value = 0;
+};
+
+UCLASS( Abstract, Blueprintable )
+class METROXHUNTER_API UMXHCheatSelectionFunction : public UMXHCheatFunction
+{
+	GENERATED_BODY()
+
+public:
+	EMXHCheatFunctionType GetFunctionType() const override { return EMXHCheatFunctionType::Selection; }
+
+public:
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	TArray<FString> ValueNames;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	int Value = 0;
