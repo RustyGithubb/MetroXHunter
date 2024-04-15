@@ -113,4 +113,6 @@ void UMXHCheatManager::InstantiateCheatFunction(
 			*CheatFunction->Name.ToString(), *CheatFunction->Category.ToString()
 		);
 	}
+
+	OnCheatFunctionRegistered( CheatFunction );
 }
