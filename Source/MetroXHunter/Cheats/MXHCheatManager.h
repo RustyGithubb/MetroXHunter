@@ -17,7 +17,11 @@ class METROXHUNTER_API UMXHCheatManager : public UCheatManager
 public:
 	void InitCheatManager() override;
 
+	UFUNCTION( BlueprintCallable, Category="Cheat Manager" )
 	void ReloadCheatFunctions();
+
+	UFUNCTION( BlueprintImplementableEvent )
+	void OnCheatFunctionRegistered( UMXHCheatFunction* CheatFunction );
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )

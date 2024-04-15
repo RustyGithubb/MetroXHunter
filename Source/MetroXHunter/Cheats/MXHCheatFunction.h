@@ -39,27 +39,27 @@ class METROXHUNTER_API UMXHCheatFunction : public UObject
 	
 public:
 	void Init( UMXHCheatManager* CheatManager );
-	UFUNCTION( BlueprintCallable )
+	UFUNCTION( BlueprintCallable, Category="Cheat Function" )
 	void Cheat( FMXHCheatFunctionActionParams Params );
 
 	UFUNCTION( BlueprintNativeEvent )
 	void OnInit();
-	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category="Cheat Function" )
+	UFUNCTION( BlueprintNativeEvent )
 	void OnCheat();
 
-	UFUNCTION( BlueprintCallable, BlueprintPure )
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category="Cheat Function" )
 	virtual EMXHCheatFunctionType GetFunctionType() const { return EMXHCheatFunctionType::Action; }
 
 	UWorld* GetWorld() const override;
 
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function" )
 	FText Name;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function" )
 	FText Category;
 	/*UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	EMXHCheatFunctionType Type = EMXHCheatFunctionType::Action;*/
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function" )
 	bool IsTogglable = false;
 
 	UPROPERTY( BlueprintReadOnly )
@@ -80,14 +80,14 @@ public:
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function|Float Parameter" )
 	float MinValue = 0.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function|Float Parameter" )
 	float MaxValue = 1.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function|Float Parameter" )
 	bool ShouldSnap = true;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter", meta=( EditCondition="ShouldSnap == true" ))
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function|Float Parameter", meta=( EditCondition="ShouldSnap == true" ))
 	float SnapStep = 0.1f;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function|Float Parameter" )
 	float Value = 0.0f;
 };
 
