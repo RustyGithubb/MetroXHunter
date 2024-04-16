@@ -17,7 +17,7 @@ public:
 	 * Log a message to the output log.
 	 * 
 	 * @param Text	Format text
-	 * @param ...	Format arguments
+	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
 	static void LogMessage( const TFormat& Text, TArgs... Args )
@@ -29,7 +29,7 @@ public:
 	 * Log a warning to the output log.
 	 *
 	 * @param Text	Format text
-	 * @param ...	Format arguments
+	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
 	static void LogWarning( const TFormat& Text, TArgs... Args )
@@ -41,7 +41,7 @@ public:
 	 * Log an error to the output log.
 	 *
 	 * @param Text	Format text
-	 * @param ...	Format arguments
+	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
 	static void LogError( const TFormat& Text, TArgs... Args )
@@ -54,20 +54,33 @@ public:
 	 * Prints to screen and logs a message to the output log.
 	 *
 	 * @param Text	Format text
-	 * @param ...	Format arguments
+	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
 	static void PrintMessage( const TFormat& Text, TArgs... Args )
 	{
+		PrintMessage( Text, FColor::Blue, 5.0f, Args... );
+	}
+	/**
+	 * Prints to screen with a custom color and time and logs a message to the output log.
+	 *
+	 * @param Text	Format text
+	 * @param Color Displayed text color on screen
+	 * @param Time  Duration of displayed text on screen
+	 * @param Args	Format arguments
+	 */
+	template<typename TFormat, typename... TArgs>
+	static void PrintMessage( const TFormat& Text, const FColor& Color = FColor::Blue, const float Time = 5.0f, TArgs... Args )
+	{
 		const FString FormattedText = FString::Printf( Text, Args... );
 		UE_LOG( LogTemp, Log, TEXT( "%s" ), *FormattedText );
-		GEngine->AddOnScreenDebugMessage( INDEX_NONE, 5.0f, FColor::Blue, FormattedText );
+		GEngine->AddOnScreenDebugMessage( INDEX_NONE, Time, Color, FormattedText );
 	}
 	/**
 	 * Prints to screen and logs a warning to the output log.
 	 *
 	 * @param Text	Format text
-	 * @param ...	Format arguments
+	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
 	static void PrintWarning( const TFormat& Text, TArgs... Args )
@@ -80,7 +93,7 @@ public:
 	 * Prints to screen and logs an error to the output log.
 	 *
 	 * @param Text	Format text
-	 * @param ...	Format arguments
+	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
 	static void PrintError( const TFormat& Text, TArgs... Args )
