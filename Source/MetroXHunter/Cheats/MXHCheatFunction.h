@@ -61,6 +61,8 @@ public:
 	EMXHCheatFunctionType Type = EMXHCheatFunctionType::Action;*/
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function" )
 	bool IsTogglable = false;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function", meta=( EditCondition="IsTogglable" ) )
+	bool ShouldStartToggled = false;
 
 	UPROPERTY( BlueprintReadOnly )
 	bool IsToggled = false;
