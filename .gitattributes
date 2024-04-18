@@ -2,8 +2,10 @@
 * text=auto
 
 # arkaht: I have no idea what this line does but it has been automatically 
-#		  added since the git lfs removal, I guess we should keep it 
-* !text !filter !merge !diff
+#         added since the git lfs removal, I guess we should keep it 
+# arkaht: Nope, don't keep it, it seems to mark the repository with LFS enabled
+#         from Github Desktop's perspective
+# * !text !filter !merge !diff
 
 # arkaht: We're disabling LFS for now, it has been the cause for so many problems
 #		  (i.e. LFS bandwidth limit involving the need to buy data packs and random
