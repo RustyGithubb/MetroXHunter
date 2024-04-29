@@ -107,6 +107,11 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function" )
 	FText Category;
 	/**
+	 * Give identical keys to different CheatFunctions to pair them together visually in the CheatMenu.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category="Cheat Function" )
+	FText PairingKey;
+	/**
 	 * Set whether the cheat has a ON/OFF state. The toggle state will be switched when the player 
 	 * press the button.
 	 */
