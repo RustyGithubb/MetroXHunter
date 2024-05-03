@@ -1,0 +1,17 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Advanced Aim Assist",
+	"Description": "This Aim Assist Component is designed to elevate the player's aiming skills. With customizable values, you can fine-tune the aim assist to perfectly complement your unique game experience.",
+	"Category": "Shooter",
+	"CreatedBy": "Coyo Prog",
+	"CreatedByURL": "https://coyoprog.github.io/",
+	"DocsURL": "https://coyoprog.github.io/plugins/advancedaimassist.html",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/etdaQ45EqY",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false
+}
