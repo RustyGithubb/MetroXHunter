@@ -102,4 +102,7 @@ public:
 		UE_LOG( LogTemp, Error, TEXT( "%s" ), *FormattedText );
 		GEngine->AddOnScreenDebugMessage( INDEX_NONE, 10.0f, FColor::Red, FormattedText );
 	}
+
+	UFUNCTION( BlueprintCallable, BlueprintPure )
+	static bool IsCVarAIDebugEnabled();
 };
