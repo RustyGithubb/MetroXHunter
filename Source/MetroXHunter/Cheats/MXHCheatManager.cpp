@@ -58,13 +58,16 @@ void UMXHCheatManager::ReloadCheatFunctions()
 			const FString CategoryA = a.Category.ToString();
 			const FString CategoryB = b.Category.ToString();
 
-			if ( CategoryA == CategoryB
-			  || !PriorityByCategory.Contains( CategoryA ) || !PriorityByCategory.Contains( CategoryB ) )
+			const int32 CategoryOrderA = CategoriesOrder.Find( CategoryA );
+			const int32 CategoryOrderB = CategoriesOrder.Find( CategoryB );
+
+			if ( CategoryOrderA == CategoryOrderB
+			  || CategoryOrderA == INDEX_NONE || CategoryOrderB == INDEX_NONE )
 			{
 				return a.Name.ToString() < b.Name.ToString();
 			}
 
-			return PriorityByCategory[CategoryA] < PriorityByCategory[CategoryB];
+			return CategoryOrderA < CategoryOrderB;
 		}
 	);
 }
@@ -106,7 +109,7 @@ void UMXHCheatManager::InstantiateCheatFunction(
 	CheatFunctions.Add( CheatFunction );
 
 	//  Warn of un-registered category
-	if ( !PriorityByCategory.Contains( CheatFunction->Category.ToString() ) )
+	if ( !CategoriesOrder.Contains( CheatFunction->Category.ToString() ) )
 	{
 		UMXHUtilityLibrary::PrintError(
 			TEXT( "Cheat Function '%s' using un-registered category '%s', please update your CheatManager!" ),

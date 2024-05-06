@@ -27,7 +27,7 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	FName CheatFunctionAssetsPath = TEXT( "/Game/Cheats/Functions/" );
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
-	TMap<FString, int> PriorityByCategory;
+	TArray<FString> CategoriesOrder;
 
 	UPROPERTY( BlueprintReadOnly )
 	TArray<UMXHCheatFunction*> CheatFunctions;
