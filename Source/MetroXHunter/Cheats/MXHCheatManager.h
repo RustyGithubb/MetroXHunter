@@ -23,6 +23,14 @@ public:
 	UFUNCTION( BlueprintImplementableEvent )
 	void OnCheatFunctionRegistered( UMXHCheatFunction* CheatFunction );
 
+	/*
+	 * Find a registered cheat function matching the given subclass. 
+	 * 
+	 * @return				Cheat Function instance or nullptr if not found
+	 */
+	UFUNCTION( BlueprintCallable, Category="Cheat Manager" )
+	UMXHCheatFunction* FindCheatFunctionOfClass( const TSubclassOf<UMXHCheatFunction> Class );
+
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	FName CheatFunctionAssetsPath = TEXT( "/Game/Cheats/Functions/" );
