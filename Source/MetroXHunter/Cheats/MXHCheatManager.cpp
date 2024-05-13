@@ -72,6 +72,19 @@ void UMXHCheatManager::ReloadCheatFunctions()
 	);
 }
 
+UMXHCheatFunction* UMXHCheatManager::FindCheatFunctionOfClass( const TSubclassOf<UMXHCheatFunction> Class )
+{
+	for ( UMXHCheatFunction* CheatFunction : CheatFunctions )
+	{
+		if ( CheatFunction->GetClass() == Class )
+		{
+			return CheatFunction;
+		}
+	}
+
+	return nullptr;
+}
+
 void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 {
 	//  Load asset registry module
