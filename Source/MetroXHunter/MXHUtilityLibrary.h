@@ -103,6 +103,27 @@ public:
 		GEngine->AddOnScreenDebugMessage( INDEX_NONE, 10.0f, FColor::Red, FormattedText );
 	}
 
+	/**
+	 * Saves a string into a file at specified path. 
+	 * Path is absolute.
+	 * 
+	 * @param Data	Serialized data to save
+	 * @param Path	File path to save to
+	 * @return Whenever the operation was successful
+	 */
+	UFUNCTION( BlueprintCallable, Category="MXHUtilityLibrary|Filesystem" )
+	static bool SaveFileAsString( const FString& Data, const FString& Path );
+	/**
+	 * Loads a file at specified path and fills the given string with its content.
+	 * Path is absolute.
+	 *
+	 * @param Path File path to load from
+	 * @param Data String to fill with the file's content 
+	 * @return Whenever the operation was successful
+	*/
+	UFUNCTION( BlueprintCallable, Category="MXHUtilityLibrary|Filesystem" )
+	static bool LoadFileAsString( const FString& Path, FString& Data );
+
 	UFUNCTION( BlueprintCallable, BlueprintPure )
 	static bool IsCVarAIDebugEnabled();
 };
