@@ -9,6 +9,16 @@ static TAutoConsoleVariable<bool> CVarAIDebug(
     ECVF_Default 
 );
 
+bool UMXHUtilityLibrary::SaveFileAsString( const FString& Data, const FString& Path )
+{
+    return FFileHelper::SaveStringToFile( Data, *Path );
+}
+
+bool UMXHUtilityLibrary::LoadFileAsString( const FString& Path, FString& Data )
+{
+    return FFileHelper::LoadFileToString( Data, *Path );
+}
+
 bool UMXHUtilityLibrary::IsCVarAIDebugEnabled()
 {
     return CVarAIDebug.GetValueOnAnyThread();
