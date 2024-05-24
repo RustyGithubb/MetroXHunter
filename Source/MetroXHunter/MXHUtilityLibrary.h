@@ -124,6 +124,19 @@ public:
 	UFUNCTION( BlueprintCallable, Category="MXHUtilityLibrary|Filesystem" )
 	static bool LoadFileAsString( const FString& Path, FString& Data );
 
-	UFUNCTION( BlueprintCallable, BlueprintPure )
+	/**
+	 * Returns whenever the game's code has been built including the editor.
+	 * 
+	 * @return Whenever the editor is included
+	 */
+	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary" )
+	static bool IsWithinEditor();
+
+	/**
+	 * Returns whenever the CVar 'MXH.AI.Debug' is enabled.
+	 * 
+	 * @return Whenever the CVar is enabled
+	 */
+	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary|CVars" )
 	static bool IsCVarAIDebugEnabled();
 };
