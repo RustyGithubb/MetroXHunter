@@ -125,5 +125,13 @@ public:
 	static bool LoadFileAsString( const FString& Path, FString& Data );
 
 	UFUNCTION( BlueprintCallable, BlueprintPure )
+	/**
+	 * Returns whenever the game's code has been built including the editor.
+	 * 
+	 * @return Whenever the editor is included
+	 */
+	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary" )
+	static bool IsWithinEditor();
+
 	static bool IsCVarAIDebugEnabled();
 };
