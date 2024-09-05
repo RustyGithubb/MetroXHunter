@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,7 +6,11 @@
 
 enum class E_InteractionType : uint8;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargeted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUntargeted);
+
+UCLASS( Blueprintable, meta = ( ABSTRACT ) )
 class METROXHUNTER_API UInteractableComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -21,9 +23,16 @@ public:
 
 	AActor* Owner = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly)
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
 	E_InteractionType InteractionType;
 
-	void OnTargeted();
-	void OnUntargeted();
+	// NEEDS TO BE REPLACED WITH DELEGATES WHEN REFACTOR OF ALL BLUEPRINTS DONE
+	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
+	FOnInteract OnInteract;
+
+	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
+	FOnTargeted OnTargeted;
+
+	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
+	FOnUntargeted OnUntargeted;
 };

@@ -8,7 +8,7 @@
 
 class UInteractableComponent;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( Blueprintable, meta = ( ABSTRACT ) )
 class METROXHUNTER_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()

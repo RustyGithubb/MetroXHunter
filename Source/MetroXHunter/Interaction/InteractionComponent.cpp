@@ -1,5 +1,7 @@
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
+#include <HUD/MainHUD.h>
+#include "Enums/E_InteractionType.h"
 
 #include "Engine.h"
 
@@ -65,21 +67,25 @@ void UInteractionComponent::GetClosestInteractable()
 
 	// Untarget the last Targeted interactable if any
 	if ( CurrentInteractable )
-		CurrentInteractable->OnUntargeted();
+		CurrentInteractable->OnUntargeted.Broadcast();
 
 	// Target the new interactable
 	// IF IS VALID ?
 	CurrentInteractable = ClosestInteractable;
-	CurrentInteractable->OnTargeted();
+	CurrentInteractable->OnTargeted.Broadcast();
 
-	//Update Viewport
+	UpdateViewport();
 }
 
 void UInteractionComponent::UpdateViewport()
 {
+	IMainHUD* MainHUD = Cast<IMainHUD>(PlayerController->GetHUD());
+
+	if ( !MainHUD )
+		return;
+
 	if ( NearInteractables.Num() > 0 )
-		// UPDATE PROMPT
-		;
+		MainHUD->Execute_UpdatePrompts(this, CurrentInteractable->InteractionType);
 	else
-		;
+		MainHUD->UpdatePrompts(E_InteractionType::Default);
 }

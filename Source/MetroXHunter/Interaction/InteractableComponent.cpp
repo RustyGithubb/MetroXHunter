@@ -20,12 +20,3 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
-
-void UInteractableComponent::OnTargeted()
-{
-}
-
-void UInteractableComponent::OnUntargeted()
-{
-}
-
