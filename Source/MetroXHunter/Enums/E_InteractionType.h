@@ -5,10 +5,10 @@
 UENUM(BlueprintType)
 enum class E_InteractionType : uint8
 {
-	INTERACT				UMETA( DisplayName = "INTERACT"),
-	PICKUP					UMETA( DisplayName = "PICK UP"),
-	OPENCLOSE				UMETA( DisplayName = "OPEN / CLOSE"),
-	TURNON					UMETA( DisplayName = "TURN ON / OFF" ),
+	Interact,
+	Pickup					UMETA( DisplayName = "Pick Up"),
+	OpenClose				UMETA( DisplayName = "Open Close"),
+	TurnOn					UMETA( DisplayName = "Turn on / off" ),
 
-	DEFAULT,
+	Default,
 };
