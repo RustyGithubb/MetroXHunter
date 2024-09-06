@@ -65,8 +65,8 @@ void UMXHCheatSelectionFunction::CycleToNext()
 void UMXHCheatSelectionFunction::CycleToPrevious()
 {
 	//  Move index to the left and wrap it around the value names length
-	Index = Index - 1 < 0 
-		? ValueNames.Num() - 1 
+	Index = Index - 1 < 0
+		? ValueNames.Num() - 1
 		: Index - 1;
 
 	Cheat();

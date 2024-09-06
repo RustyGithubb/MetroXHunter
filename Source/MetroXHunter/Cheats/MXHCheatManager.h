@@ -7,28 +7,28 @@
 class UMXHCheatFunction;
 
 /**
- * 
+ *
  */
 UCLASS()
 class METROXHUNTER_API UMXHCheatManager : public UCheatManager
 {
 	GENERATED_BODY()
-	
+
 public:
 	void InitCheatManager() override;
 
-	UFUNCTION( BlueprintCallable, Category="Cheat Manager" )
+	UFUNCTION( BlueprintCallable, Category = "Cheat Manager" )
 	void ReloadCheatFunctions();
 
 	UFUNCTION( BlueprintImplementableEvent )
 	void OnCheatFunctionRegistered( UMXHCheatFunction* CheatFunction );
 
 	/*
-	 * Find a registered cheat function matching the given subclass. 
-	 * 
+	 * Find a registered cheat function matching the given subclass.
+	 *
 	 * @return				Cheat Function instance or nullptr if not found
 	 */
-	UFUNCTION( BlueprintCallable, Category="Cheat Manager" )
+	UFUNCTION( BlueprintCallable, Category = "Cheat Manager" )
 	UMXHCheatFunction* FindCheatFunctionOfClass( const TSubclassOf<UMXHCheatFunction> Class );
 
 public:
