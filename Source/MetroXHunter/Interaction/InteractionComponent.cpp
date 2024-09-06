@@ -53,15 +53,15 @@ void UInteractionComponent::RetrieveClosestInteractable()
 	for ( auto Interactable : NearInteractables )
 	{
 		// Calculate Player to Interactable direction
-		FVector interactableLocation = Interactable->Owner->GetActorLocation();
-		TargetDirection = interactableLocation - PlayerLocation;
+		FVector InteractableLocation = Interactable->Owner->GetActorLocation();
+		TargetDirection = InteractableLocation - PlayerLocation;
 		TargetDirection.Normalize();
 
 		// Calculate Dot product with player current View Direction
-		float targetAlignement = FVector::DotProduct( TargetDirection, PlayerDirection );
-		if ( targetAlignement < ClosestAlignement )
+		float TargetAlignement = FVector::DotProduct( TargetDirection, PlayerDirection );
+		if ( TargetAlignement < ClosestAlignement )
 		{
-			ClosestAlignement = targetAlignement;
+			ClosestAlignement = TargetAlignement;
 			ClosestInteractable = Interactable;
 		}
 	}

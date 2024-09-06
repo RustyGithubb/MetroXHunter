@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,12 +6,16 @@
 
 class UInteractableComponent;
 
+/*
+ * The interaction Component, that trigger the interaction with the interactables,
+ * needs to be attached to the player
+ */
 UCLASS( BlueprintType, meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UInteractionComponent();
 
 	virtual void BeginPlay() override;
@@ -27,6 +29,7 @@ private:
 	void RetrieveClosestInteractable();
 	void UpdateViewport();
 
+private:
 	APlayerController* PlayerController = nullptr;
 
 	/*
