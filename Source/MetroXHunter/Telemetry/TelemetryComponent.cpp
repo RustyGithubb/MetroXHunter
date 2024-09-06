@@ -110,10 +110,10 @@ void UTelemetryComponent::ClearBuffer()
 FString UTelemetryComponent::GetFilePath( const FDateTime& DateTime, const FString& CheckpointName ) const
 {
 	return FString::Printf(
-		"%s/Playtest/%s_Data_%s_Checkpoint%s.csv",
-		FPaths::ProjectSavedDir(),
-		UMXHUtilityLibrary::IsWithinEditor() ? "PIE" : "Build",
-		DateTime.ToFormattedString( TEXT( "%d/%b_%H:%M:%S" ) ),
-		CheckpointName
+		TEXT( "%s/Playtest/%s_Data_%s_Checkpoint%s.csv" ),
+		*FPaths::ProjectSavedDir(),
+		UMXHUtilityLibrary::IsWithinEditor() ? TEXT( "PIE" ) : TEXT( "Build" ),
+		*DateTime.ToFormattedString( TEXT( "%d/%b_%H:%M:%S" ) ),
+		*CheckpointName
 	);
 }
