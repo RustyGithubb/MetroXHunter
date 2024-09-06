@@ -19,6 +19,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
+	void AddNearInteractable( UInteractableComponent* InInteractable );
+	void RemoveNearInteractable( UInteractableComponent* InInteractable );
 private:
 	void GetReferences();
 	APlayerController* PlayerController = nullptr;

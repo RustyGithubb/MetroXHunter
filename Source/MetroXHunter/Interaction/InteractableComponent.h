@@ -5,6 +5,7 @@
 #include "InteractableComponent.generated.h"
 
 enum class E_InteractionType : uint8;
+class UInteractionComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargeted);
@@ -26,7 +27,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
 	E_InteractionType InteractionType;
 
-	// NEEDS TO BE REPLACED WITH DELEGATES WHEN REFACTOR OF ALL BLUEPRINTS DONE
+	void OnPlayerOverlap(UInteractionComponent* InteractionComponent);
+	void OnPlayerOut(UInteractionComponent* InteractionComponent );
+
 	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
 	FOnInteract OnInteract;
 

@@ -70,9 +70,28 @@ void UInteractionComponent::GetClosestInteractable()
 		CurrentInteractable->OnUntargeted.Broadcast();
 
 	// Target the new interactable
-	// IF IS VALID ?
+	// IF CurrentInteractable IS VALID ?
 	CurrentInteractable = ClosestInteractable;
 	CurrentInteractable->OnTargeted.Broadcast();
+
+	UpdateViewport();
+}
+
+void UInteractionComponent::AddNearInteractable( UInteractableComponent* InInteractable )
+{
+	NearInteractables.AddUnique( InInteractable );
+	bNearInteractable = true;
+}
+
+void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InInteractable )
+{
+	NearInteractables.Remove( InInteractable );
+
+	if ( NearInteractables.IsEmpty() )
+	{
+		bNearInteractable = false;
+		CurrentInteractable = nullptr;
+	}
 
 	UpdateViewport();
 }
