@@ -43,7 +43,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 
 		UMXHUtilityLibrary::LogMessage(
 			TEXT( "New Cheat Function: %s" ),
-			*It->GetName() 
+			*It->GetName()
 		);
 	}
 
@@ -108,7 +108,7 @@ void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 		auto Asset = AssetData.GetAsset();
 		UMXHUtilityLibrary::LogMessage(
 			TEXT( "Force Load Asset: %s" ),
-			*Asset->GetPathName() 
+			*Asset->GetPathName()
 		);
 	}
 }
