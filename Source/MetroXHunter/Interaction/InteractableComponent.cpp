@@ -1,12 +1,11 @@
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"
-#include "Enums/E_InteractionType.h"
+#include "Interaction/EInteractionType.h"
 
 UInteractableComponent::UInteractableComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
-
 
 void UInteractableComponent::BeginPlay()
 {
@@ -15,8 +14,6 @@ void UInteractableComponent::BeginPlay()
 	Owner = GetOwner();
 }
 
-
-
 void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -24,8 +21,7 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UInteractableComponent::OnPlayerOverlap( UInteractionComponent* InteractionComponent )
 {
-	if ( !InteractionComponent )
-		return;
+	if ( !InteractionComponent ) return;
 
 	InteractionComponent->AddNearInteractable( this );
 
@@ -33,8 +29,7 @@ void UInteractableComponent::OnPlayerOverlap( UInteractionComponent* Interaction
 
 void UInteractableComponent::OnPlayerOut( UInteractionComponent* InteractionComponent )
 {
-	if ( !InteractionComponent )
-		return;
+	if ( !InteractionComponent ) return;
 
 	InteractionComponent->RemoveNearInteractable( this );
 }

@@ -8,7 +8,7 @@
 
 class UInteractableComponent;
 
-UCLASS( Blueprintable, meta = ( ABSTRACT ) )
+UCLASS( BlueprintType, meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -21,11 +21,14 @@ public:
 
 	void AddNearInteractable( UInteractableComponent* InInteractable );
 	void RemoveNearInteractable( UInteractableComponent* InInteractable );
+
 private:
 	void GetReferences();
+	void RetrieveClosestInteractable();
+	void UpdateViewport();
+
 	APlayerController* PlayerController = nullptr;
 
-	// Interactables
 	/*
 	* The closest interactable from the player's view
 	*/
@@ -37,13 +40,7 @@ private:
 	TArray<UInteractableComponent*> NearInteractables;
 
 	/*
-	* If there is any interactalbe near the player
+	* If there is any interactable near the player
 	*/
-	bool bNearInteractable = false;
-
-	void RetrieveClosestInteractable();
-
-
-	// HUD
-	void UpdateViewport();
+	bool bIsNearInteractable = false;
 };

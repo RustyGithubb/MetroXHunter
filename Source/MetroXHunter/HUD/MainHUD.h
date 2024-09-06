@@ -20,6 +20,7 @@ class UMainHUD : public UInterface
 class METROXHUNTER_API IMainHUD
 {
 	GENERATED_BODY()
+
 public:
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Cheat Menu" )
 	bool ShowHideCheatMenuVisibility(UMXHCheatManager* CheatManager, APlayerController* PlayerController, bool bNewVisibility, bool bShouldToggle);

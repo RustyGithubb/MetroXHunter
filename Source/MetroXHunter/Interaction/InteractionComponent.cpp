@@ -1,7 +1,7 @@
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
-#include <HUD/MainHUD.h>
-#include "Enums/E_InteractionType.h"
+#include "Interaction/EInteractionType.h"
+#include "HUD/MainHUD.h"
 
 #include "Engine.h"
 
@@ -26,54 +26,54 @@ void UInteractionComponent::GetReferences()
 }
 
 
-void UInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
-	if ( bNearInteractable )
-		RetrieveClosestInteractable();
+	RetrieveClosestInteractable();
 }
 
 void UInteractionComponent::RetrieveClosestInteractable()
 {
-	//Viewport Size
-	const FVector2D viewportSize = FVector2D( GEngine->GameViewport->Viewport->GetSizeXY() );
+	// Viewport Size
+	const FVector2D ViewportSize = FVector2D( GEngine->GameViewport->Viewport->GetSizeXY() );
 
-	//Viewport Center		
-	const FVector2D  viewportCenter = FVector2D( viewportSize.X / 2, viewportSize.Y / 2 );
+	// Viewport Center		
+	const FVector2D ViewportCenter = FVector2D( ViewportSize.X / 2, ViewportSize.Y / 2 );
 
 	// Get player's world location and direction
-	FVector playerLocation;
-	FVector playerDirection;
-	PlayerController->DeprojectScreenPositionToWorld( viewportCenter.X, viewportCenter.Y, playerLocation, playerDirection);
+	FVector PlayerLocation;
+	FVector PlayerDirection;
+	PlayerController->DeprojectScreenPositionToWorld( ViewportCenter.X, ViewportCenter.Y, PlayerLocation, PlayerDirection );
 
-	FVector targetDirecion;
-	float closestAlignement = 1;
+	FVector TargetDirection;
+	float ClosestAlignement = 1;
 	UInteractableComponent* ClosestInteractable = nullptr;
 
-	for ( auto interactable : NearInteractables )
+	for ( auto Interactable : NearInteractables )
 	{
-		// Calculate Interactable to Player's direction
-		FVector interactableLocation = interactable->Owner->GetActorLocation();
-		targetDirecion = interactableLocation - playerLocation;
-		targetDirecion.Normalize();
+		// Calculate Player to Interactable direction
+		FVector interactableLocation = Interactable->Owner->GetActorLocation();
+		TargetDirection = interactableLocation - PlayerLocation;
+		TargetDirection.Normalize();
 
 		// Calculate Dot product with player current View Direction
-		float targetAlignement = FVector::DotProduct( targetDirecion, playerDirection );
-		if ( targetAlignement < closestAlignement )
+		float targetAlignement = FVector::DotProduct( TargetDirection, PlayerDirection );
+		if ( targetAlignement < ClosestAlignement )
 		{
-			closestAlignement = targetAlignement;
-			ClosestInteractable = interactable;
+			ClosestAlignement = targetAlignement;
+			ClosestInteractable = Interactable;
 		}
 	}
 
 	// Check if new interactable
-	if ( CurrentInteractable == ClosestInteractable )
-		return;
+	if ( CurrentInteractable == ClosestInteractable ) return;
 
 	// Untarget the last Targeted interactable if any
 	if ( CurrentInteractable )
+	{
 		CurrentInteractable->OnUntargeted.Broadcast();
+	}
 
 	// Target the new interactable
 	CurrentInteractable = ClosestInteractable;
@@ -90,7 +90,7 @@ void UInteractionComponent::AddNearInteractable( UInteractableComponent* InInter
 	this->SetComponentTickEnabled( true );
 
 	NearInteractables.AddUnique( InInteractable );
-	bNearInteractable = true;
+	bIsNearInteractable = true;
 }
 
 void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InInteractable )
@@ -99,7 +99,7 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 
 	if ( NearInteractables.IsEmpty() )
 	{
-		bNearInteractable = false;
+		bIsNearInteractable = false;
 		CurrentInteractable = nullptr;
 
 		this->SetComponentTickEnabled( false );
@@ -110,13 +110,16 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 
 void UInteractionComponent::UpdateViewport()
 {
-	IMainHUD* MainHUD = Cast<IMainHUD>(PlayerController->GetHUD());
+	IMainHUD* MainHUD = Cast<IMainHUD>( PlayerController->GetHUD() );
 
-	if ( !MainHUD )
-		return;
+	if ( !MainHUD ) return;
 
 	if ( NearInteractables.Num() > 0 )
-		MainHUD->Execute_UpdatePrompts(this, CurrentInteractable->InteractionType);
+	{
+		MainHUD->UpdatePrompts( CurrentInteractable->InteractionType );
+	}
 	else
-		MainHUD->UpdatePrompts(E_InteractionType::Default);
+	{
+		MainHUD->UpdatePrompts( E_InteractionType::Default );
+	}
 }
