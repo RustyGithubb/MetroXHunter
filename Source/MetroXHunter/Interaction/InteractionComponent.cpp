@@ -8,13 +8,16 @@
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	this->SetComponentTickInterval( 0.2f );
+	this->SetComponentTickEnabled( false );
 }
 
 void UInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetReferences();
+	// Late Begin Play
+	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::GetReferences );
 }
 
 void UInteractionComponent::GetReferences()
@@ -26,9 +29,12 @@ void UInteractionComponent::GetReferences()
 void UInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if ( bNearInteractable )
+		RetrieveClosestInteractable();
 }
 
-void UInteractionComponent::GetClosestInteractable()
+void UInteractionComponent::RetrieveClosestInteractable()
 {
 	//Viewport Size
 	const FVector2D viewportSize = FVector2D( GEngine->GameViewport->Viewport->GetSizeXY() );
@@ -70,15 +76,19 @@ void UInteractionComponent::GetClosestInteractable()
 		CurrentInteractable->OnUntargeted.Broadcast();
 
 	// Target the new interactable
-	// IF CurrentInteractable IS VALID ?
 	CurrentInteractable = ClosestInteractable;
-	CurrentInteractable->OnTargeted.Broadcast();
 
-	UpdateViewport();
+	if ( CurrentInteractable )
+	{
+		CurrentInteractable->OnTargeted.Broadcast();
+		UpdateViewport();
+	}
 }
 
 void UInteractionComponent::AddNearInteractable( UInteractableComponent* InInteractable )
 {
+	this->SetComponentTickEnabled( true );
+
 	NearInteractables.AddUnique( InInteractable );
 	bNearInteractable = true;
 }
@@ -91,6 +101,8 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 	{
 		bNearInteractable = false;
 		CurrentInteractable = nullptr;
+
+		this->SetComponentTickEnabled( false );
 	}
 
 	UpdateViewport();

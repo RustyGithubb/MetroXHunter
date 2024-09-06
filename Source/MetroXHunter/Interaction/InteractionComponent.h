@@ -41,7 +41,7 @@ private:
 	*/
 	bool bNearInteractable = false;
 
-	void GetClosestInteractable();
+	void RetrieveClosestInteractable();
 
 
 	// HUD
