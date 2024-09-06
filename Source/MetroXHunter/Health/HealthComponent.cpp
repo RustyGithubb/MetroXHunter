@@ -14,10 +14,10 @@ void UHealthComponent::BeginPlay()
 
 bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
 {
-	ensureMsgf( DamageContext.DamageAmount > 0, TEXT("'DamageContext.DamageAmount' must be positive") );
+	ensureMsgf( DamageContext.DamageAmount > 0, TEXT( "'DamageContext.DamageAmount' must be positive" ) );
 
 	if ( bIsDead || bIsInvulnerable ) return false;
-	
+
 	//  Apply damage to health
 	CurrentHealth = FMath::Max( DamageContext.DamageAmount, 0 );
 	OnDamage.Broadcast( DamageContext );
@@ -35,7 +35,7 @@ bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
 
 void UHealthComponent::Heal( int32 Amount )
 {
-	ensureMsgf( Amount > 0, TEXT("'Amount' must be positive") );
+	ensureMsgf( Amount > 0, TEXT( "'Amount' must be positive" ) );
 
 	//  Apply heal to health
 	CurrentHealth = FMath::Min( CurrentHealth + Amount, MaxHealth );

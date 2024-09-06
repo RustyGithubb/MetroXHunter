@@ -71,7 +71,7 @@ struct FDamageContext
 };
 
 /*
- * Actor component handling health with basic damage and heal.
+ * Component handling health with basic damage and heal features.
  */
 UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UHealthComponent : public UActorComponent
