@@ -5,7 +5,7 @@
 #include "TelemetryComponent.generated.h"
 
 /*
- * Relevant game data to track, save for analysis purposes.
+ * Relevant game data to track and save for analysis purposes.
  */
 USTRUCT( BlueprintType )
 struct FTelemetryData
@@ -48,15 +48,15 @@ struct FTelemetryData
 };
 
 /*
- * Component handling game data for game design statistics analysis.
- * Data is written into a file to the 'Saved/Playtest/' directory with the CSV format.
+ * Component tracking game data for game design statistics analysis.
+ * Data is written into a file to the 'Saved/Playtest/' directory using CSV format.
  */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UTelemetryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UTelemetryComponent();
 
 	virtual void BeginPlay() override;

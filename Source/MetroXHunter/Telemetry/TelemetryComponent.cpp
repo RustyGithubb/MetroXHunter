@@ -47,7 +47,7 @@ void UTelemetryComponent::WriteDataToFile()
 	FDateTime DateTimeNow = UKismetMathLibrary::Now();
 	FString DateTime = UKismetTextLibrary::AsDateTime_DateTime( DateTimeNow ).ToString();
 	DateTime = DateTime.Replace( TEXT( "," ), TEXT( "" ), ESearchCase::IgnoreCase );
-	
+
 	ClearBuffer();
 
 	// Write session data
