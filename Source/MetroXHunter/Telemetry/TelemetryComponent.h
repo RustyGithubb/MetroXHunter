@@ -51,7 +51,7 @@ struct FTelemetryData
  * Component tracking game data for game design statistics analysis.
  * Data is written into a file to the 'Saved/Playtest/' directory using CSV format.
  */
-UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
+UCLASS( Blueprintable, ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UTelemetryComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -65,10 +65,12 @@ public:
 	/*
 	 * Saves all tracked game data into a file.
 	 */
+	UFUNCTION( BlueprintCallable, Category = "Telemetry" )
 	void WriteDataToFile();
 	/*
 	 * Clears all tracked game data.
 	 */
+	UFUNCTION( BlueprintCallable, Category = "Telemetry" )
 	void ClearData();
 
 public:
