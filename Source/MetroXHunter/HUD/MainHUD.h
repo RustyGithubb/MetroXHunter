@@ -8,7 +8,7 @@ class UMXHCheatManager;
 class APlayerController;
 enum class E_InteractionType : uint8;
 
-UINTERFACE( MinimalAPI )
+UINTERFACE( Blueprintable )
 class UMainHUD : public UInterface
 {
 	GENERATED_BODY()
@@ -29,16 +29,19 @@ public:
 	void UpdatePrompts( E_InteractionType InteractionType );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
-	bool ShowNewTextIndication( const FText& TextToShow );
+	void ShowNewTextIndication( const FText& TextToShow );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
-	bool UpdateAmmoCount();
+	void UpdateAmmoCount();
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
+	void SetUIMode(bool bShouldHideUI);
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
-	bool ShowLockerSkillCheck( bool bNewLockerVisibility );
+	void ShowLockerSkillCheck( bool bNewLockerVisibility );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
-	bool GiveInputToLockerSkillCheck( FVector2D MovementsInput );
+	void GiveInputToLockerSkillCheck( FVector2D MovementsInput );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
 	bool PressingLockerNow();

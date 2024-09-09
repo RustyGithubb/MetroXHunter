@@ -4,7 +4,7 @@
 
 UInteractableComponent::UInteractableComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UInteractableComponent::BeginPlay()
@@ -14,10 +14,10 @@ void UInteractableComponent::BeginPlay()
 	Owner = GetOwner();
 }
 
-void UInteractableComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
-{
-	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-}
+//void UInteractableComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+//{
+//	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+//}
 
 void UInteractableComponent::OnPlayerOverlap( UInteractionComponent* InteractionComponent )
 {
