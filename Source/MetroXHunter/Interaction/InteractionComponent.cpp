@@ -47,14 +47,14 @@ void UInteractionComponent::RetrieveClosestInteractable()
 	PlayerController->DeprojectScreenPositionToWorld( ViewportCenter.X, ViewportCenter.Y, PlayerLocation, PlayerDirection );
 
 	FVector TargetDirection;
-	float ClosestAlignement = 1;
+	float ClosestAlignement = 0;
 	UInteractableComponent* ClosestInteractable = nullptr;
 
 	for ( auto Interactable : NearInteractables )
 	{
-		// Calculate Player to Interactable direction
+		// Calculate Interactable to Player direction
 		FVector InteractableLocation = Interactable->Owner->GetActorLocation();
-		TargetDirection = InteractableLocation - PlayerLocation;
+		TargetDirection = PlayerLocation - InteractableLocation;
 		TargetDirection.Normalize();
 
 		// Calculate Dot product with player current View Direction

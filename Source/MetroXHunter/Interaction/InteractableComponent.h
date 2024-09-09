@@ -19,22 +19,25 @@ public:
 	UInteractableComponent();
 
 	virtual void BeginPlay() override;
-	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
+	//virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
+	UFUNCTION( BlueprintCallable )
 	void OnPlayerOverlap( UInteractionComponent* InteractionComponent );
+
+	UFUNCTION( BlueprintCallable )
 	void OnPlayerOut( UInteractionComponent* InteractionComponent );
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnInteract );
-	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnInteract OnInteract;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnTargeted );
-	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnTargeted OnTargeted;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUntargeted );
-	UPROPERTY( BlueprintCallable, Category = "Interaction|Event" )
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnUntargeted OnUntargeted;
 
 public:
