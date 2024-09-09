@@ -7,7 +7,9 @@
 class UTelemetryComponent;
 
 /*
- *
+ * Component storing last saved data of its owner such as location and rotation.
+ * The owner is assumed to inherit ACharacter and to represent the player.
+ * To be used with checkpoint triggers.
  */
 UCLASS( BlueprintType, ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UCheckpointComponent : public UActorComponent
