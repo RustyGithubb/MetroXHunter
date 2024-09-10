@@ -13,7 +13,7 @@ class METROXHUNTER_API UMXHUtilityLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 	
 public:
-	/**
+	/*
 	 * Log a message to the output log.
 	 * 
 	 * @param Text	Format text
@@ -25,7 +25,7 @@ public:
 		const FString FormattedText = FString::Printf( Text, Args... );
 		UE_LOG( LogTemp, Log, TEXT( "%s" ), *FormattedText );
 	}
-	/**
+	/*
 	 * Log a warning to the output log.
 	 *
 	 * @param Text	Format text
@@ -37,7 +37,7 @@ public:
 		const FString FormattedText = FString::Printf( Text, Args... );
 		UE_LOG( LogTemp, Warning, TEXT( "%s" ), *FormattedText );
 	}
-	/**
+	/*
 	 * Log an error to the output log.
 	 *
 	 * @param Text	Format text
@@ -50,7 +50,17 @@ public:
 		UE_LOG( LogTemp, Error, TEXT( "%s" ), *FormattedText );
 	}
 
-	/**
+	/*
+	 * Prints to screen and logs a message to the output log.
+	 *
+	 * @param Text Text
+	 */
+	template<typename TText>
+	static void PrintMessage( const TText& Text )
+	{
+		PrintMessage( Text, TEXT( "" ) );
+	}
+	/*
 	 * Prints to screen and logs a message to the output log.
 	 *
 	 * @param Text	Format text
@@ -61,7 +71,7 @@ public:
 	{
 		PrintMessage( Text, FColor::Blue, 5.0f, Args... );
 	}
-	/**
+	/*
 	 * Prints to screen with a custom color and time and logs a message to the output log.
 	 *
 	 * @param Text	Format text
@@ -70,13 +80,28 @@ public:
 	 * @param Args	Format arguments
 	 */
 	template<typename TFormat, typename... TArgs>
-	static void PrintMessage( const TFormat& Text, const FColor& Color = FColor::Blue, const float Time = 5.0f, TArgs... Args )
+	static void PrintMessage( 
+		const TFormat& Text,
+		const FColor& Color = FColor::Blue,
+		const float Time = 5.0f,
+		TArgs... Args
+	)
 	{
 		const FString FormattedText = FString::Printf( Text, Args... );
 		UE_LOG( LogTemp, Log, TEXT( "%s" ), *FormattedText );
 		GEngine->AddOnScreenDebugMessage( INDEX_NONE, Time, Color, FormattedText );
 	}
-	/**
+	/*
+	 * Prints to screen and logs a warning to the output log.
+	 *
+	 * @param Text Text
+	 */
+	template<typename TFormat>
+	static void PrintWarning( const TFormat& Text )
+	{
+		PrintWarning( Text, TEXT( "" ) );
+	}
+	/*
 	 * Prints to screen and logs a warning to the output log.
 	 *
 	 * @param Text	Format text
@@ -89,7 +114,17 @@ public:
 		UE_LOG( LogTemp, Warning, TEXT( "%s" ), *FormattedText );
 		GEngine->AddOnScreenDebugMessage( INDEX_NONE, 5.0f, FColor::Yellow, FormattedText );
 	}
-	/**
+	/*
+	 * Prints to screen and logs an error to the output log.
+	 *
+	 * @param Text Text
+	 */
+	template<typename TFormat>
+	static void PrintError( const TFormat& Text )
+	{
+		PrintError( Text, TEXT( "" ) );
+	}
+	/*
 	 * Prints to screen and logs an error to the output log.
 	 *
 	 * @param Text	Format text
@@ -113,7 +148,7 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category="MXHUtilityLibrary|Filesystem" )
 	static bool SaveFileAsString( const FString& Data, const FString& Path );
-	/**
+	/*
 	 * Loads a file at specified path and fills the given string with its content.
 	 * Path is absolute.
 	 *
@@ -124,7 +159,7 @@ public:
 	UFUNCTION( BlueprintCallable, Category="MXHUtilityLibrary|Filesystem" )
 	static bool LoadFileAsString( const FString& Path, FString& Data );
 
-	/**
+	/*
 	 * Returns whenever the game's code has been built including the editor.
 	 * 
 	 * @return Whenever the editor is included
@@ -132,7 +167,7 @@ public:
 	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary" )
 	static bool IsWithinEditor();
 
-	/**
+	/*
 	 * Returns whenever the CVar 'MXH.AI.Debug' is enabled.
 	 * 
 	 * @return Whenever the CVar is enabled
