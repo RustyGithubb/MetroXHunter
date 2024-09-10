@@ -12,6 +12,7 @@
 				"CoreUObject",
 				"Engine",
 				"UMG"
+				"AIModule"
 			]
 		}
 	],
