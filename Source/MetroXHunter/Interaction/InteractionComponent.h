@@ -7,8 +7,8 @@
 class UInteractableComponent;
 
 /*
- * The interaction Component, that trigger the interaction with the interactables,
- * needs to be attached to the player
+ * The interaction Component that trigger the interaction with the interactables,
+ * Needs to be attached to the player
  */
 UCLASS( BlueprintType, meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UInteractionComponent : public UActorComponent
