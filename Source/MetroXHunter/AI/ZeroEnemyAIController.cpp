@@ -1,4 +1,5 @@
 #include "AI/ZeroEnemyAIController.h"
+#include "AI/ZeroEnemy.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -9,6 +10,10 @@ constexpr auto TARGET_KEYNAME = TEXT( "TargetActor" );
 
 void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 {
+	CustomPawn = CastChecked<AZeroEnemy>( InPawn );
+	CustomPawn->OnStun.AddDynamic( this, &AZeroEnemyAIController::OnStun );
+	CustomPawn->OnUnStun.AddDynamic( this, &AZeroEnemyAIController::OnUnStun );
+
 	ensure( RunBehaviorTree( BehaviorTree ) );
 	UMXHUtilityLibrary::PrintMessage( TEXT( "AI: Behavior Tree for '%s' is running!" ), *GetName() );
 
@@ -37,4 +42,14 @@ void AZeroEnemyAIController::SetTarget( AActor* InTarget )
 		*GetName(),
 		InTarget == nullptr ? TEXT( "nullptr" ) : *InTarget->GetName()
 	);
+}
+
+void AZeroEnemyAIController::OnStun()
+{
+	SetState( EZeroEnemyAIState::Stun );
+}
+
+void AZeroEnemyAIController::OnUnStun()
+{
+	SetState( EZeroEnemyAIState::Combat );
 }

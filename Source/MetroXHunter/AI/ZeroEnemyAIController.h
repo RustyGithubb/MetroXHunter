@@ -4,11 +4,14 @@
 #include "AIController.h"
 #include "ZeroEnemyAIController.generated.h"
 
+class AZeroEnemy;
+
 UENUM( BlueprintType )
 enum class EZeroEnemyAIState : uint8
 {
 	Idle,
 	Combat,
+	Stun,
 };
 
 /**
@@ -33,6 +36,14 @@ public:
 	UBehaviorTree* BehaviorTree = nullptr;
 
 private:
+	UFUNCTION()
+	void OnStun();
+	UFUNCTION()
+	void OnUnStun();
+
+private:
+	AZeroEnemy* CustomPawn;
+
 	AActor* Target = nullptr;
 	EZeroEnemyAIState CurrentState = EZeroEnemyAIState::Idle;
 };
