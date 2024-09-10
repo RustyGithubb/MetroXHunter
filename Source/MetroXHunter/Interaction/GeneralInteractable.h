@@ -14,7 +14,7 @@ class UInteractionComponent;
 
 /*
  * Parent class of all Interactables
- * 
+ *
  * Important: You will have to set the widget class in blueprint to WBP_Interactable for all the child class !
  */
 UCLASS()
@@ -51,9 +51,13 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|UI" )
 	UInteractableWidget* InteractableWidget = nullptr;
 
+protected:
+	UFUNCTION()
+	virtual void Interact() {};
+
 private:
 	UFUNCTION()
-	virtual void OnInnerCircleOverlapBegin(
+	void OnInnerCircleOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult
@@ -79,10 +83,10 @@ private:
 	);
 
 	UFUNCTION()
-	virtual void OnInteractableTargeted();
+	void OnInteractableTargeted();
 
 	UFUNCTION()
-	virtual void OnInteractableUntargeted();
+	void OnInteractableUntargeted();
 
 private:
 	UInteractionComponent* PlayerInteractionComponent = nullptr;

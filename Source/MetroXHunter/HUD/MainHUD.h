@@ -35,7 +35,7 @@ public:
 	void UpdateAmmoCount();
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
-	void SetUIMode(bool bShouldHideUI);
+	void SetUIMode( bool bShouldHideUI );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
 	void ShowLockerSkillCheck( bool bNewLockerVisibility );

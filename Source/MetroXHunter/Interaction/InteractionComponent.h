@@ -19,15 +19,23 @@ public:
 	UInteractionComponent();
 
 	virtual void BeginPlay() override;
+	void LateBeginPlay();
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
+	void SetupPlayerInputComponent();
 
 	void AddNearInteractable( UInteractableComponent* InInteractable );
 	void RemoveNearInteractable( UInteractableComponent* InInteractable );
+
+public:
+	/* Controllers */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction| Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	class UInputAction* InteractAction = nullptr;
 
 private:
 	void GetReferences();
 	void RetrieveClosestInteractable();
 	void UpdateViewport();
+	void Interact();
 
 private:
 	APlayerController* PlayerController = nullptr;
