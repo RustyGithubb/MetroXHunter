@@ -138,7 +138,30 @@ public:
 		GEngine->AddOnScreenDebugMessage( INDEX_NONE, 10.0f, FColor::Red, FormattedText );
 	}
 
-	/**
+	/*
+	 * Get components by tag of a given actor. 
+	 * Internally use AActor::GetComponentsByTag, but return the correct array type.
+	 * 
+	 * @param Actor Actor to get the components from
+	 * @param Tag   Tag to search for
+	 * @return Array of components in correct type
+	 */
+	template<typename ComponentType>
+	static TArray<ComponentType*> GetComponentsOfActorByTag( AActor* Actor, const FName& Tag )
+	{
+		auto Components = Actor->GetComponentsByTag( ComponentType::StaticClass(), Tag );
+
+		TArray<ComponentType*> OutComponents {};
+		OutComponents.Reserve( Components.Num() );
+		for ( auto Component : Components )
+		{
+			OutComponents.Add( CastChecked<ComponentType>( Component ) );
+		}
+
+		return MoveTemp( OutComponents );
+	}
+
+	/*
 	 * Saves a string into a file at specified path. 
 	 * Path is absolute.
 	 * 
