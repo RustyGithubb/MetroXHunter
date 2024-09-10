@@ -8,20 +8,26 @@ class UStaticMeshComponent;
 class USceneComponent;
 class USphereComponent;
 class UWidgetComponent;
+class UInteractableWidget;
 class UInteractableComponent;
+class UInteractionComponent;
 
+/*
+ * Parent class of all Interactables
+ * 
+ * Important: You will have to set the widget class in blueprint to WBP_Interactable for all the child class !
+ */
 UCLASS()
 class METROXHUNTER_API AGeneralInteractable : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AGeneralInteractable();
 
 	virtual void BeginPlay() override;
-//	virtual void Tick(float DeltaTime) override;
 
-public:
+	void BindToDelegates();
 
 public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
@@ -38,4 +44,46 @@ public:
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Component" )
 	UInteractableComponent* InteractableComponent = nullptr;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Interactable|UI" )
+	UWidgetComponent* Widget = nullptr;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|UI" )
+	UInteractableWidget* InteractableWidget = nullptr;
+
+private:
+	UFUNCTION()
+	virtual void OnInnerCircleOverlapBegin(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	void OnOutterCircleOverlapBegin(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	virtual void OnInnerCircleOverlapEnd(
+		UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
+	);
+
+	UFUNCTION()
+	void OnOutterCircleOverlapEnd(
+		UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
+	);
+
+	UFUNCTION()
+	virtual void OnInteractableTargeted();
+
+	UFUNCTION()
+	virtual void OnInteractableUntargeted();
+
+private:
+	UInteractionComponent* PlayerInteractionComponent = nullptr;
 };

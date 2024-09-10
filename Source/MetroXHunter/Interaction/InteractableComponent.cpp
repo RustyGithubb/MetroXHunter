@@ -14,17 +14,11 @@ void UInteractableComponent::BeginPlay()
 	Owner = GetOwner();
 }
 
-//void UInteractableComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
-//{
-//	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-//}
-
 void UInteractableComponent::OnPlayerOverlap( UInteractionComponent* InteractionComponent )
 {
 	if ( !InteractionComponent ) return;
 
 	InteractionComponent->AddNearInteractable( this );
-
 }
 
 void UInteractableComponent::OnPlayerOut( UInteractionComponent* InteractionComponent )
