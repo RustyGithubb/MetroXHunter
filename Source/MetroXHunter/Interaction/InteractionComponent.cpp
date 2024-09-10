@@ -8,8 +8,9 @@
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	this->SetComponentTickInterval( 0.2f );
-	this->SetComponentTickEnabled( false );
+
+	SetComponentTickInterval( 0.2f );
+	SetComponentTickEnabled( false );
 }
 
 void UInteractionComponent::BeginPlay()
@@ -42,12 +43,15 @@ void UInteractionComponent::RetrieveClosestInteractable()
 	const FVector2D ViewportCenter = FVector2D( ViewportSize.X / 2, ViewportSize.Y / 2 );
 
 	// Get player's world location and direction
-	FVector PlayerLocation;
-	FVector PlayerDirection;
-	PlayerController->DeprojectScreenPositionToWorld( ViewportCenter.X, ViewportCenter.Y, PlayerLocation, PlayerDirection );
+	FVector PlayerLocation {};
+	FVector PlayerDirection {};
+	PlayerController->DeprojectScreenPositionToWorld(
+		ViewportCenter.X, ViewportCenter.Y,
+		PlayerLocation, PlayerDirection
+	);
 
-	FVector TargetDirection;
-	float ClosestAlignement = 0;
+	FVector TargetDirection {};
+	float ClosestAlignement = 1.0f;
 	UInteractableComponent* ClosestInteractable = nullptr;
 
 	for ( auto Interactable : NearInteractables )
@@ -87,7 +91,7 @@ void UInteractionComponent::RetrieveClosestInteractable()
 
 void UInteractionComponent::AddNearInteractable( UInteractableComponent* InInteractable )
 {
-	this->SetComponentTickEnabled( true );
+	SetComponentTickEnabled( true );
 
 	NearInteractables.AddUnique( InInteractable );
 	bIsNearInteractable = true;
@@ -102,7 +106,7 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 		bIsNearInteractable = false;
 		CurrentInteractable = nullptr;
 
-		this->SetComponentTickEnabled( false );
+		SetComponentTickEnabled( false );
 	}
 
 	UpdateViewport();
