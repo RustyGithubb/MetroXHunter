@@ -31,6 +31,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction| Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	class UInputAction* InteractAction = nullptr;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction| Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	class UInputAction* CancelInteractAction = nullptr;
+
 private:
 	void GetReferences();
 	void RetrieveClosestInteractable();

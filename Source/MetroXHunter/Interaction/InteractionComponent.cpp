@@ -7,6 +7,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#if WITH_EDITOR
+#include <FileHelpers.h>
+#endif
+
+
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -44,7 +49,15 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 
 void UInteractionComponent::SetupPlayerInputComponent()
 {
-	UInputComponent* PlayerInputComponent = GetWorld()->GetFirstPlayerController()->InputComponent;
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+
+	verifyf(
+		InteractAction && CancelInteractAction,
+		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
+	);
+
+	if ( !InteractAction || !CancelInteractAction )
+		return;
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
@@ -153,5 +166,9 @@ void UInteractionComponent::UpdateViewport()
 
 void UInteractionComponent::Interact()
 {
-	CurrentInteractable->OnInteract.Broadcast();
+	if ( CurrentInteractable )
+	{
+		CurrentInteractable->OnInteract.Broadcast();
+	}
+
 }
