@@ -44,7 +44,12 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 
 void UInteractionComponent::SetupPlayerInputComponent()
 {
-	UInputComponent* PlayerInputComponent = GetWorld()->GetFirstPlayerController()->InputComponent;
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+
+	verifyf(
+		InteractAction && CancelInteractAction,
+		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
+	);
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
@@ -153,5 +158,9 @@ void UInteractionComponent::UpdateViewport()
 
 void UInteractionComponent::Interact()
 {
-	CurrentInteractable->OnInteract.Broadcast();
+	if ( CurrentInteractable )
+	{
+		CurrentInteractable->OnInteract.Broadcast();
+	}
+
 }
