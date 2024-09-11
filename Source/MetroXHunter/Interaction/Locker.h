@@ -5,7 +5,7 @@
 #include "Locker.generated.h"
 
 /**
- *
+ *	A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
  */
 UCLASS()
 class METROXHUNTER_API ALocker : public AGeneralInteractable
@@ -29,7 +29,7 @@ protected:
 	void Interact() override;
 	void OnCancelInteraction();
 
-	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|Skill Check")
+	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|Skill Check" )
 	void OnSkillCheckAttempt();
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|Skill Check" )

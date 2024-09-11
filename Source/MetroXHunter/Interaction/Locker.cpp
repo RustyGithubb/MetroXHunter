@@ -23,6 +23,7 @@ void ALocker::Interact()
 {
 	ShowSkillCheckWidget();
 
+	/* Smooth camera transition from the player to the Locker's camera */
 	PlayerController->SetViewTargetWithBlend(
 		this,
 		BlendTime,
@@ -44,6 +45,7 @@ void ALocker::OnCancelInteraction()
 	UnbindInputs();
 	RemoveSkillCheckWidget();
 
+	/* Smooth camera transition from the Locker's camera to the Player */
 	PlayerController->SetViewTargetWithBlend(
 	PlayerController->GetPawn(),
 	BlendTime,
