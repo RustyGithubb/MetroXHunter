@@ -47,6 +47,13 @@ void AZeroEnemy::Tick( float DeltaTime )
 				0.0
 			}
 		);
+
+		return;
+	}
+
+	if ( bIsRushing )
+	{
+		AddMovementInput( GetActorForwardVector() );
 	}
 }
 
@@ -134,6 +141,28 @@ void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 	 Impulse.Z = Data->DefaultKnockbackZ;
 
 	 GetCharacterMovement()->AddImpulse( Impulse, true );
+}
+
+void AZeroEnemy::RushAttack()
+{
+	bIsRushing = true;
+
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.SetTimer(
+		RushTimerHandle,
+		this, &AZeroEnemy::StopRushAttack,
+		Data->RushTime
+	);
+
+	OnRush.Broadcast();
+}
+
+void AZeroEnemy::StopRushAttack()
+{
+	RushTimerHandle.Invalidate();
+	bIsRushing = false;
+
+	OnUnRush.Broadcast();
 }
 
 void AZeroEnemy::GenerateBulb()

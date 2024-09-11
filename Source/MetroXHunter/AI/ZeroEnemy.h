@@ -34,6 +34,11 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ApplyKnockback( const FVector& Direction, float Force );
 
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void RushAttack();
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void StopRushAttack();
+
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
 	bool IsBulbOpened() const { return bIsBulbOpened; }
 
@@ -45,6 +50,14 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUnStun );
 	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
 	FOnStun OnUnStun;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnRush );
+	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	FOnRush OnRush;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUnRush );
+	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	FOnUnRush OnUnRush;
 
 public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
@@ -72,6 +85,7 @@ private:
 private:
 	bool bIsBulbOpened = false;
 	bool bIsStun = false;
+	bool bIsRushing = false;
 
 	FRotator StartStunRotation {};
 
@@ -79,4 +93,5 @@ private:
 
 	FTimerHandle OpeningBulbTimerHandle {};
 	FTimerHandle StunTimerHandle {};
+	FTimerHandle RushTimerHandle {};
 };

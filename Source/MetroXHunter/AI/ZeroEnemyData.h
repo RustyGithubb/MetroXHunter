@@ -23,6 +23,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicStunTime = 5.0f;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
+	float RushTime = 2.0f;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "StunAnimation", meta = ( Units = "Degrees" ) )
 	float StunAnimationAngle = 45.0f; 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "StunAnimation" )
