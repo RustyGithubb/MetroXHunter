@@ -4,8 +4,8 @@
 #include "Interaction/GeneralInteractable.h"
 #include "Locker.generated.h"
 
-/**
- *	A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
+/*
+ * A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
  */
 UCLASS()
 class METROXHUNTER_API ALocker : public AGeneralInteractable
@@ -14,8 +14,8 @@ class METROXHUNTER_API ALocker : public AGeneralInteractable
 
 public:
 	ALocker();
-	virtual void Tick( float DeltaTime ) override;
 
+public:
 	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
 	float BlendExp = 1.0f;
 

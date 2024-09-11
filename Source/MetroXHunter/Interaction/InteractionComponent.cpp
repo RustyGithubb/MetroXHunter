@@ -7,11 +7,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-#if WITH_EDITOR
-#include <FileHelpers.h>
-#endif
-
-
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -55,9 +50,6 @@ void UInteractionComponent::SetupPlayerInputComponent()
 		InteractAction && CancelInteractAction,
 		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
 	);
-
-	if ( !InteractAction || !CancelInteractAction )
-		return;
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )

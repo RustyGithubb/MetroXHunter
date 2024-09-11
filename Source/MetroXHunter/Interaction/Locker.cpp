@@ -5,8 +5,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-#include "MXHUtilityLibrary.h"
-
 ALocker::ALocker()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -14,16 +12,11 @@ ALocker::ALocker()
 	SetActorTickEnabled( false );
 }
 
-void ALocker::Tick( float DeltaTime )
-{
-	Super::Tick( DeltaTime );
-}
-
 void ALocker::Interact()
 {
 	ShowSkillCheckWidget();
 
-	/* Smooth camera transition from the player to the Locker's camera */
+	// Smooth camera transition from the player to the Locker's camera
 	PlayerController->SetViewTargetWithBlend(
 		this,
 		BlendTime,
@@ -31,6 +24,7 @@ void ALocker::Interact()
 		BlendExp
 	);
 
+	// Should refactor the inputs so we still see the Visualizer
 	PlayerController->GetPawn()->DisableInput( PlayerController );
 	PlayerController->DisableInput( PlayerController );
 
@@ -45,12 +39,12 @@ void ALocker::OnCancelInteraction()
 	UnbindInputs();
 	RemoveSkillCheckWidget();
 
-	/* Smooth camera transition from the Locker's camera to the Player */
+	// Smooth camera transition from the Locker's camera to the Player
 	PlayerController->SetViewTargetWithBlend(
-	PlayerController->GetPawn(),
-	BlendTime,
-	EViewTargetBlendFunction::VTBlend_EaseInOut,
-	BlendExp
+		PlayerController->GetPawn(),
+		BlendTime,
+		EViewTargetBlendFunction::VTBlend_EaseInOut,
+		BlendExp
 	);
 
 	PlayerController->GetPawn()->EnableInput( PlayerController );
@@ -67,10 +61,8 @@ void ALocker::EndSkillCheck()
 
 void ALocker::BindToInputs()
 {
-	UInputComponent* PlayerInputComponent = InputComponent;
-
 	// Set up action bindings
-	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
@@ -88,9 +80,7 @@ void ALocker::BindToInputs()
 
 void ALocker::UnbindInputs()
 {
-	UInputComponent* PlayerInputComponent = InputComponent;
-
-	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{
 		EnhancedInputComponent->ClearActionBindings();
 	}
