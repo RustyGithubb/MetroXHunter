@@ -1,13 +1,13 @@
 #include "AI/ZeroEnemyAIController.h"
 #include "AI/ZeroEnemy.h"
 
-#include "Navigation/CrowdFollowingComponent.h"
+#include "MXHUtilityLibrary.h"
 
+#include "Navigation/CrowdFollowingComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 #include "Kismet/KismetSystemLibrary.h"
-
-#include "MXHUtilityLibrary.h"
 
 constexpr auto STATE_KEYNAME = TEXT( "CurrentState" );
 constexpr auto TARGET_KEYNAME = TEXT( "TargetActor" );
@@ -49,13 +49,16 @@ void AZeroEnemyAIController::CombatTarget( AActor* InTarget )
 void AZeroEnemyAIController::SetState( EZeroEnemyAIState State )
 {
 	Blackboard->SetValueAsEnum( STATE_KEYNAME, (uint8)State );
-	CurrentState = State;
+}
+
+EZeroEnemyAIState AZeroEnemyAIController::GetState() const
+{
+	return (EZeroEnemyAIState)Blackboard->GetValueAsEnum( STATE_KEYNAME );
 }
 
 void AZeroEnemyAIController::SetTarget( AActor* InTarget )
 {
 	Blackboard->SetValueAsObject( TARGET_KEYNAME, InTarget );
-	Target = InTarget;
 
 	UMXHUtilityLibrary::PrintMessage( 
 		TEXT( "AI: '%s' targeting '%s'" ),
@@ -64,23 +67,35 @@ void AZeroEnemyAIController::SetTarget( AActor* InTarget )
 	);
 }
 
+AActor* AZeroEnemyAIController::GetTarget() const
+{
+	auto Target = Blackboard->GetValueAsObject( TARGET_KEYNAME );
+	if ( !Target ) return nullptr;
+
+	return CastChecked<AActor>( Target );
+}
+
 void AZeroEnemyAIController::TickDebugDraw()
 {
+	AActor* Target = GetTarget();
+
 	FFormatNamedArguments Args {};
-	Args.Add( TEXT( "Name" ), FText::FromString( CustomPawn->GetName() ) );
-	Args.Add( TEXT( "State" ), FText::FromString( UEnum::GetValueAsString( CurrentState ) ) );
+	Args.Add( TEXT( "Name" ), FText::FromString( GetName() ) );
+	Args.Add( TEXT( "State" ), FText::FromString( UEnum::GetValueAsString( GetState() ) ) );
 	Args.Add(
 		TEXT( "Target" ),
 		IsValid( Target )
 			? FText::FromString( Target->GetName() )
 			: FText::FromString( TEXT( "nullptr" ) )
 	);
+	Args.Add( TEXT( "MaxWalkSpeed" ), CustomPawn->GetCharacterMovement()->MaxWalkSpeed );
 
-	FText Text = FText::Format(
+	const FText Text = FText::Format(
 		FTextFormat::FromString(
 			"Self: {Name}:\n"
 			"State: {State}\n"
 			"Target: {Target}\n"
+			"MaxWalkSpeed: {MaxWalkSpeed} cm/s\n"
 		),
 		Args
 	);
@@ -106,10 +121,10 @@ void AZeroEnemyAIController::OnUnStun()
 
 void AZeroEnemyAIController::OnRush()
 {
-	SetState( EZeroEnemyAIState::RushAttack );
+	//SetState( EZeroEnemyAIState::RushAttack );
 }
 
 void AZeroEnemyAIController::OnUnRush()
 {
-	SetState( EZeroEnemyAIState::Combat );
+	//SetState( EZeroEnemyAIState::Combat );
 }

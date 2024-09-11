@@ -154,6 +154,8 @@ void AZeroEnemy::RushAttack()
 		Data->RushTime
 	);
 
+	GetCharacterMovement()->MaxWalkSpeed = Data->RushSpeed;
+
 	OnRush.Broadcast();
 }
 
@@ -161,6 +163,9 @@ void AZeroEnemy::StopRushAttack()
 {
 	RushTimerHandle.Invalidate();
 	bIsRushing = false;
+
+	// Reset walk speed
+	UpdateWalkSpeed();
 
 	OnUnRush.Broadcast();
 }

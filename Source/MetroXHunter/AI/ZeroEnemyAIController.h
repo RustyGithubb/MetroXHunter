@@ -34,8 +34,12 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void SetState( EZeroEnemyAIState State );
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
+	EZeroEnemyAIState GetState() const;
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void SetTarget( AActor* Target );
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
+	AActor* GetTarget() const;
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
@@ -56,8 +60,4 @@ private:
 	void OnRush();
 	UFUNCTION()
 	void OnUnRush();
-
-private:
-	AActor* Target = nullptr;
-	EZeroEnemyAIState CurrentState = EZeroEnemyAIState::Idle;
 };

@@ -41,6 +41,8 @@ public:
 
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
 	bool IsBulbOpened() const { return bIsBulbOpened; }
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
+	bool IsRushing() const { return bIsRushing; }
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStun );
