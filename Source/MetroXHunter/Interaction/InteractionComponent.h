@@ -1,3 +1,7 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"

@@ -1,3 +1,7 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #include "Interaction/GeneralInteractable.h"
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"

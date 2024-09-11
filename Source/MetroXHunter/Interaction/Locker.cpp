@@ -1,3 +1,7 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #include "Interaction/Locker.h"
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
