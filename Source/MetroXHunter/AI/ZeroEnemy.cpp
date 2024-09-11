@@ -54,6 +54,9 @@ void AZeroEnemy::OpenBulb( float OpenTime )
 {
 	BulbMeshComponent->SetMaterial( 0, Data->OpenedBulbMaterial );
 
+	// Enable aim assist on bulb
+	BulbMeshComponent->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+
 	if ( OpenTime > 0.0f )
 	{
 		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
@@ -70,6 +73,9 @@ void AZeroEnemy::OpenBulb( float OpenTime )
 void AZeroEnemy::CloseBulb()
 {
 	BulbMeshComponent->SetMaterial( 0, Data->ClosedBulbMaterial );
+
+	// Disable aim assist on bulb
+	BulbMeshComponent->SetCollisionObjectType( Data->DefaultBodyPartCollisionChannel );
 
 	OpeningBulbTimerHandle.Invalidate();
 	bIsBulbOpened = false;
@@ -154,6 +160,12 @@ void AZeroEnemy::RetrieveReferences()
 	);
 	StartBodyPartsCount = BodyParts.Num();
 	LeftBodyPartsCount = StartBodyPartsCount;
+
+	// Enable aim assist for all body parts
+	for ( auto BodyPart : BodyParts )
+	{
+		BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+	}
 }
 
 void AZeroEnemy::UpdateWalkSpeed()

@@ -14,8 +14,7 @@ void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 	CustomPawn->OnStun.AddDynamic( this, &AZeroEnemyAIController::OnStun );
 	CustomPawn->OnUnStun.AddDynamic( this, &AZeroEnemyAIController::OnUnStun );
 
-	ensure( RunBehaviorTree( BehaviorTree ) );
-	UMXHUtilityLibrary::PrintMessage( TEXT( "AI: Behavior Tree for '%s' is running!" ), *GetName() );
+	verifyf( RunBehaviorTree( BehaviorTree ), TEXT( "Behavior Tree of %s failed to run" ), *GetName() );
 
 	Super::OnPossess( InPawn );
 }

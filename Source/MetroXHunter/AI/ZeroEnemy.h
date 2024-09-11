@@ -47,16 +47,16 @@ public:
 	FOnStun OnUnStun;
 
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* ProtoMeshComponent = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* BulbMeshComponent = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy" )
 	UZeroEnemyData* Data = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
 	int32 LeftBodyPartsCount = 0;
 
 	//  TODO: Move to private
