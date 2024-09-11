@@ -5,6 +5,7 @@
 #include "InteractionComponent.generated.h"
 
 class UInteractableComponent;
+class UInputAction;
 
 /*
  * The interaction Component that trigger the interaction with the interactables,
@@ -28,8 +29,11 @@ public:
 
 public:
 	/* Controllers */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction| Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	class UInputAction* InteractAction = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	UInputAction* InteractAction = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	UInputAction* CancelInteractAction = nullptr;
 
 private:
 	void GetReferences();

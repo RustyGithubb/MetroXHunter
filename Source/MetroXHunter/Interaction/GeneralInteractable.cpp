@@ -67,6 +67,7 @@ void AGeneralInteractable::OnInnerCircleOverlapBegin(
 
 	if ( PlayerInteractionComponent )
 	{
+		PlayerController = GetWorld()->GetFirstPlayerController();
 		InteractableComponent->OnPlayerOverlap( PlayerInteractionComponent );
 	}
 }
@@ -87,6 +88,7 @@ void AGeneralInteractable::OnInnerCircleOverlapEnd(
 {
 	if ( PlayerInteractionComponent )
 	{
+		PlayerController = nullptr;
 		InteractableComponent->OnPlayerOut( PlayerInteractionComponent );
 		InteractableWidget->OnUntargeted();
 	}

@@ -51,9 +51,15 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|UI" )
 	UInteractableWidget* InteractableWidget = nullptr;
 
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Player" )
+	APlayerController* PlayerController = nullptr;
+
 protected:
 	UFUNCTION()
 	virtual void Interact() {};
+
+protected:
+	UInteractionComponent* PlayerInteractionComponent = nullptr;
 
 private:
 	UFUNCTION()
@@ -87,7 +93,4 @@ private:
 
 	UFUNCTION()
 	void OnInteractableUntargeted();
-
-private:
-	UInteractionComponent* PlayerInteractionComponent = nullptr;
 };
