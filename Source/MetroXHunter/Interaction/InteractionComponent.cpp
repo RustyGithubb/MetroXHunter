@@ -2,8 +2,10 @@
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/EInteractionType.h"
 #include "HUD/MainHUD.h"
-
 #include "Engine.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -18,7 +20,13 @@ void UInteractionComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Late Begin Play
-	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::GetReferences );
+	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::LateBeginPlay );
+}
+
+void UInteractionComponent::LateBeginPlay()
+{
+	GetReferences();
+	SetupPlayerInputComponent();
 }
 
 void UInteractionComponent::GetReferences()
@@ -32,6 +40,21 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
 	RetrieveClosestInteractable();
+}
+
+void UInteractionComponent::SetupPlayerInputComponent()
+{
+	UInputComponent* PlayerInputComponent = GetWorld()->GetFirstPlayerController()->InputComponent;
+
+	// Set up action bindings
+	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	{
+		// Interaction
+		EnhancedInputComponent->BindAction(
+			InteractAction, ETriggerEvent::Started, this,
+			&UInteractionComponent::Interact
+		);
+	}
 }
 
 void UInteractionComponent::RetrieveClosestInteractable()
@@ -126,4 +149,9 @@ void UInteractionComponent::UpdateViewport()
 	{
 		MainHUD->UpdatePrompts( E_InteractionType::Default );
 	}
+}
+
+void UInteractionComponent::Interact()
+{
+	CurrentInteractable->OnInteract.Broadcast();
 }

@@ -5,7 +5,7 @@
 #include "InteractableWidget.generated.h"
 
 /**
- *
+ *	The widget of the interactables
  */
 UCLASS()
 class METROXHUNTER_API UInteractableWidget : public UUserWidget
@@ -17,7 +17,7 @@ public:
 	void OnPickupTargeted( int Amount );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
-	void OnObjectTargeted( );
+	void OnObjectTargeted();
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
 	void OnUntargeted();

@@ -14,8 +14,9 @@ public class MetroXHunter : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"InputCore",
-				"UMG"
-			}
+				"UMG",
+                "EnhancedInput",
+            }
 		);
 
 		PrivateDependencyModuleNames.AddRange( new string[] { } );

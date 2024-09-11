@@ -5,7 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "HUD/InteractableWidget.h"
 
-const FName PROFILE_NAME_INTERACTABLE = TEXT( "Interactable" );
+constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );
 
 AGeneralInteractable::AGeneralInteractable()
 {
@@ -28,10 +28,10 @@ AGeneralInteractable::AGeneralInteractable()
 
 	Widget = CreateDefaultSubobject<UWidgetComponent>( TEXT( "WidgetComponent" ) );
 	Widget->SetupAttachment( RootComponent );
-	Widget->SetVisibility(false);
+	Widget->SetVisibility( false );
 
-	InnerCollision->SetCollisionProfileName( PROFILE_NAME_INTERACTABLE );
-	OutterCollision->SetCollisionProfileName( PROFILE_NAME_INTERACTABLE );
+	InnerCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
+	OutterCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
 }
 
 void AGeneralInteractable::BeginPlay()
@@ -54,11 +54,14 @@ void AGeneralInteractable::BindToDelegates()
 
 	InteractableComponent->OnTargeted.AddDynamic( this, &AGeneralInteractable::OnInteractableTargeted );
 	InteractableComponent->OnUntargeted.AddDynamic( this, &AGeneralInteractable::OnInteractableUntargeted );
+	InteractableComponent->OnInteract.AddDynamic( this, &AGeneralInteractable::Interact );
 }
 
-void AGeneralInteractable::OnInnerCircleOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	const FHitResult& SweepResult )
+void AGeneralInteractable::OnInnerCircleOverlapBegin(
+	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult
+)
 {
 	PlayerInteractionComponent = OtherActor->FindComponentByClass<UInteractionComponent>();
 
@@ -68,15 +71,19 @@ void AGeneralInteractable::OnInnerCircleOverlapBegin( UPrimitiveComponent* Overl
 	}
 }
 
-void AGeneralInteractable::OnOutterCircleOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	const FHitResult& SweepResult )
+void AGeneralInteractable::OnOutterCircleOverlapBegin(
+	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult
+)
 {
 	Widget->SetVisibility( true );
 }
 
-void AGeneralInteractable::OnInnerCircleOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex )
+void AGeneralInteractable::OnInnerCircleOverlapEnd(
+	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
+)
 {
 	if ( PlayerInteractionComponent )
 	{
@@ -85,8 +92,10 @@ void AGeneralInteractable::OnInnerCircleOverlapEnd( UPrimitiveComponent* Overlap
 	}
 }
 
-void AGeneralInteractable::OnOutterCircleOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex )
+void AGeneralInteractable::OnOutterCircleOverlapEnd(
+	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
+)
 {
 	Widget->SetVisibility( false );
 }
