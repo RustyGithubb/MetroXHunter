@@ -5,7 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interaction/GeneralInteractable.h"
+#include "Interaction/BaseInteractable.h"
 #include "Locker.generated.h"
 
 /*

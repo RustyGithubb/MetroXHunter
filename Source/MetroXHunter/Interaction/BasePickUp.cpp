@@ -2,7 +2,7 @@
  * Implemented by Corentin Paya
  */
 
-#include "Interaction/PickUp.h"
+#include "Interaction/BasePickUp.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"

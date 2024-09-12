@@ -2,7 +2,7 @@
  * Implemented by Corentin Paya
  */
 
-#include "Interaction/GeneralInteractable.h"
+#include "Interaction/BaseInteractable.h"
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"
 #include "Components/SphereComponent.h"

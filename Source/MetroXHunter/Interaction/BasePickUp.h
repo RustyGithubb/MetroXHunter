@@ -5,9 +5,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interaction/GeneralInteractable.h"
+#include "Interaction/BaseInteractable.h"
 
-#include "PickUp.generated.h"
+#include "BasePickUp.generated.h"
 
 class UInventoryComponent;
 enum class EPickupType : uint8;

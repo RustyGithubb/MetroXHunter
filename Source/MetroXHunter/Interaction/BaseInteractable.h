@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GeneralInteractable.generated.h"
+#include "BaseInteractable.generated.h"
 
 class UStaticMeshComponent;
 class USceneComponent;
