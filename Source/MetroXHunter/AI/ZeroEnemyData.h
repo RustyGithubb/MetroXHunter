@@ -17,6 +17,8 @@ public:
 	float WalkSpeed = 270.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = ( Units = "CentimetersPerSecond" ) )
 	float WalkSpeedLossPerBodyPartLost = 20.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = ( Units = "DegreesPerSecond" ) )
+	float YawRotationRate = 80.0f;
 
 	// Deprecated: now use RushSpeedCurve
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Rush", meta = ( Units = "CentimetersPerSecond" ) )
@@ -24,6 +26,8 @@ public:
 	// Deprecated: now use RushSpeedCurve
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Rush", meta = ( Units = "Seconds" ) )
 	float RushTime = 2.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush", meta = ( Units = "DegreesPerSecond" ) )
+	float RushYawRotationRate = 30.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
 	UCurveFloat* RushSpeedCurve = nullptr;
 

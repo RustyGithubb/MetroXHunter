@@ -41,6 +41,10 @@ public:
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
 	AActor* GetTarget() const;
 
+#if ENABLE_VISUAL_LOG
+	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;
+#endif
+
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UBehaviorTree* BehaviorTree = nullptr;

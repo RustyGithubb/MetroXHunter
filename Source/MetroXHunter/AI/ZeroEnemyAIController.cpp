@@ -67,10 +67,10 @@ void AZeroEnemyAIController::SetTarget( AActor* InTarget )
 {
 	Blackboard->SetValueAsObject( TARGET_KEYNAME, InTarget );
 
-	UMXHUtilityLibrary::PrintMessage( 
+	UMXHUtilityLibrary::PrintMessage(
 		TEXT( "AI: '%s' targeting '%s'" ),
 		*GetName(),
-		InTarget == nullptr ? TEXT( "nullptr" ) : *InTarget->GetName()
+		*GetNameSafe( InTarget )
 	);
 }
 
@@ -81,6 +81,26 @@ AActor* AZeroEnemyAIController::GetTarget() const
 
 	return CastChecked<AActor>( Target );
 }
+
+#if ENABLE_VISUAL_LOG
+void AZeroEnemyAIController::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
+{
+	Super::GrabDebugSnapshot( Snapshot );
+
+	FVisualLogStatusCategory Category;
+	Category.Category = TEXT( "Zero Enemy AI" );
+	Category.Add(
+		TEXT( "VelocityLength" ),
+		FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->Velocity.Length() )
+	);
+	Category.Add(
+		TEXT( "MaxWalkSpeed" ),
+		FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->MaxWalkSpeed )
+	);
+
+	Snapshot->Status.Add( Category );
+}
+#endif
 
 void AZeroEnemyAIController::TickDebugDraw()
 {
@@ -99,11 +119,11 @@ void AZeroEnemyAIController::TickDebugDraw()
 			: FText::FromString( TEXT( "nullptr" ) )
 	);
 	Args.Add( TEXT( "MaxWalkSpeed" ), CustomPawn->GetCharacterMovement()->MaxWalkSpeed );
-	Args.Add( TEXT( "VelocityLength" ), 
-		FText::AsNumber( 
-			CustomPawn->GetCharacterMovement()->Velocity.Length(), 
-			&NumberFormattingOptions 
-		) 
+	Args.Add( TEXT( "VelocityLength" ),
+		FText::AsNumber(
+			CustomPawn->GetCharacterMovement()->Velocity.Length(),
+			&NumberFormattingOptions
+		)
 	);
 
 	float DistanceFromTarget = 0.0f;

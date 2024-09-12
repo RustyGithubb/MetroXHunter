@@ -56,8 +56,11 @@ void AZeroEnemy::Tick( float DeltaTime )
 		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 		float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
 
-		GetCharacterMovement()->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
+		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+		MovementComponent->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
 		AddMovementInput( GetActorForwardVector() );
+
+		UE_VLOG( this, LogTemp, Verbose, TEXT( "Rush Tick" ) );
 	}
 }
 
@@ -159,7 +162,13 @@ void AZeroEnemy::RushAttack()
 		MaxRushTime
 	);
 
-	//GetCharacterMovement()->MaxWalkSpeed = Data->RushSpeed;
+	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+	MovementComponent->RotationRate.Yaw = Data->RushYawRotationRate;
+	// Force velocity to maximum walk speed to patch an issue with BTTask_MoveTo reseting velocity 
+	// at the end of the task
+	//CharacterMovement->Velocity = CharacterMovement->Velocity.GetSafeNormal() * Data->RushSpeedCurve->GetFloatValue( 0.0f );
+	MovementComponent->Velocity = MovementComponent->Velocity.GetSafeNormal() 
+								* MovementComponent->MaxWalkSpeed;
 
 	OnRush.Broadcast();
 }
@@ -171,6 +180,7 @@ void AZeroEnemy::StopRushAttack()
 
 	// Reset walk speed
 	UpdateWalkSpeed();
+	GetCharacterMovement()->RotationRate.Yaw = Data->YawRotationRate;
 
 	OnUnRush.Broadcast();
 }
@@ -192,8 +202,9 @@ void AZeroEnemy::GenerateBulb()
 void AZeroEnemy::RetrieveReferences()
 {
 	verifyf( IsValid( Data ), TEXT( "%s doesn't reference a DataAsset" ), *GetName() );
-	verifyf( IsValid( Data->RushSpeedCurve ), TEXT( "The DataAsset must set a value for RushSpeedCurve" ) );
+	verifyf( IsValid( Data->RushSpeedCurve ), TEXT( "The DataAsset must set a value for 'RushSpeedCurve'" ) );
 
+	// Retrieve maximum rush time from the curve
 	[[maybe_unused]] float Temp = 0.0f;
 	Data->RushSpeedCurve->GetTimeRange( Temp, MaxRushTime );
 
