@@ -9,20 +9,20 @@
 #include "Interaction/InteractionType.h"
 #include "HUD/InteractableWidget.h"
 
-APickUp::APickUp()
+ABasePickUp::ABasePickUp()
 {
 	InteractableComponent->InteractionType = E_InteractionType::Pickup;
 
 }
 
-void APickUp::BeginPlay()
+void ABasePickUp::BeginPlay()
 {
 	Super::BeginPlay();
 
 	InteractableWidget->EditSprite( Sprite );
 }
 
-void APickUp::Interact()
+void ABasePickUp::Interact()
 {
 	int OverflowAmount = PlayerInventory->AddToInventory( PickupType, Amount );
 
@@ -36,7 +36,7 @@ void APickUp::Interact()
 	Destroy();
 }
 
-void APickUp::OnInnerCircleOverlapBegin(
+void ABasePickUp::OnInnerCircleOverlapBegin(
 	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult
@@ -51,7 +51,7 @@ void APickUp::OnInnerCircleOverlapBegin(
 	PlayerInventory = OtherActor->FindComponentByClass<UInventoryComponent>();
 }
 
-void APickUp::OnInteractableTargeted()
+void ABasePickUp::OnInteractableTargeted()
 {
 	InteractableWidget->OnPickupTargeted( Amount );
 }

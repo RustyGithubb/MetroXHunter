@@ -16,12 +16,12 @@ enum class EPickupType : uint8;
  * 
  */
 UCLASS()
-class METROXHUNTER_API APickUp : public AGeneralInteractable
+class METROXHUNTER_API ABasePickUp : public AGeneralInteractable
 {
 	GENERATED_BODY()
 	
 public:
-	APickUp();
+	ABasePickUp();
 	virtual void BeginPlay() override;
 
 public:
