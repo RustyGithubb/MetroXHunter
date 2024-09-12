@@ -29,6 +29,8 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush", meta = ( Units = "DegreesPerSecond" ) )
 	float RushYawRotationRate = 30.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
+	int32 RushDamage = 50;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
 	UCurveFloat* RushSpeedCurve = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
