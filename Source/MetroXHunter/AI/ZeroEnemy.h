@@ -92,6 +92,7 @@ private:
 	FRotator StartStunRotation {};
 
 	int32 StartBodyPartsCount = 0;
+	float MaxRushTime = 0.0f;
 
 	FTimerHandle OpeningBulbTimerHandle {};
 	FTimerHandle StunTimerHandle {};

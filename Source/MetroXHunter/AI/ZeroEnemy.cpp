@@ -53,6 +53,10 @@ void AZeroEnemy::Tick( float DeltaTime )
 
 	if ( bIsRushing )
 	{
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+		float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
+
+		GetCharacterMovement()->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
 		AddMovementInput( GetActorForwardVector() );
 	}
 }
@@ -151,10 +155,11 @@ void AZeroEnemy::RushAttack()
 	TimerManager.SetTimer(
 		RushTimerHandle,
 		this, &AZeroEnemy::StopRushAttack,
-		Data->RushTime
+		//Data->RushTime
+		MaxRushTime
 	);
 
-	GetCharacterMovement()->MaxWalkSpeed = Data->RushSpeed;
+	//GetCharacterMovement()->MaxWalkSpeed = Data->RushSpeed;
 
 	OnRush.Broadcast();
 }
@@ -187,6 +192,10 @@ void AZeroEnemy::GenerateBulb()
 void AZeroEnemy::RetrieveReferences()
 {
 	verifyf( IsValid( Data ), TEXT( "%s doesn't reference a DataAsset" ), *GetName() );
+	verifyf( IsValid( Data->RushSpeedCurve ), TEXT( "The DataAsset must set a value for RushSpeedCurve" ) );
+
+	[[maybe_unused]] float Temp = 0.0f;
+	Data->RushSpeedCurve->GetTimeRange( Temp, MaxRushTime );
 
 	auto BodyParts = UMXHUtilityLibrary::GetComponentsOfActorByTag<UStaticMeshComponent>( 
 		this,

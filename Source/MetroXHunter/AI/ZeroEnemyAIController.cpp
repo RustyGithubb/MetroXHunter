@@ -27,6 +27,13 @@ void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 
 	verifyf( RunBehaviorTree( BehaviorTree ), TEXT( "Behavior Tree of %s failed to run" ), *GetName() );
 
+	// Disabling crowd simulation fixes a bug where AI can't move on navmesh; but it disables crowd 
+	// simulation features so it's just a quick patch before finding the real source
+	if ( CustomPawn->Data->bIsCrowdSimulationDisabled )
+	{
+		GetComponentByClass<UCrowdFollowingComponent>()->SetCrowdSimulationState( ECrowdSimulationState::Disabled );
+	}
+
 	Super::OnPossess( InPawn );
 }
 
@@ -79,6 +86,9 @@ void AZeroEnemyAIController::TickDebugDraw()
 {
 	AActor* Target = GetTarget();
 
+	FNumberFormattingOptions NumberFormattingOptions {};
+	NumberFormattingOptions.MaximumFractionalDigits = 0;
+
 	FFormatNamedArguments Args {};
 	Args.Add( TEXT( "Name" ), FText::FromString( GetName() ) );
 	Args.Add( TEXT( "State" ), FText::FromString( UEnum::GetValueAsString( GetState() ) ) );
@@ -89,13 +99,28 @@ void AZeroEnemyAIController::TickDebugDraw()
 			: FText::FromString( TEXT( "nullptr" ) )
 	);
 	Args.Add( TEXT( "MaxWalkSpeed" ), CustomPawn->GetCharacterMovement()->MaxWalkSpeed );
+	Args.Add( TEXT( "VelocityLength" ), 
+		FText::AsNumber( 
+			CustomPawn->GetCharacterMovement()->Velocity.Length(), 
+			&NumberFormattingOptions 
+		) 
+	);
+
+	float DistanceFromTarget = 0.0f;
+	if ( IsValid( Target ) )
+	{
+		DistanceFromTarget = FVector::Distance( Target->GetActorLocation(), CustomPawn->GetActorLocation() );
+	}
+	Args.Add( TEXT( "DistanceFromTarget" ), FText::AsNumber( DistanceFromTarget, &NumberFormattingOptions ) );
 
 	const FText Text = FText::Format(
 		FTextFormat::FromString(
 			"Self: {Name}:\n"
 			"State: {State}\n"
 			"Target: {Target}\n"
+			"VelocityLength: {VelocityLength} cm/s\n"
 			"MaxWalkSpeed: {MaxWalkSpeed} cm/s\n"
+			"DistanceFromTarget: {DistanceFromTarget} cm\n"
 		),
 		Args
 	);
