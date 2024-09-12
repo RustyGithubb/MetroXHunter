@@ -1,8 +1,12 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GeneralInteractable.generated.h"
+#include "BaseInteractable.generated.h"
 
 class UStaticMeshComponent;
 class USceneComponent;
@@ -14,16 +18,16 @@ class UInteractionComponent;
 
 /*
  * Parent class of all Interactables
- * 
+ *
  * Important: You will have to set the widget class in blueprint to WBP_Interactable for all the child class !
  */
 UCLASS()
-class METROXHUNTER_API AGeneralInteractable : public AActor
+class METROXHUNTER_API ABaseInteractable : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AGeneralInteractable();
+	ABaseInteractable();
 
 	virtual void BeginPlay() override;
 
@@ -51,7 +55,13 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|UI" )
 	UInteractableWidget* InteractableWidget = nullptr;
 
-private:
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Player" )
+	APlayerController* PlayerController = nullptr;
+
+protected:
+	UFUNCTION()
+	virtual void Interact() {};
+
 	UFUNCTION()
 	virtual void OnInnerCircleOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
@@ -67,7 +77,7 @@ private:
 	);
 
 	UFUNCTION()
-	virtual void OnInnerCircleOverlapEnd(
+	void OnInnerCircleOverlapEnd(
 		UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	);
@@ -82,8 +92,8 @@ private:
 	virtual void OnInteractableTargeted();
 
 	UFUNCTION()
-	virtual void OnInteractableUntargeted();
+	void OnInteractableUntargeted();
 
-private:
+protected:
 	UInteractionComponent* PlayerInteractionComponent = nullptr;
 };

@@ -1,6 +1,10 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"
-#include "Interaction/EInteractionType.h"
+#include "Interaction/InteractionType.h"
 
 UInteractableComponent::UInteractableComponent()
 {

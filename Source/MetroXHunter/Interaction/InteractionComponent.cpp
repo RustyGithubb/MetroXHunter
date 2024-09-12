@@ -1,9 +1,15 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
-#include "Interaction/EInteractionType.h"
+#include "Interaction/InteractionType.h"
 #include "HUD/MainHUD.h"
-
 #include "Engine.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -18,7 +24,13 @@ void UInteractionComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Late Begin Play
-	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::GetReferences );
+	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::LateBeginPlay );
+}
+
+void UInteractionComponent::LateBeginPlay()
+{
+	GetReferences();
+	SetupPlayerInputComponent();
 }
 
 void UInteractionComponent::GetReferences()
@@ -32,6 +44,26 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
 	RetrieveClosestInteractable();
+}
+
+void UInteractionComponent::SetupPlayerInputComponent()
+{
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+
+	verifyf(
+		InteractAction && CancelInteractAction,
+		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
+	);
+
+	// Set up action bindings
+	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	{
+		// Interaction
+		EnhancedInputComponent->BindAction(
+			InteractAction, ETriggerEvent::Started, this,
+			&UInteractionComponent::Interact
+		);
+	}
 }
 
 void UInteractionComponent::RetrieveClosestInteractable()
@@ -114,16 +146,22 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 
 void UInteractionComponent::UpdateViewport()
 {
-	IMainHUD* MainHUD = Cast<IMainHUD>( PlayerController->GetHUD() );
-
-	if ( !MainHUD ) return;
+	AHUD* MainHUD = ( PlayerController->GetHUD() );
 
 	if ( NearInteractables.Num() > 0 )
 	{
-		MainHUD->UpdatePrompts( CurrentInteractable->InteractionType );
+		IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
 	}
 	else
 	{
-		MainHUD->UpdatePrompts( E_InteractionType::Default );
+		IMainHUD::Execute_UpdatePrompts( MainHUD, E_InteractionType::Default );
+	}
+}
+
+void UInteractionComponent::Interact()
+{
+	if ( CurrentInteractable )
+	{
+		CurrentInteractable->OnInteract.Broadcast();
 	}
 }
