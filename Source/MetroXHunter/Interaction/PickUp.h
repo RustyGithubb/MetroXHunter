@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Interaction/GeneralInteractable.h"
+
 #include "PickUp.generated.h"
 
 class UInventoryComponent;
@@ -20,12 +21,18 @@ class METROXHUNTER_API APickUp : public AGeneralInteractable
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	APickUp();
+	virtual void BeginPlay() override;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Amount = 0;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	EPickupType PickupType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture2D* Sprite;
 
 protected:
 	void Interact() override;

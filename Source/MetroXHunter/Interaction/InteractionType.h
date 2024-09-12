@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "EInteractionType.generated.h"
+#include "InteractionType.generated.h"
 
 UENUM( BlueprintType )
 enum class E_InteractionType : uint8

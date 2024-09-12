@@ -25,4 +25,7 @@ public:
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
 	void OnUntargeted();
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
+	void EditSprite( UTexture2D* Sprite);
 };
