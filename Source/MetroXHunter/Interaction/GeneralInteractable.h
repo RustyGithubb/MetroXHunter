@@ -22,12 +22,12 @@ class UInteractionComponent;
  * Important: You will have to set the widget class in blueprint to WBP_Interactable for all the child class !
  */
 UCLASS()
-class METROXHUNTER_API AGeneralInteractable : public AActor
+class METROXHUNTER_API ABaseInteractable : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AGeneralInteractable();
+	ABaseInteractable();
 
 	virtual void BeginPlay() override;
 

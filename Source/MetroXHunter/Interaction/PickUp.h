@@ -16,7 +16,7 @@ enum class EPickupType : uint8;
  * 
  */
 UCLASS()
-class METROXHUNTER_API ABasePickUp : public AGeneralInteractable
+class METROXHUNTER_API ABasePickUp : public ABaseInteractable
 {
 	GENERATED_BODY()
 	
