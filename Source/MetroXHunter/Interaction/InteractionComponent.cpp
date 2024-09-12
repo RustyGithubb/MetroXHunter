@@ -146,17 +146,15 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 
 void UInteractionComponent::UpdateViewport()
 {
-	IMainHUD* MainHUD = Cast<IMainHUD>( PlayerController->GetHUD() );
-
-	if ( !MainHUD ) return;
+	AHUD* MainHUD = ( PlayerController->GetHUD() );
 
 	if ( NearInteractables.Num() > 0 )
 	{
-		MainHUD->UpdatePrompts( CurrentInteractable->InteractionType );
+		IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
 	}
 	else
 	{
-		MainHUD->UpdatePrompts( E_InteractionType::Default );
+		IMainHUD::Execute_UpdatePrompts( MainHUD, E_InteractionType::Default );
 	}
 }
 
@@ -166,5 +164,4 @@ void UInteractionComponent::Interact()
 	{
 		CurrentInteractable->OnInteract.Broadcast();
 	}
-
 }

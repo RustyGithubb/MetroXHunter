@@ -89,7 +89,7 @@ protected:
 	);
 
 	UFUNCTION()
-	void OnInteractableTargeted();
+	virtual void OnInteractableTargeted();
 
 	UFUNCTION()
 	void OnInteractableUntargeted();

@@ -8,6 +8,9 @@
 #include "Interaction/GeneralInteractable.h"
 #include "PickUp.generated.h"
 
+class UInventoryComponent;
+enum class EPickupType : uint8;
+
 /**
  * 
  */
@@ -16,15 +19,25 @@ class METROXHUNTER_API APickUp : public AGeneralInteractable
 {
 	GENERATED_BODY()
 	
-protected:
-	UFUNCTION( BlueprintImplementableEvent, Category = "Pick Up|UI" )
-	void EditSprite();
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int Amount = 0;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly )
+	EPickupType PickupType;
+
+
+protected:
 	void Interact() override;
 
-	virtual void OnInnerCircleOverlapBegin(
+	void OnInnerCircleOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult
-	);
+	) override;
+
+	void OnInteractableTargeted() override;
+
+private:
+	UInventoryComponent* PlayerInventory = nullptr;
 };
