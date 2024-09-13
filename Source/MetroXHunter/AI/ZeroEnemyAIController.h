@@ -10,9 +10,22 @@ UENUM( BlueprintType )
 enum class EZeroEnemyAIState : uint8
 {
 	Idle,
+	/*
+	 * Chasing a target and deciding which attack to use.
+	 */
 	Combat,
+	/*
+	 * State of paralysis for a short time.
+	 */
 	Stun,
+	/*
+	 * Heavy and long-range attack by charging the target and dealing high damage.
+	 */
 	RushAttack,
+	/*
+	 * Light and close-range attack.
+	 */
+	MeleeAttack,
 };
 
 /**

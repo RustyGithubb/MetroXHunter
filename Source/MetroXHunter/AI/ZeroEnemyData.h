@@ -28,10 +28,15 @@ public:
 	float RushTime = 2.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush", meta = ( Units = "DegreesPerSecond" ) )
 	float RushYawRotationRate = 30.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush", meta = ( Units = "Centimeters" ) )
+	FFloatRange RushFromDistance { 500.0f, 700.0f };
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
 	int32 RushDamage = 50;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
 	UCurveFloat* RushSpeedCurve = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Melee" )
+	int32 MeleeDamage = 25;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicBulbOpenTime = 5.0f;
@@ -53,7 +58,6 @@ public:
 	TEnumAsByte<ECollisionChannel> AimAssistCollisionChannel;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Collisions" )
 	TEnumAsByte<ECollisionChannel> DefaultBodyPartCollisionChannel;
-
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
 	float DefaultKnockbackZ = 20.0f;

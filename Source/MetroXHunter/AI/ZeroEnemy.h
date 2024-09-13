@@ -39,6 +39,11 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void StopRushAttack();
 
+	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "ZeroEnemy" )
+	void MeleeAttack();
+	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "ZeroEnemy" )
+	void StopMeleeAttack();
+
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
 	bool IsBulbOpened() const { return bIsBulbOpened; }
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
@@ -61,6 +66,10 @@ public:
 	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
 	FOnUnRush OnUnRush;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnMeleeAttack, bool, bIsStarting );
+	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	FOnMeleeAttack OnMeleeAttack;
+
 public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* ProtoMeshComponent = nullptr;
@@ -74,7 +83,7 @@ public:
 	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
 	int32 LeftBodyPartsCount = 0;
 
-	//  TODO: Move to private
+	// TODO: Move to private
 	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
 	bool bIsAlive = true;
 
@@ -86,8 +95,11 @@ private:
 
 private:
 	bool bIsBulbOpened = false;
+
+	// TODO: Refactor with states
 	bool bIsStun = false;
 	bool bIsRushing = false;
+	bool bIsMeleeAttacking = false;
 
 	FRotator StartStunRotation {};
 

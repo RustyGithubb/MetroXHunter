@@ -53,11 +53,15 @@ void AZeroEnemy::Tick( float DeltaTime )
 
 	if ( bIsRushing )
 	{
+		// Get current rush time
 		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 		float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
 
+		// Apply new walk speed
 		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 		MovementComponent->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
+		
+		// Move forward
 		AddMovementInput( GetActorForwardVector() );
 
 		UE_VLOG( this, LogTemp, Verbose, TEXT( "Rush Tick" ) );
@@ -183,6 +187,18 @@ void AZeroEnemy::StopRushAttack()
 	GetCharacterMovement()->RotationRate.Yaw = Data->YawRotationRate;
 
 	OnUnRush.Broadcast();
+}
+
+void AZeroEnemy::MeleeAttack_Implementation()
+{
+	bIsMeleeAttacking = true;
+	OnMeleeAttack.Broadcast( true );
+}
+
+void AZeroEnemy::StopMeleeAttack_Implementation()
+{
+	bIsMeleeAttacking = false;
+	OnMeleeAttack.Broadcast( false );
 }
 
 void AZeroEnemy::GenerateBulb()
