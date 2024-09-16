@@ -12,7 +12,6 @@
 ABasePickUp::ABasePickUp()
 {
 	InteractableComponent->InteractionType = E_InteractionType::Pickup;
-
 }
 
 void ABasePickUp::BeginPlay()
