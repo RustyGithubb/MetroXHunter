@@ -14,10 +14,15 @@ ALock::ALock()
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health Component" ) );
 	HealthComponent->MaxHealth = 50.f;
-	HealthComponent->OnDeath.AddDynamic( this, &ALock::DestroyMe );
+	HealthComponent->OnDeath.AddDynamic( this, &ALock::OnDeath );
 }
 
-void ALock::DestroyMe( FDamageContext DamageContext )
+void ALock::OnDeath( FDamageContext DamageContext )
 {
+	if ( OnLockDown.IsBound() )
+	{
+		OnLockDown.Broadcast( this );
+	}
+
 	Destroy();
 }

@@ -4,6 +4,7 @@
 
 #include "Interaction/BaseDoor.h"
 #include "Interaction/Lock.h"
+#include "Health/HealthComponent.h"
 
 #include <GameFramework/MovementComponent.h>
 
@@ -12,6 +13,11 @@ void ABaseDoor::BeginPlay()
 	Super::BeginPlay();
 
 	if ( !bIsLocked ) return;
+
+	for ( auto Locks : LocksList )
+	{
+		Locks->OnLockDown.AddDynamic( this, &ABaseDoor::RemoveLock );
+	}
 
 	SetInteractionFreezed( true );
 }
@@ -47,6 +53,7 @@ void ABaseDoor::AddLock()
 	FVector Origin;
 	FVector BoxExtend;
 	GetActorBounds( true, Origin, BoxExtend );
+	Origin.Z += LocksList.Num() * 30 - 40;
 
 	ALock* newLock = GetWorld()->SpawnActor<ALock>( Origin, GetActorRotation(), SpawnInfo );
 	if ( !newLock ) return;
@@ -56,14 +63,38 @@ void ABaseDoor::AddLock()
 	NewRotation.Roll = FMath::FRandRange( -10.f, 10.f );
 
 	newLock->SetActorRelativeRotation( NewRotation );
-
 	newLock->AttachToActor( this, FAttachmentTransformRules::KeepWorldTransform );
 	LocksList.Add( newLock );
+
+	CloseDoorEditor();
 	bIsLocked = true;
 
 	/* Set its mesh */
 	if ( LockMesh )
 	{
 		newLock->StaticMesh->SetStaticMesh( LockMesh );
+	}
+}
+
+void ABaseDoor::RemoveAllLocks()
+{
+	for ( int i = LocksList.Num() - 1; i > -1; i--  )
+	{
+		LocksList[i]->Destroy();
+	}
+
+	LocksList.Empty();
+	bIsLocked = false;
+}
+
+void ABaseDoor::RemoveLock( ALock* Lock )
+{
+	LocksList.Remove( Lock );
+
+	if ( LocksList.IsEmpty() )
+	{
+		bIsLocked = false;
+
+		SetDoorOpened( true );
 	}
 }

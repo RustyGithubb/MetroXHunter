@@ -28,8 +28,17 @@ public:
 	UFUNCTION( BlueprintImplementableEvent, Category = "Door" )
 	void SetDoorOpened( bool bShouldOpen );
 
+	UFUNCTION( BlueprintImplementableEvent, Category = "Door" )
+	void CloseDoorEditor();
+
 	UFUNCTION( CallInEditor, Category = "Door" )
 	void AddLock();
+
+	UFUNCTION( CallInEditor, Category = "Door" )
+	void RemoveAllLocks();
+
+	UFUNCTION()
+	void RemoveLock( ALock* Lock);
 
 protected:
 	UPROPERTY(EditAnywhere)

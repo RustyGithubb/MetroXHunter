@@ -19,6 +19,10 @@ public:
 	ALock();
 
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnLockDown, ALock*, Lock );
+	FOnLockDown OnLockDown;
+
+public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMesh = nullptr;
 
@@ -27,5 +31,5 @@ public:
 
 private:
 	UFUNCTION()
-	void DestroyMe( FDamageContext DamageContext );
+	void OnDeath( FDamageContext DamageContext );
 };
