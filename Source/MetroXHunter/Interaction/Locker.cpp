@@ -57,10 +57,7 @@ void ALocker::OnCancelInteraction()
 
 void ALocker::EndSkillCheck()
 {
-	OnCancelInteraction();
-	PlayerInteractionComponent->RemoveNearInteractable( InteractableComponent );
-
-	InteractableComponent->DestroyComponent();
+	OnCancelInteraction(); 
 }
 
 void ALocker::BindToInputs()
