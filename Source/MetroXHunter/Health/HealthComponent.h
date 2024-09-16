@@ -110,14 +110,14 @@ public:
 	 * @param DamageContext Damage context
 	 */
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDamage, FDamageContext, DamageContext );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "Health" )
+	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnDamage OnDamage;
 
 	/*
 	 * Event called when health has been changed. Useful for visual updates such as UI.
 	 */
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnHealthUpdate );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "Health" )
+	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnHealthUpdate OnHealthUpdate;
 
 	/*
@@ -126,7 +126,7 @@ public:
 	 * @param DamageContext Damage context
 	 */
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDeath, FDamageContext, DamageContext );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "Health" )
+	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnDeath OnDeath;
 
 public:
@@ -135,8 +135,8 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Health" )
 	int32 MaxHealth = 0;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Health" )
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Health" )
 	bool bIsDead = false;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Health" )
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Health" )
 	bool bIsInvulnerable = false;
 };
