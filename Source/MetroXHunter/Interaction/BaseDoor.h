@@ -8,6 +8,8 @@
 #include "Interaction/BaseInteractable.h"
 #include "BaseDoor.generated.h"
 
+class ALock;
+
  /**
   *
   */
@@ -25,6 +27,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetDoorOpened( bool bShouldOpen );
 
+	UFUNCTION(CallInEditor)
+	void AddLock();
+
 protected:
 	bool bIsLocked = false;
 
@@ -34,4 +39,7 @@ protected:
 	/* The minimum velocity required for the player to slam the door */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MinimumVelocityRequired = 251.f;
+
+private:
+	TArray<ALock*> LocksList;
 };

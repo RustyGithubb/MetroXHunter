@@ -3,6 +3,8 @@
  */
 
 #include "Interaction/BaseDoor.h"
+#include "Interaction/Lock.h"
+
 #include <GameFramework/MovementComponent.h>
 
 void ABaseDoor::Interact()
@@ -21,4 +23,11 @@ void ABaseDoor::OnDoorHit( AActor* Player)
 
 	float PlayerVelocity = PlayerMovement->Velocity.Length();
 	if ( PlayerVelocity > MinimumVelocityRequired ) SetDoorOpened( true );
+}
+
+void ABaseDoor::AddLock()
+{
+	ALock* newLock = CreateDefaultSubobject<ALock>( TEXT( "Object Mesh" ) );
+
+	LocksList.Add( newLock );
 }
