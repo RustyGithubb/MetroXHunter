@@ -33,6 +33,12 @@ public:
 
 	void BindToDelegates();
 
+	UFUNCTION( BlueprintCallable )
+	void SetInteractionFreezed( bool bShouldFreeze );
+
+	UFUNCTION( BlueprintCallable )
+	void RemoveInteractionComponent();
+
 public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
 	UStaticMeshComponent* StaticMesh = nullptr;
@@ -96,4 +102,9 @@ protected:
 
 protected:
 	UInteractionComponent* PlayerInteractionComponent = nullptr;
+	bool bIsInteractableSleeping = false;
+
+private:
+	float InnerSphereRadius = 170.f;
+	float OutterSphereRadius = 420.f;
 };

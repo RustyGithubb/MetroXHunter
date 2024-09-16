@@ -24,9 +24,11 @@ ABaseInteractable::ABaseInteractable()
 
 	InnerCollision = CreateDefaultSubobject<USphereComponent>( TEXT( "Inner Collision" ) );
 	InnerCollision->SetupAttachment( RootComponent );
+	InnerCollision->SetSphereRadius( InnerSphereRadius );
 
 	OutterCollision = CreateDefaultSubobject<USphereComponent>( TEXT( "Outter Collision" ) );
 	OutterCollision->SetupAttachment( RootComponent );
+	OutterCollision->SetSphereRadius( OutterSphereRadius );
 
 	InteractableComponent = CreateDefaultSubobject<UInteractableComponent>( TEXT( "Interactable Component" ) );
 
@@ -59,6 +61,43 @@ void ABaseInteractable::BindToDelegates()
 	InteractableComponent->OnTargeted.AddDynamic( this, &ABaseInteractable::OnInteractableTargeted );
 	InteractableComponent->OnUntargeted.AddDynamic( this, &ABaseInteractable::OnInteractableUntargeted );
 	InteractableComponent->OnInteract.AddDynamic( this, &ABaseInteractable::Interact );
+}
+
+void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
+{
+	if ( !bShouldFreeze )
+	{
+		InnerCollision->SetCollisionEnabled( ECollisionEnabled::QueryOnly );
+		OutterCollision->SetCollisionEnabled( ECollisionEnabled::QueryOnly );
+
+		bIsInteractableSleeping = false;
+		return;
+	}
+
+	InnerCollision->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+	OutterCollision->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+
+	bIsInteractableSleeping = true;
+
+	if ( PlayerInteractionComponent )
+	{
+		PlayerInteractionComponent->RemoveNearInteractable( InteractableComponent );
+	}
+}
+
+void ABaseInteractable::RemoveInteractionComponent()
+{
+	if ( PlayerInteractionComponent )
+	{
+		PlayerInteractionComponent->RemoveNearInteractable( InteractableComponent );
+	}
+
+	InteractableComponent->DestroyComponent();
+	InnerCollision->DestroyComponent();
+	OutterCollision->DestroyComponent();
+	Widget->DestroyComponent();
+
+	InteractableWidget = nullptr;
 }
 
 void ABaseInteractable::OnInnerCircleOverlapBegin(
@@ -95,6 +134,8 @@ void ABaseInteractable::OnInnerCircleOverlapEnd(
 		PlayerController = nullptr;
 		InteractableComponent->OnPlayerOut( PlayerInteractionComponent );
 		InteractableWidget->OnUntargeted();
+
+		PlayerInteractionComponent = nullptr;
 	}
 }
 
