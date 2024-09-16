@@ -13,6 +13,6 @@ enum class E_InteractionType : uint8
 
 	Interact,
 	Pickup					UMETA( DisplayName = "Pick Up" ),
-	OpenClose				UMETA( DisplayName = "Open Close" ),
+	OpenClose				UMETA( DisplayName = "Open" ),
 	TurnOn					UMETA( DisplayName = "Turn on / off" ),
 };

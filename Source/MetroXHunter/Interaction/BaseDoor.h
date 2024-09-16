@@ -33,5 +33,5 @@ protected:
 
 	/* The minimum velocity required for the player to slam the door */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MinimumVelocityRequired = 135.f;
+	float MinimumVelocityRequired = 251.f;
 };

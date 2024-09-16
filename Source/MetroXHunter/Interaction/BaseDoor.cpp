@@ -3,16 +3,19 @@
  */
 
 #include "Interaction/BaseDoor.h"
-
 #include <GameFramework/MovementComponent.h>
 
 void ABaseDoor::Interact()
 {
-	// Open Door ?
+	if ( bIsOpened || bIsLocked ) return;
+
+	SetDoorOpened( true );
 }
 
 void ABaseDoor::OnDoorHit( AActor* Player)
 {
+	if ( bIsOpened || bIsLocked ) return;
+
 	UMovementComponent* PlayerMovement = Player->FindComponentByClass<UMovementComponent>();
 	if ( !PlayerMovement ) return;
 
