@@ -19,7 +19,7 @@ bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
 	if ( bIsDead || bIsInvulnerable ) return false;
 
 	//  Apply damage to health
-	CurrentHealth = FMath::Max( DamageContext.DamageAmount, 0 );
+	CurrentHealth = FMath::Max( CurrentHealth - DamageContext.DamageAmount, 0 );
 	OnDamage.Broadcast( DamageContext );
 	OnHealthUpdate.Broadcast();
 
