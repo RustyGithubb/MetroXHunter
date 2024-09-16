@@ -19,6 +19,13 @@ public:
 	ALock();
 
 public:
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMesh = nullptr;
+
+	UPROPERTY( EditAnywhere )
 	UHealthComponent* HealthComponent = nullptr;
+
+private:
+	UFUNCTION()
+	void DestroyMe( FDamageContext DamageContext );
 };

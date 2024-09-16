@@ -13,4 +13,11 @@ ALock::ALock()
 	StaticMesh->SetupAttachment( RootComponent );
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health Component" ) );
+	HealthComponent->MaxHealth = 50.f;
+	HealthComponent->OnDeath.AddDynamic( this, &ALock::DestroyMe );
+}
+
+void ALock::DestroyMe( FDamageContext DamageContext )
+{
+	Destroy();
 }
