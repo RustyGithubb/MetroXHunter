@@ -49,20 +49,33 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	UInputAction* ReloadAction = nullptr;
 
+
+
 private:
 
+	UFUNCTION( BlueprintCallable )
+	void StartReloadSequence();
+
+	UFUNCTION( BlueprintCallable )
 	void UpdateCurrentReloadState();
+	UFUNCTION( BlueprintCallable )
 	void UpdateAmmoCount();
 
+	UFUNCTION( BlueprintCallable )
 	void GetReferences();
+	UFUNCTION( BlueprintCallable )
 	void GetCurrentReloadState();
+	UFUNCTION( BlueprintCallable )
 	void GetAmmoData();
+	UFUNCTION( BlueprintCallable )
 	void GetNormalizedReloadTimings();
+	UFUNCTION( BlueprintCallable )
 	void GetNormalizedReloadElapsedTime();
 
+	UFUNCTION( BlueprintCallable )
 	void ComputeReloadAmmoCount();
+	UFUNCTION( BlueprintCallable )
 	void OnReloadInput();
-
 
 private:	
 
@@ -70,5 +83,6 @@ private:
 
 	bool bIsAmmoFull = false;
 	bool bIsGunFireLocked = false;
+	bool bIsInfiniteAmmo = false;
 		
 };

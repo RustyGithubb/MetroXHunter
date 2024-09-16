@@ -40,5 +40,7 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Failed" )
 	float FailedReloadPenaltyTime = 2.0f;
-	
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Curve" )
+	TObjectPtr<UCurveFloat> ReloadCurve;
 };
