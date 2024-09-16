@@ -4,6 +4,8 @@
 #include "Engine/DataAsset.h"
 #include "ZeroEnemyData.generated.h"
 
+class UAISubstate;
+
 /**
  * 
  */
@@ -37,6 +39,9 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Melee" )
 	int32 MeleeDamage = 25;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Substates" )
+	TArray<TSubclassOf<UAISubstate>> SubstateClasses;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicBulbOpenTime = 5.0f;

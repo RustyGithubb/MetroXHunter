@@ -1,4 +1,8 @@
 #include "AI/ZeroEnemy.h"
+#include "AI/AISubstateManagerComponent.h"
+#include "AI/AISubstate.h"
+
+#include "Health/HealthComponent.h"
 
 #include "MXHUtilityLibrary.h"
 
@@ -16,6 +20,12 @@ AZeroEnemy::AZeroEnemy()
 
 	BulbMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "BulbMeshComponent" ) );
 	BulbMeshComponent->SetupAttachment( RootComponent );
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health" ) );
+
+	AISubstateManagerComponent = CreateDefaultSubobject<UAISubstateManagerComponent>(
+		TEXT( "AISubstateManager" ) 
+	);
 }
 
 void AZeroEnemy::BeginPlay()
@@ -24,12 +34,13 @@ void AZeroEnemy::BeginPlay()
 
 	RetrieveReferences();
 	
+	InitializeAISubstateManager();
 	UpdateWalkSpeed();
 
 	GenerateBulb();
 	CloseBulb();
 }
-	
+
 void AZeroEnemy::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
@@ -199,6 +210,14 @@ void AZeroEnemy::StopMeleeAttack_Implementation()
 {
 	bIsMeleeAttacking = false;
 	OnMeleeAttack.Broadcast( false );
+}
+
+void AZeroEnemy::InitializeAISubstateManager()
+{
+	AISubstateManagerComponent->CreateSubstates( Data->SubstateClasses );
+	AISubstateManagerComponent->SwitchToSubstate(
+		SpawnSubstateClass != nullptr ? Data->SubstateClasses.Find( SpawnSubstateClass ) : 0
+	);
 }
 
 void AZeroEnemy::GenerateBulb()

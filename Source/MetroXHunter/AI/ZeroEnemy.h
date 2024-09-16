@@ -5,6 +5,9 @@
 #include "AI/ZeroEnemyData.h"
 #include "ZeroEnemy.generated.h"
 
+class UHealthComponent;
+class UAISubstateManagerComponent;
+
 UCLASS()
 class METROXHUNTER_API AZeroEnemy : public ACharacter
 {
@@ -76,9 +79,18 @@ public:
 
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* BulbMeshComponent = nullptr;
+	
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UHealthComponent* HealthComponent = nullptr;
+
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UAISubstateManagerComponent* AISubstateManagerComponent = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy" )
 	UZeroEnemyData* Data = nullptr;
+
+	UPROPERTY( EditInstanceOnly, BlueprintReadWrite, Category = "ZeroEnemy" )
+	TSubclassOf<UAISubstate> SpawnSubstateClass;
 
 	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
 	int32 LeftBodyPartsCount = 0;
@@ -88,6 +100,7 @@ public:
 	bool bIsAlive = true;
 
 private:
+	void InitializeAISubstateManager();
 	void GenerateBulb();
 	void RetrieveReferences();
 
