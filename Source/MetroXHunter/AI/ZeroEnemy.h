@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AI/ZeroEnemyData.h"
 #include "ZeroEnemy.generated.h"
 
 UCLASS()
@@ -16,6 +17,12 @@ public:
 	virtual void Tick( float DeltaTime ) override;
 
 public:
-	UPROPERTY( EditAnywhere )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* ProtoMeshComponent;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy" )
+	UZeroEnemyData* Data;
+
+private:
+	void RetrieveReferences();
 };
