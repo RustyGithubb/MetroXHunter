@@ -1,4 +1,8 @@
-#include "Interaction/GeneralInteractable.h"
+/*
+ * Implemented by Corentin Paya
+ */
+
+#include "Interaction/BaseInteractable.h"
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"
 #include "Components/SphereComponent.h"
@@ -7,7 +11,7 @@
 
 constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );
 
-AGeneralInteractable::AGeneralInteractable()
+ABaseInteractable::ABaseInteractable()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -34,7 +38,7 @@ AGeneralInteractable::AGeneralInteractable()
 	OutterCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
 }
 
-void AGeneralInteractable::BeginPlay()
+void ABaseInteractable::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -44,20 +48,20 @@ void AGeneralInteractable::BeginPlay()
 	InteractableWidget = CastChecked<UInteractableWidget>( Widget->GetUserWidgetObject() );
 }
 
-void AGeneralInteractable::BindToDelegates()
+void ABaseInteractable::BindToDelegates()
 {
-	InnerCollision->OnComponentBeginOverlap.AddDynamic( this, &AGeneralInteractable::OnInnerCircleOverlapBegin );
-	OutterCollision->OnComponentBeginOverlap.AddDynamic( this, &AGeneralInteractable::OnOutterCircleOverlapBegin );
+	InnerCollision->OnComponentBeginOverlap.AddDynamic( this, &ABaseInteractable::OnInnerCircleOverlapBegin );
+	OutterCollision->OnComponentBeginOverlap.AddDynamic( this, &ABaseInteractable::OnOutterCircleOverlapBegin );
 
-	InnerCollision->OnComponentEndOverlap.AddDynamic( this, &AGeneralInteractable::OnInnerCircleOverlapEnd );
-	OutterCollision->OnComponentEndOverlap.AddDynamic( this, &AGeneralInteractable::OnOutterCircleOverlapEnd );
+	InnerCollision->OnComponentEndOverlap.AddDynamic( this, &ABaseInteractable::OnInnerCircleOverlapEnd );
+	OutterCollision->OnComponentEndOverlap.AddDynamic( this, &ABaseInteractable::OnOutterCircleOverlapEnd );
 
-	InteractableComponent->OnTargeted.AddDynamic( this, &AGeneralInteractable::OnInteractableTargeted );
-	InteractableComponent->OnUntargeted.AddDynamic( this, &AGeneralInteractable::OnInteractableUntargeted );
-	InteractableComponent->OnInteract.AddDynamic( this, &AGeneralInteractable::Interact );
+	InteractableComponent->OnTargeted.AddDynamic( this, &ABaseInteractable::OnInteractableTargeted );
+	InteractableComponent->OnUntargeted.AddDynamic( this, &ABaseInteractable::OnInteractableUntargeted );
+	InteractableComponent->OnInteract.AddDynamic( this, &ABaseInteractable::Interact );
 }
 
-void AGeneralInteractable::OnInnerCircleOverlapBegin(
+void ABaseInteractable::OnInnerCircleOverlapBegin(
 	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult
@@ -72,7 +76,7 @@ void AGeneralInteractable::OnInnerCircleOverlapBegin(
 	}
 }
 
-void AGeneralInteractable::OnOutterCircleOverlapBegin(
+void ABaseInteractable::OnOutterCircleOverlapBegin(
 	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult
@@ -81,7 +85,7 @@ void AGeneralInteractable::OnOutterCircleOverlapBegin(
 	Widget->SetVisibility( true );
 }
 
-void AGeneralInteractable::OnInnerCircleOverlapEnd(
+void ABaseInteractable::OnInnerCircleOverlapEnd(
 	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 )
@@ -94,7 +98,7 @@ void AGeneralInteractable::OnInnerCircleOverlapEnd(
 	}
 }
 
-void AGeneralInteractable::OnOutterCircleOverlapEnd(
+void ABaseInteractable::OnOutterCircleOverlapEnd(
 	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 )
@@ -102,12 +106,12 @@ void AGeneralInteractable::OnOutterCircleOverlapEnd(
 	Widget->SetVisibility( false );
 }
 
-void AGeneralInteractable::OnInteractableTargeted()
+void ABaseInteractable::OnInteractableTargeted()
 {
 	InteractableWidget->OnObjectTargeted();
 }
 
-void AGeneralInteractable::OnInteractableUntargeted()
+void ABaseInteractable::OnInteractableUntargeted()
 {
 	InteractableWidget->OnUntargeted();
 }

@@ -1,3 +1,7 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -21,4 +25,7 @@ public:
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
 	void OnUntargeted();
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
+	void EditSprite( UTexture2D* Sprite);
 };
