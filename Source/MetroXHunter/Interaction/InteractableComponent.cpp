@@ -1,6 +1,10 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"
-#include "Interaction/EInteractionType.h"
+#include "Interaction/InteractionType.h"
 
 UInteractableComponent::UInteractableComponent()
 {
@@ -14,17 +18,11 @@ void UInteractableComponent::BeginPlay()
 	Owner = GetOwner();
 }
 
-//void UInteractableComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
-//{
-//	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-//}
-
 void UInteractableComponent::OnPlayerOverlap( UInteractionComponent* InteractionComponent )
 {
 	if ( !InteractionComponent ) return;
 
 	InteractionComponent->AddNearInteractable( this );
-
 }
 
 void UInteractableComponent::OnPlayerOut( UInteractionComponent* InteractionComponent )

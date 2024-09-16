@@ -1,15 +1,22 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
-#include "Interaction/EInteractionType.h"
+#include "Interaction/InteractionType.h"
 #include "HUD/MainHUD.h"
-
 #include "Engine.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	this->SetComponentTickInterval( 0.2f );
-	this->SetComponentTickEnabled( false );
+
+	SetComponentTickInterval( 0.2f );
+	SetComponentTickEnabled( false );
 }
 
 void UInteractionComponent::BeginPlay()
@@ -17,7 +24,13 @@ void UInteractionComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Late Begin Play
-	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::GetReferences );
+	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInteractionComponent::LateBeginPlay );
+}
+
+void UInteractionComponent::LateBeginPlay()
+{
+	GetReferences();
+	SetupPlayerInputComponent();
 }
 
 void UInteractionComponent::GetReferences()
@@ -33,6 +46,26 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 	RetrieveClosestInteractable();
 }
 
+void UInteractionComponent::SetupPlayerInputComponent()
+{
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+
+	verifyf(
+		InteractAction && CancelInteractAction,
+		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
+	);
+
+	// Set up action bindings
+	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	{
+		// Interaction
+		EnhancedInputComponent->BindAction(
+			InteractAction, ETriggerEvent::Started, this,
+			&UInteractionComponent::Interact
+		);
+	}
+}
+
 void UInteractionComponent::RetrieveClosestInteractable()
 {
 	// Viewport Size
@@ -42,12 +75,15 @@ void UInteractionComponent::RetrieveClosestInteractable()
 	const FVector2D ViewportCenter = FVector2D( ViewportSize.X / 2, ViewportSize.Y / 2 );
 
 	// Get player's world location and direction
-	FVector PlayerLocation;
-	FVector PlayerDirection;
-	PlayerController->DeprojectScreenPositionToWorld( ViewportCenter.X, ViewportCenter.Y, PlayerLocation, PlayerDirection );
+	FVector PlayerLocation {};
+	FVector PlayerDirection {};
+	PlayerController->DeprojectScreenPositionToWorld(
+		ViewportCenter.X, ViewportCenter.Y,
+		PlayerLocation, PlayerDirection
+	);
 
-	FVector TargetDirection;
-	float ClosestAlignement = 0;
+	FVector TargetDirection {};
+	float ClosestAlignement = 1.0f;
 	UInteractableComponent* ClosestInteractable = nullptr;
 
 	for ( auto Interactable : NearInteractables )
@@ -87,7 +123,7 @@ void UInteractionComponent::RetrieveClosestInteractable()
 
 void UInteractionComponent::AddNearInteractable( UInteractableComponent* InInteractable )
 {
-	this->SetComponentTickEnabled( true );
+	SetComponentTickEnabled( true );
 
 	NearInteractables.AddUnique( InInteractable );
 	bIsNearInteractable = true;
@@ -102,7 +138,7 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 		bIsNearInteractable = false;
 		CurrentInteractable = nullptr;
 
-		this->SetComponentTickEnabled( false );
+		SetComponentTickEnabled( false );
 	}
 
 	UpdateViewport();
@@ -110,16 +146,22 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 
 void UInteractionComponent::UpdateViewport()
 {
-	IMainHUD* MainHUD = Cast<IMainHUD>( PlayerController->GetHUD() );
-
-	if ( !MainHUD ) return;
+	AHUD* MainHUD = ( PlayerController->GetHUD() );
 
 	if ( NearInteractables.Num() > 0 )
 	{
-		MainHUD->UpdatePrompts( CurrentInteractable->InteractionType );
+		IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
 	}
 	else
 	{
-		MainHUD->UpdatePrompts( E_InteractionType::Default );
+		IMainHUD::Execute_UpdatePrompts( MainHUD, E_InteractionType::Default );
+	}
+}
+
+void UInteractionComponent::Interact()
+{
+	if ( CurrentInteractable )
+	{
+		CurrentInteractable->OnInteract.Broadcast();
 	}
 }

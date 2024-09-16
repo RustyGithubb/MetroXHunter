@@ -1,3 +1,7 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -35,14 +39,5 @@ public:
 	void UpdateAmmoCount();
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
-	void SetUIMode(bool bShouldHideUI);
-
-	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
-	void ShowLockerSkillCheck( bool bNewLockerVisibility );
-
-	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
-	void GiveInputToLockerSkillCheck( FVector2D MovementsInput );
-
-	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Locker" )
-	bool PressingLockerNow();
+	void SetUIMode( bool bShouldHideUI );
 };
