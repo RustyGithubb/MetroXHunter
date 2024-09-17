@@ -1,3 +1,7 @@
+/*
+ * Implemented by BARRAU Benoit
+ */
+
 #pragma once
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"

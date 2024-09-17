@@ -1,5 +1,11 @@
+/*
+ * Implemented by BARRAU Benoit
+ */
+
 #include "Reload/ReloadComponent.h"
 #include "Reload/ReloadData.h"
+#include "HUD/MainHUD.h"
+#include "Reload/IReloadSystemUpdate.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -13,6 +19,7 @@ void UReloadComponent::BeginPlay()
 	Super::BeginPlay();
 
 	GetReferences();
+	UpdateAmmoCount(MaxMagazineAmmoCount);
 	SetupPlayerInputComponent();
 }
 
@@ -35,14 +42,23 @@ void UReloadComponent::SetupPlayerInputComponent()
 
 void UReloadComponent::StartReloadSequence()
 {
+
 }
 
-void UReloadComponent::UpdateCurrentReloadState()
+void UReloadComponent::UpdateCurrentReloadState(EGunReloadState NewState)
 {
+	CurrentReloadState = NewState;
 
+	if( HUD )
+	{
+		if ( IIReloadSystemUpdate* ReloadSystemInterface = Cast<IIReloadSystemUpdate>( HUD ) )
+		{
+			ReloadSystemInterface->UpdateReloadSystemState( CurrentReloadState );
+		}
+	}
 }
 
-void UReloadComponent::UpdateAmmoCount()
+void UReloadComponent::UpdateAmmoCount(int32 NewAmmoCount)
 {
 
 }
@@ -52,22 +68,53 @@ void UReloadComponent::GetReferences()
 
 }
 
-void UReloadComponent::GetCurrentReloadState()
+EGunReloadState UReloadComponent::GetCurrentReloadState() const
 {
+	return CurrentReloadState;
+}
 
+void UReloadComponent::InitializeReloadData( UReloadData* NewReloadData )
+{
+	if ( NewReloadData )
+	{
+		ReloadDataAsset = NewReloadData;
+		UE_LOG( LogTemp, Warning, TEXT( "Reload Data Asset initialized !" ));
+	}
+	else
+	{
+		UE_LOG( LogTemp, Warning, TEXT( "Failed to initialize Reload Data Asset !" ));
+	}
+}
+
+void UReloadComponent::GetNormalizedReloadTimings( float& OutPerfectReloadStartTime, float& OutActiveReloadStartTime, float& OutActiveReloadEndTime ) const
+{
+	if ( ReloadDataAsset && ReloadDataAsset->NormalReloadDuration > 0.0f )
+	{
+		OutPerfectReloadStartTime = ReloadDataAsset->PerfectReloadStartTime / ReloadDataAsset->NormalReloadDuration;
+		OutActiveReloadStartTime = ReloadDataAsset->ActiveReloadStartTime / ReloadDataAsset->NormalReloadDuration;
+		OutActiveReloadEndTime = ReloadDataAsset->ActiveReloadEndTime / ReloadDataAsset->NormalReloadDuration;
+	}
+	else
+	{
+		OutPerfectReloadStartTime = 0.0f;
+		OutActiveReloadStartTime = 0.0f;
+		OutActiveReloadEndTime = 0.0f;
+	}
+}
+
+float UReloadComponent::GetNormalizedReloadElapsedTime() const
+{
+	if ( ReloadDataAsset && ReloadDataAsset->NormalReloadDuration > 0.0f )
+	{
+		return ReloadDataAsset->ReloadElapsedTime / ReloadDataAsset->NormalReloadDuration;
+	}
+	else
+	{
+		return 0.0f;
+	}
 }
 
 void UReloadComponent::GetAmmoData()
-{
-
-}
-
-void UReloadComponent::GetNormalizedReloadTimings()
-{
-
-}
-
-void UReloadComponent::GetNormalizedReloadElapsedTime()
 {
 
 }
