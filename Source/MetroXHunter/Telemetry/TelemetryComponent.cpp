@@ -23,11 +23,11 @@ void UTelemetryComponent::EndPlay( const EEndPlayReason::Type Reason )
 {
 	switch ( Reason )
 	{
-	case EEndPlayReason::LevelTransition:
-	case EEndPlayReason::EndPlayInEditor:
-	case EEndPlayReason::Quit:
-		WriteDataToFile();
-		break;
+		case EEndPlayReason::LevelTransition:
+		case EEndPlayReason::EndPlayInEditor:
+		case EEndPlayReason::Quit:
+			WriteDataToFile();
+			break;
 	}
 }
 
