@@ -8,6 +8,15 @@
 class UHealthComponent;
 class UAISubstateManagerComponent;
 
+USTRUCT( BlueprintType )
+struct METROXHUNTER_API FZeroEnemyModifiers
+{
+	GENERATED_BODY()
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "" )
+	float WalkSpeedMultiplier = 1.0f;
+};
+
 UCLASS()
 class METROXHUNTER_API AZeroEnemy : public ACharacter
 {
@@ -47,10 +56,15 @@ public:
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "ZeroEnemy" )
 	void StopMeleeAttack();
 
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	bool IsBulbOpened() const { return bIsBulbOpened; }
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	bool IsRushing() const { return bIsRushing; }
+
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void ApplyModifiers( const FZeroEnemyModifiers& NewModifiers );
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void ResetModifiers();
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStun );
@@ -118,6 +132,8 @@ private:
 
 	int32 StartBodyPartsCount = 0;
 	float MaxRushTime = 0.0f;
+
+	FZeroEnemyModifiers Modifiers {};
 
 	FTimerHandle OpeningBulbTimerHandle {};
 	FTimerHandle StunTimerHandle {};

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "ZeroEnemyData.generated.h"
 
 class UAISubstate;
+class USoundBase;
 
 /**
  * 
@@ -42,6 +42,8 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Substates" )
 	TArray<TSubclassOf<UAISubstate>> SubstateClasses;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Substates" )
+	USoundBase* SubstateChangedSound = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicBulbOpenTime = 5.0f;

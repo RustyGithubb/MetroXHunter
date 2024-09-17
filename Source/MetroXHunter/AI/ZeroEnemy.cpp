@@ -200,6 +200,18 @@ void AZeroEnemy::StopRushAttack()
 	OnUnRush.Broadcast();
 }
 
+void AZeroEnemy::ApplyModifiers( const FZeroEnemyModifiers& NewModifiers )
+{
+	Modifiers = NewModifiers;
+
+	UpdateWalkSpeed();
+}
+
+void AZeroEnemy::ResetModifiers()
+{
+	ApplyModifiers( {} );
+}
+
 void AZeroEnemy::MeleeAttack_Implementation()
 {
 	bIsMeleeAttacking = true;
@@ -259,7 +271,7 @@ void AZeroEnemy::RetrieveReferences()
 
 void AZeroEnemy::UpdateWalkSpeed()
 {
-	float WalkSpeed = Data->WalkSpeed;
+	float WalkSpeed = Data->WalkSpeed * Modifiers.WalkSpeedMultiplier;
 
 	// Substract speed for each body parts lost
 	WalkSpeed -= Data->WalkSpeedLossPerBodyPartLost * ( StartBodyPartsCount - LeftBodyPartsCount );
