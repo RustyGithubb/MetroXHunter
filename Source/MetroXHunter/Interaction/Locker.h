@@ -8,9 +8,9 @@
 #include "Interaction/BaseInteractable.h"
 #include "Locker.generated.h"
 
-/*
- * A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
- */
+ /*
+  * A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
+  */
 UCLASS()
 class METROXHUNTER_API ALocker : public ABaseInteractable
 {
@@ -21,17 +21,11 @@ public:
 
 public:
 	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
-	float BlendExp = 1.0f;
-
-	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
-	float BlendTime = 0.3f;
-
-	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
 	TEnumAsByte <EViewTargetBlendFunction> TargetBlendFunction = EViewTargetBlendFunction::VTBlend_EaseInOut;
 
 protected:
 	void Interact() override;
-	void OnCancelInteraction();
+	void OnCancelInteraction() override;
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|Skill Check" )
 	void OnSkillCheckAttempt();
