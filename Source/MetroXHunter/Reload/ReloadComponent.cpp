@@ -114,6 +114,11 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 	}
 }
 
+bool UReloadComponent::IsGunFireLocked() const
+{
+	return bIsReloadActive;
+}
+
 void UReloadComponent::GetAmmoData()
 {
 

@@ -11,6 +11,7 @@
  * The reload component manage the differents types of reload that the player can achieve.
  */
 
+class UGunComponent;
 class UReloadData;
 class UMainHUD;
 class UInputAction;
@@ -65,6 +66,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Reload|Events")
 	FOnReloadStateUpdated OnReloadStateUpdated;
 
+
+
 public:
 
 	UFUNCTION( BlueprintCallable, Category = "Reload")
@@ -79,6 +82,9 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	float GetNormalizedReloadElapsedTime() const;
 
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	bool IsGunFireLocked() const;
+
 private:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload", meta = ( AllowPrivateAccess = "true" ) )
@@ -86,6 +92,9 @@ private:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Data Asset", meta = ( AllowPrivateAccess = "true" ) )
 	UReloadData* ReloadDataAsset = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload", meta = ( AllowPrivateAccess = "true" ) )
+	bool bIsReloadActive = false;
 
 private:
 
@@ -111,7 +120,6 @@ private:
 	class AHUD* HUD = nullptr;
 
 	bool bIsAmmoFull = false;
-	bool bIsGunFireLocked = false;
 	bool bIsInfiniteAmmo = false;
 		
 };
