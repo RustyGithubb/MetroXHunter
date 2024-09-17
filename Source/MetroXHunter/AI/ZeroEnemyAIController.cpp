@@ -50,7 +50,7 @@ void AZeroEnemyAIController::Tick( float DeltaTime )
 void AZeroEnemyAIController::CombatTarget( AActor* InTarget )
 {
 	SetTarget( InTarget );
-	SetState( EZeroEnemyAIState::Combat );
+	SetState( EZeroEnemyAIState::Target );
 }
 
 void AZeroEnemyAIController::SetState( EZeroEnemyAIState State )
@@ -161,7 +161,7 @@ void AZeroEnemyAIController::OnStun()
 
 void AZeroEnemyAIController::OnUnStun()
 {
-	SetState( EZeroEnemyAIState::Combat );
+	SetState( EZeroEnemyAIState::Chase );
 }
 
 void AZeroEnemyAIController::OnRush()
@@ -171,5 +171,5 @@ void AZeroEnemyAIController::OnRush()
 
 void AZeroEnemyAIController::OnUnRush()
 {
-	//SetState( EZeroEnemyAIState::Combat );
+	//SetState( EZeroEnemyAIState::Chase );
 }

@@ -11,9 +11,13 @@ enum class EZeroEnemyAIState : uint8
 {
 	Idle,
 	/*
+	 * Lock a target before chasing it
+	 */
+	Target,
+	/*
 	 * Chasing a target and deciding which attack to use.
 	 */
-	Combat,
+	Chase,
 	/*
 	 * State of paralysis for a short time.
 	 */
