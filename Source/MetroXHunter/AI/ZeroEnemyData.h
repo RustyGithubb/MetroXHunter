@@ -69,7 +69,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
 	float DefaultKnockbackZ = 20.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
-	float BodyPartHitKnockbackForce = 500.0f;
+	float BodyPartHitKnockbackForce = 1500.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
+	float WholeBodyHitKnockbackForce = 500.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Materials" )
 	UMaterialInterface* OpenedBulbMaterial = nullptr;
