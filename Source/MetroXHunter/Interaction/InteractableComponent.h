@@ -35,6 +35,10 @@ public:
 	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnInteract OnInteract;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnCancelInteract );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
+	FOnCancelInteract OnCancelInteract;
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnTargeted );
 	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnTargeted OnTargeted;
