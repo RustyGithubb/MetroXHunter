@@ -212,6 +212,15 @@ void AZeroEnemy::ResetModifiers()
 	ApplyModifiers( {} );
 }
 
+float AZeroEnemy::GetMadnessLevel() const
+{
+	int32 SubstatesCount = AISubstateManagerComponent->GetSubstatesCount();
+	if ( SubstatesCount == 0 ) return 0.0f;
+
+	int32 SubstateIndex = AISubstateManagerComponent->GetSubstateIndex();
+	return (float)( SubstateIndex + 1 ) / (float)SubstatesCount;
+}
+
 void AZeroEnemy::MeleeAttack_Implementation()
 {
 	bIsMeleeAttacking = true;

@@ -31,8 +31,21 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "AISubstateManager" )
 	bool SwitchToSubstate( int32 Index );
 
+	/*
+	 * Returns the current substate index to the substates list.
+	 */
+	UFUNCTION( BlueprintCallable, Category = "AISubstateManager" )
+	int32 GetSubstateIndex() const;
+	/*
+	 * Returns the time since the current substate is active.
+	 */
 	UFUNCTION( BlueprintCallable, Category = "AISubstateManager" )
 	float GetSubstateTime() const;
+	/*
+	 * Returns the number of substates in the list.
+	 */
+	UFUNCTION( BlueprintCallable, Category = "AISubstateManager" )
+	int32 GetSubstatesCount() const;
 
 public:
 	/*

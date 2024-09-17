@@ -66,6 +66,13 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ResetModifiers();
 
+	/*
+	 * Returns the madness level, representing the current progress of the AISubstateManagerComponent.
+	 * In range of 0.0f to 1.0f.
+	 */
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	float GetMadnessLevel() const;
+
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStun );
 	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )

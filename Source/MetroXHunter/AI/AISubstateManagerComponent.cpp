@@ -94,8 +94,18 @@ bool UAISubstateManagerComponent::SwitchToSubstate( int32 Index )
 	return true;
 }
 
+int32 UAISubstateManagerComponent::GetSubstateIndex() const
+{
+	return CurrentIndex;
+}
+
 float UAISubstateManagerComponent::GetSubstateTime() const
 {
 	return GetOwner()->GetGameTimeSinceCreation() - GameTimeSinceLastSwitch;
+}
+
+int32 UAISubstateManagerComponent::GetSubstatesCount() const
+{
+	return Substates.Num();
 }
 
