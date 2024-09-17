@@ -218,7 +218,7 @@ float AZeroEnemy::GetMadnessLevel() const
 	if ( SubstatesCount == 0 ) return 0.0f;
 
 	int32 SubstateIndex = AISubstateManagerComponent->GetSubstateIndex();
-	return (float)( SubstateIndex + 1 ) / (float)SubstatesCount;
+	return (float)SubstateIndex / (float)( SubstatesCount - 1 );
 }
 
 void AZeroEnemy::MeleeAttack_Implementation()
