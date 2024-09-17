@@ -47,9 +47,16 @@ void AZeroEnemy::Tick( float DeltaTime )
 
 	if ( bIsStun )
 	{
+		float Frequency = bUseStunAnimation 
+			? Data->StunAnimationFrequency 
+			: Data->SubstateSwitchedAnimationFrequency;
+		float Angle = bUseStunAnimation 
+			? Data->StunAnimationAngle 
+			: Data->SubstateSwitchedAnimationAngle;
+
 		double AngleOffset = FMath::Sin( 
-			GetGameTimeSinceCreation() * Data->StunAnimationFrequency 
-		) * Data->StunAnimationAngle;
+			GetGameTimeSinceCreation() * Frequency 
+		) * Angle;
 
 		SetActorRotation( 
 			FRotator {
@@ -110,9 +117,10 @@ void AZeroEnemy::CloseBulb()
 	bIsBulbOpened = false;
 }
 
-void AZeroEnemy::Stun( float StunTime )
+void AZeroEnemy::Stun( float StunTime, bool bUseDefaultAnimation )
 {
 	bIsStun = true;
+	bUseStunAnimation = bUseDefaultAnimation;
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.SetTimer(

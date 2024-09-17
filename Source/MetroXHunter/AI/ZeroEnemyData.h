@@ -53,10 +53,14 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Debug" )
 	bool bIsCrowdSimulationDisabled = false;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "StunAnimation", meta = ( Units = "Degrees" ) )
-	float StunAnimationAngle = 45.0f; 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "StunAnimation" )
-	float StunAnimationFrequency = 6.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Animation|Stun", meta = ( Units = "Degrees" ) )
+	float StunAnimationAngle = 12.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Animation|Stun" )
+	float StunAnimationFrequency = 20.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Animation|SubstateSwitched", meta = ( Units = "Degrees" ) )
+	float SubstateSwitchedAnimationAngle = 20.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Animation|SubstateSwitched" )
+	float SubstateSwitchedAnimationFrequency = 1.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "BodyParts" )
 	int32 BodyPartsLeftToKill = 1;

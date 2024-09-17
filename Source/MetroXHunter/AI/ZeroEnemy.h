@@ -34,7 +34,7 @@ public:
 	void CloseBulb();
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
-	void Stun( float StunTime = 0.0f );
+	void Stun( float StunTime = 0.0f, bool bUseDefaultAnimation = true );
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void UnStun();
 
@@ -132,6 +132,7 @@ private:
 
 	// TODO: Refactor with states
 	bool bIsStun = false;
+	bool bUseStunAnimation = true;
 	bool bIsRushing = false;
 	bool bIsMeleeAttacking = false;
 
