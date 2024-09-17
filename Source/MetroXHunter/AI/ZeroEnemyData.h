@@ -42,8 +42,6 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Substates" )
 	TArray<TSubclassOf<UAISubstate>> SubstateClasses;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Substates" )
-	USoundBase* SubstateChangedSound = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicBulbOpenTime = 5.0f;
@@ -81,6 +79,13 @@ public:
 	UMaterialInterface* OpenedBulbMaterial = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Materials" )
 	UMaterialInterface* ClosedBulbMaterial = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Sounds" )
+	USoundBase* RushStartSound = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Sounds" )
+	USoundBase* FootstepSound = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Sounds" )
+	USoundBase* SubstateChangedSound = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Tags" )
 	FName BulbSpotTag = TEXT( "BulbSpot" );
