@@ -27,7 +27,7 @@ public:
 public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Gun" )
-	APawn* PlayerCharacter = nullptr;
+	ACharacter* PlayerCharacter = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Gun" )
 	class UReloadComponent* ReloadSystemComponent;
@@ -51,6 +51,12 @@ public :
 
 	UFUNCTION( BlueprintCallable, Category = "Gun" )
 	FVector CalculateWorldlocation( bool UseMovementImprecision );
+
+	UFUNCTION( BlueprintCallable, Category = "Gun" )
+	void SetNewAmmoCount(int32 NewCount);
+
+	UFUNCTION( BlueprintCallable, Category = "Gun" )
+	void CallOnFire();
 
 private:	
 

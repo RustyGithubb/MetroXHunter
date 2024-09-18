@@ -4,6 +4,7 @@
 
 #include "Gun/GunComponent.h"
 #include "Gun/GunData.h"
+#include "Gun/GunCommunication.h"
 #include "Reload/ReloadComponent.h"
 #include"GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
@@ -19,12 +20,35 @@ void UGunComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	InitializeAmmo();
-	ACharacter* Player = UGameplayStatics::GetPlayerCharacter( this, 0 );
+
+
+	/*ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	if ( PlayerCharacter )
+	{
+		this->PlayerCharacter = PlayerCharacter;
+
+		//ReloadSystemComponent = Cast<UReloadComponent>( PlayerCharacter->GetComponentByClass( UReloadComponent::StaticClass ) );
+
+		if ( ReloadSystemComponent )
+		{
+			UE_LOG( LogTemp, Warning, TEXT( "Reload System initialized !" ) );
+		}
+		else
+		{
+			UE_LOG( LogTemp, Error, TEXT( "Reload System not initialized !" ) );
+		}
+	}*/
+
 }
 
 void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	/*if ( PlayerCharacter && PlayerCharacter-> )
+	{
+
+	}*/
 }
 
 void UGunComponent::InitializeAmmo()
@@ -102,6 +126,29 @@ FVector UGunComponent::CalculateWorldlocation( bool UseMovementImprecision )
 	{
 		return EndLocation;
 	}
+}
+
+void UGunComponent::SetNewAmmoCount( int32 NewCount )
+{
+	// Update CurrentAmmoInMagazine with the new value
+	GunDataAsset->CurrentAmmoInMagazine = NewCount;
+
+	UE_LOG( LogTemp, Warning, TEXT( "Ammo Count updated" ), NewCount);
+}
+
+void UGunComponent::CallOnFire()
+{
+	/*if ( CanFire() )
+	{
+		// Do the event OnFire
+		OnFire.BroadCast();
+
+		UE_LOG( LogTemp, Warning, TEXT( "Gun fired !" ));
+	}
+	else
+	{
+		UE_LOG( LogTemp, Warning, TEXT( " Cannot fire !" ) );
+	}*/
 }
 
 // Adjust the vector with the imprecision movement
