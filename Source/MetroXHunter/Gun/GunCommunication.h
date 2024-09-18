@@ -25,11 +25,11 @@ public:
 
 	// Get the maximum number of ammo in a magazine
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Gun Communication" )
-	int32 GetMaxMagazineInAmmoCount() const;
+	int GetMaxMagazineInAmmoCount() const;
 
 	// Get the current number of ammo in the magazine
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Gun Communication" )
-	int32 GetCurrentMagazineAmmoCount() const;
+	int GetCurrentMagazineAmmoCount();
 
 	// Called when firing with the gun
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Gun Communication" )
@@ -37,7 +37,7 @@ public:
 
 	// Set a new ammo count in the magazine
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Gun Communication" )
-	int32 SetNewAmmoCount(int32 NewCount);
+	int SetNewAmmoCount(int NewCount);
 
 	// Get the shoot point location
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Gun Communication" )

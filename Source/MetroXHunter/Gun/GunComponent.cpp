@@ -22,12 +22,12 @@ void UGunComponent::BeginPlay()
 	InitializeAmmo();
 
 
-	/*ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 	if ( PlayerCharacter )
 	{
 		this->PlayerCharacter = PlayerCharacter;
 
-		//ReloadSystemComponent = Cast<UReloadComponent>( PlayerCharacter->GetComponentByClass( UReloadComponent::StaticClass ) );
+		ReloadSystemComponent = Cast<UReloadComponent>( PlayerCharacter->GetComponentByClass( UReloadComponent::StaticClass() ));
 
 		if ( ReloadSystemComponent )
 		{
@@ -37,7 +37,7 @@ void UGunComponent::BeginPlay()
 		{
 			UE_LOG( LogTemp, Error, TEXT( "Reload System not initialized !" ) );
 		}
-	}*/
+	}
 
 }
 
@@ -47,8 +47,10 @@ void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 	/*if ( PlayerCharacter && PlayerCharacter-> )
 	{
-
+		UE_LOG( LogTemp, Warning, TEXT( "Player not initialized !" ) );
 	}*/
+
+
 }
 
 void UGunComponent::InitializeAmmo()
@@ -128,7 +130,7 @@ FVector UGunComponent::CalculateWorldlocation( bool UseMovementImprecision )
 	}
 }
 
-void UGunComponent::SetNewAmmoCount( int32 NewCount )
+void UGunComponent::SetNewAmmoCount( int NewCount )
 {
 	// Update CurrentAmmoInMagazine with the new value
 	GunDataAsset->CurrentAmmoInMagazine = NewCount;

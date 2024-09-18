@@ -53,7 +53,7 @@ public :
 	FVector CalculateWorldlocation( bool UseMovementImprecision );
 
 	UFUNCTION( BlueprintCallable, Category = "Gun" )
-	void SetNewAmmoCount(int32 NewCount);
+	void SetNewAmmoCount(int NewCount);
 
 	UFUNCTION( BlueprintCallable, Category = "Gun" )
 	void CallOnFire();

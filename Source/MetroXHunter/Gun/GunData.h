@@ -19,12 +19,12 @@ class METROXHUNTER_API UGunData : public UDataAsset
 public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Gun Data|Damage" )
-	int32 GunDamageAmmount = 50;
+	int GunDamageAmmount = 50;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Gun Data|Ammo" )
-	int32 CurrentAmmoInMagazine = 6;
+	int CurrentAmmoInMagazine = 6;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Gun Data|Ammo" )
-	int32 MaxMagazineAmmo = 6;
+	int MaxMagazineAmmo = 6;
 
 };
