@@ -135,5 +135,4 @@ private:
 	APlayerController* PlayerController = nullptr; 
 	AActor* CharacterGun;
 	AHUD* HUD = nullptr;
-		
 };

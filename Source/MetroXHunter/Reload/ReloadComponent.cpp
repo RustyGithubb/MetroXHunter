@@ -196,7 +196,7 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 
 	// Get the current ammo count in the magazine
 	int CurrentAmmoCount = GunInterface->GetCurrentMagazineAmmoCount();
-	int MaxMagazineAmmoCount = this->MaxMagazineAmmoCount;
+	int LMaxMagazineAmmoCount = this->MaxMagazineAmmoCount;
 
 	// Calculate how much ammo is needed to fully reload
 	int AmmoToConsumeToMax = this->MaxMagazineAmmoCount - CurrentAmmoCount;
@@ -248,7 +248,7 @@ bool UReloadComponent::bIsAmmoFull() const
 		int MaxAmmo = GunInterface->GetMaxMagazineInAmmoCount();
 
 		// Check if current ammo is equal to the max ammo
-		return CurrentAmmo = MaxAmmo;
+		return CurrentAmmo == MaxAmmo;
 	}
 	return false;
 }

@@ -22,10 +22,10 @@ void UGunComponent::BeginPlay()
 	InitializeAmmo();
 
 
-	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	ACharacter* LocalPlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 	if ( PlayerCharacter )
 	{
-		this->PlayerCharacter = PlayerCharacter;
+		this->PlayerCharacter = LocalPlayerCharacter;
 
 		ReloadSystemComponent = Cast<UReloadComponent>( PlayerCharacter->GetComponentByClass( UReloadComponent::StaticClass() ));
 
