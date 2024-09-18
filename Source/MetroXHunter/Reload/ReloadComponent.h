@@ -83,7 +83,19 @@ public:
 	float GetNormalizedReloadElapsedTime() const;
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void UpdateAmmoCount(int32 NewCount);
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void GetAmmoData(int32& IndexMagazine, int32& MaxMagazineAmmo) const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void GetReferences();
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	bool IsGunFireLocked() const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	bool bIsAmmoFull() const;
 
 private:
 
@@ -103,23 +115,10 @@ private:
 
 	UFUNCTION( BlueprintCallable )
 	void UpdateCurrentReloadState(EGunReloadState NewState);
-	UFUNCTION( BlueprintCallable )
-	void UpdateAmmoCount(int32 NewAmmoCount);
-	UFUNCTION( BlueprintCallable )
-	void GetReferences();
-	UFUNCTION( BlueprintCallable )
-	void GetAmmoData();
-	UFUNCTION( BlueprintCallable )
-	void ComputeReloadAmmoCount();
-	UFUNCTION( BlueprintCallable )
-	void OnReloadInput();
 
 private:	
 
 	APlayerController* PlayerController = nullptr; 
 	class AHUD* HUD = nullptr;
-
-	bool bIsAmmoFull = false;
-	bool bIsInfiniteAmmo = false;
 		
 };

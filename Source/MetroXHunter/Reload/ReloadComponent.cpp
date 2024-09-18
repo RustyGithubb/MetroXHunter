@@ -58,16 +58,6 @@ void UReloadComponent::UpdateCurrentReloadState(EGunReloadState NewState)
 	}
 }
 
-void UReloadComponent::UpdateAmmoCount(int32 NewAmmoCount)
-{
-
-}
-
-void UReloadComponent::GetReferences()
-{
-
-}
-
 EGunReloadState UReloadComponent::GetCurrentReloadState() const
 {
 	return CurrentReloadState;
@@ -114,22 +104,27 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 	}
 }
 
+void UReloadComponent::UpdateAmmoCount( int32 NewCount )
+{
+
+}
+
+void UReloadComponent::GetAmmoData( int32& IndexMagazine, int32& MaxMagazineAmmo ) const
+{
+
+}
+
+void UReloadComponent::GetReferences()
+{
+
+}
+
 bool UReloadComponent::IsGunFireLocked() const
 {
 	return bIsReloadActive;
 }
 
-void UReloadComponent::GetAmmoData()
+bool UReloadComponent::bIsAmmoFull() const
 {
-
-}
-
-void UReloadComponent::ComputeReloadAmmoCount()
-{
-
-}
-
-void UReloadComponent::OnReloadInput()
-{
-
+	return false;
 }
