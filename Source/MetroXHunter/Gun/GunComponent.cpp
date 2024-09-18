@@ -13,9 +13,6 @@
 UGunComponent::UGunComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	GunDataAsset->CurrentAmmoInMagazine = 6;
-	GunDataAsset->MaxMagazineAmmo = 6;
 }
 
 void UGunComponent::BeginPlay()
@@ -60,30 +57,20 @@ bool UGunComponent::IsGunEmpty() const
 
 bool UGunComponent::CanFire()
 {
-	// Access the reload system component
 	if ( ReloadSystemComponent && ReloadSystemComponent->IsGunFireLocked() )
 	{
-		// DEBUG ONLY
-		UKismetSystemLibrary::PrintString( this, TEXT( "Gun : Fire is locked from Reload System !" ), true, true, FLinearColor(1, 0, 0), 2.0f);
+		UKismetSystemLibrary::PrintString( this, TEXT( "Gun : Fire is locked from Reload System!" ), true, true, FLinearColor( 1, 0, 0 ), 2.0f );
 		return false;
 	}
 
-	// Check if the gun is empty
 	bool bIsGunEmpty = IsGunEmpty();
-
-	// Inverse the result of bIsGunEmpty(if the gun is not empty it can shoot)
 	if ( bIsGunEmpty )
 	{
-		// Can shoot
-		return true;
-	}
-	else
-	{
-		// Print out that the gun need to reload
-		UKismetSystemLibrary::PrintString( this, TEXT( "You need to reload !" ), true, true, FLinearColor(0, 0.66f, 0), 2.0f);
+		UKismetSystemLibrary::PrintString( this, TEXT( "You need to reload!" ), true, true, FLinearColor( 0, 0.66f, 0 ), 2.0f );
 		return false;
 	}
-	return false;
+
+	return true;
 }
 
 FVector UGunComponent::CalculateWorldlocation( bool UseMovementImprecision )
