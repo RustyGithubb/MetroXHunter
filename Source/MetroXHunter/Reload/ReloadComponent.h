@@ -13,6 +13,7 @@
 
 class UGunComponent;
 class UReloadData;
+class UInventoryComponent;
 class UMainHUD;
 class UInputAction;
 
@@ -61,12 +62,10 @@ public:
 	UInputAction* ReloadAction = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo", meta = ( AllowPrivateAccess = "true" ) )
-	int32 MaxMagazineAmmoCount = 6;
+	int MaxMagazineAmmoCount = 6;
 
 	UPROPERTY(BlueprintAssignable, Category = "Reload|Events")
 	FOnReloadStateUpdated OnReloadStateUpdated;
-
-
 
 public:
 
@@ -83,10 +82,13 @@ public:
 	float GetNormalizedReloadElapsedTime() const;
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void UpdateAmmoCount(int32 NewCount);
+	void UpdateAmmoCount(int NewCount);
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetAmmoData(int32& IndexMagazine, int32& MaxMagazineAmmo) const;
+	void GetAmmoData(int& IndexMagazine, int& MaxMagazineAmmo) const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void ComputeReloadAmmoCount(int& NewMagazineAmmoCount, int& InventoryAmmoConsumed);
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void GetReferences();
@@ -105,6 +107,9 @@ private:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Data Asset", meta = ( AllowPrivateAccess = "true" ) )
 	UReloadData* ReloadDataAsset = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = ( AllowPrivateAccess = "true" ))
+	UInventoryComponent* PlayerInventory = nullptr;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload", meta = ( AllowPrivateAccess = "true" ) )
 	bool bIsReloadActive = false;
 
@@ -116,9 +121,19 @@ private:
 	UFUNCTION( BlueprintCallable )
 	void UpdateCurrentReloadState(EGunReloadState NewState);
 
+	UFUNCTION( BlueprintCallable )
+	void GetPlayerInventory();
+
+	UFUNCTION( BlueprintCallable )
+	void GetHUDFromPlayerController();
+
+	UFUNCTION( BlueprintCallable )
+	void GetGunReference();
+
 private:	
 
 	APlayerController* PlayerController = nullptr; 
-	class AHUD* HUD = nullptr;
+	AActor* CharacterGun;
+	AHUD* HUD = nullptr;
 		
 };

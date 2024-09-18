@@ -6,6 +6,11 @@
 #include "Reload/ReloadData.h"
 #include "HUD/MainHUD.h"
 #include "Reload/IReloadSystemUpdate.h"
+#include "Gun/GunCommunication.h"
+#include "Inventory/InventoryComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -19,13 +24,13 @@ void UReloadComponent::BeginPlay()
 	Super::BeginPlay();
 
 	GetReferences();
-	UpdateAmmoCount(MaxMagazineAmmoCount);
+	UpdateAmmoCount( MaxMagazineAmmoCount );
 	SetupPlayerInputComponent();
 }
 
-void UReloadComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UReloadComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 }
 
 void UReloadComponent::SetupPlayerInputComponent()
@@ -36,7 +41,7 @@ void UReloadComponent::SetupPlayerInputComponent()
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
 	{
 		// Interaction
-		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this,&UReloadComponent::StartReloadSequence);
+		EnhancedInputComponent->BindAction( ReloadAction, ETriggerEvent::Started, this, &UReloadComponent::StartReloadSequence );
 	}
 }
 
@@ -45,15 +50,54 @@ void UReloadComponent::StartReloadSequence()
 
 }
 
-void UReloadComponent::UpdateCurrentReloadState(EGunReloadState NewState)
+void UReloadComponent::UpdateCurrentReloadState( EGunReloadState NewState )
 {
 	CurrentReloadState = NewState;
 
-	if( HUD )
+	if ( HUD )
 	{
 		if ( IIReloadSystemUpdate* ReloadSystemInterface = Cast<IIReloadSystemUpdate>( HUD ) )
 		{
 			ReloadSystemInterface->UpdateReloadSystemState( CurrentReloadState );
+		}
+	}
+}
+
+void UReloadComponent::GetPlayerInventory()
+{
+	AActor* Owner = GetOwner();
+	if ( Owner )
+	{
+		PlayerInventory = Cast<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
+	}
+}
+
+void UReloadComponent::GetHUDFromPlayerController()
+{
+	PlayerController = UGameplayStatics::GetPlayerController( this, 0 );
+	if ( PlayerController )
+	{
+		HUD = PlayerController->GetHUD();
+	}
+}
+
+void UReloadComponent::GetGunReference()
+{
+	AActor* Owner = GetOwner();
+	if ( Owner )
+	{
+		TArray<UChildActorComponent*> ChildActorComponent;
+		Owner->GetComponents<UChildActorComponent>( ChildActorComponent );
+
+		for ( UChildActorComponent* ChildActorComp : ChildActorComponent )
+		{
+			AActor* ChildActor = ChildActorComp->GetChildActor();
+			if ( ChildActor && ChildActor->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ))
+			{
+				CharacterGun = ChildActor;
+				MaxMagazineAmmoCount = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+				break;
+			}
 		}
 	}
 }
@@ -104,19 +148,84 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 	}
 }
 
-void UReloadComponent::UpdateAmmoCount( int32 NewCount )
+void UReloadComponent::UpdateAmmoCount( int NewCount )
 {
 
 }
 
-void UReloadComponent::GetAmmoData( int32& IndexMagazine, int32& MaxMagazineAmmo ) const
+void UReloadComponent::GetAmmoData( int& IndexMagazine, int& MaxMagazineAmmo ) const
 {
+	if ( !CharacterGun )
+	{
+		IndexMagazine = 0;
+		MaxMagazineAmmo = 0;
+		return;
+	}
 
+	// Cast the gun to the GunCommunication interface
+	IGunCommunication* GunInterface = Cast<IGunCommunication>( CharacterGun );
+	if ( GunInterface )
+	{
+		IndexMagazine = GunInterface->GetCurrentMagazineAmmoCount();
+		MaxMagazineAmmo = GunInterface->GetMaxMagazineInAmmoCount();
+	}
+	else
+	{
+		IndexMagazine = 0;
+		MaxMagazineAmmo = 0;
+	}
+}
+
+void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed )
+{
+	if ( !CharacterGun )
+	{
+		NewMagazineAmmoCount = 0;
+		InventoryAmmoConsumed = 0;
+		return;
+	}
+
+	// Cast the gun to the GunCommunication interface
+	IGunCommunication* GunInterface = Cast<IGunCommunication>( CharacterGun );
+	if ( !GunInterface )
+	{
+		NewMagazineAmmoCount = 0;
+		InventoryAmmoConsumed = 0;
+		return;
+	}
+
+	// Get the current ammo count in the magazine
+	int CurrentAmmoCount = GunInterface->GetCurrentMagazineAmmoCount();
+	int MaxMagazineAmmoCount = this->MaxMagazineAmmoCount;
+
+	// Calculate how much ammo is needed to fully reload
+	int AmmoToConsumeToMax = this->MaxMagazineAmmoCount - CurrentAmmoCount;
+
+	// NEED TO ADD A FUNCTION IN THE INVENTORY COMPONENT TO GET THE CURRENT AMMO COUNT
+ 
+	// Get the player's available ammo in inventory
+	/*int InventoryAmmo = PlayerInventory ? PlayerInventory->GetCurrentAmmoAmount() : 0;
+
+	// Determine if we have enough ammo in the inventory
+	if ( InventoryAmmo )
+	{
+		// Full reload possible
+		NewMagazineAmmoCount = MaxMagazineAmmoCount;
+		InventoryAmmoConsumed = AmmoToConsumeToMax;
+	}
+	else
+	{
+		// Partial Reload
+		NewMagazineAmmoCount = CurrentAmmoCount + InventoryAmmo;
+		InventoryAmmoConsumed = InventoryAmmo;
+	}*/
 }
 
 void UReloadComponent::GetReferences()
 {
-
+	GetPlayerInventory();
+	GetHUDFromPlayerController();
+	GetGunReference();
 }
 
 bool UReloadComponent::IsGunFireLocked() const
@@ -126,5 +235,20 @@ bool UReloadComponent::IsGunFireLocked() const
 
 bool UReloadComponent::bIsAmmoFull() const
 {
+	if ( !CharacterGun )
+	{
+		return false;
+	}
+
+	// Cast the gun to the GunCommunication interface
+	IGunCommunication* GunInterface = Cast<IGunCommunication>( CharacterGun );
+	if ( GunInterface )
+	{
+		int CurrentAmmo = GunInterface->GetCurrentMagazineAmmoCount();
+		int MaxAmmo = GunInterface->GetMaxMagazineInAmmoCount();
+
+		// Check if current ammo is equal to the max ammo
+		return CurrentAmmo = MaxAmmo;
+	}
 	return false;
 }
