@@ -20,17 +20,7 @@ void ALocker::Interact()
 {
 	ShowSkillCheckWidget();
 
-	// Smooth camera transition from the player to the Locker's camera
-	PlayerController->SetViewTargetWithBlend(
-		this,
-		BlendTime,
-		EViewTargetBlendFunction::VTBlend_EaseInOut,
-		BlendExp
-	);
-
-	// Should refactor the inputs so we still see the Visualizer
-	PlayerController->GetPawn()->DisableInput( PlayerController );
-	PlayerController->DisableInput( PlayerController );
+	SwitchCameraTarget();
 
 	bIsSkillCheckActive = true;
 	SetActorTickEnabled( true );
@@ -43,21 +33,13 @@ void ALocker::OnCancelInteraction()
 	UnbindInputs();
 	RemoveSkillCheckWidget();
 
-	// Smooth camera transition from the Locker's camera to the Player
-	PlayerController->SetViewTargetWithBlend(
-		PlayerController->GetPawn(),
-		BlendTime,
-		EViewTargetBlendFunction::VTBlend_EaseInOut,
-		BlendExp
-	);
-
-	PlayerController->GetPawn()->EnableInput( PlayerController );
-	PlayerController->EnableInput( PlayerController );
+	ResetCameraTarget();
+	bIsSkillCheckActive = false;
 }
 
 void ALocker::EndSkillCheck()
 {
-	OnCancelInteraction(); 
+	OnCancelInteraction();
 }
 
 void ALocker::BindToInputs()
