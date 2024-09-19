@@ -45,44 +45,49 @@ void AZeroEnemy::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	if ( bIsStun )
+	switch ( State )
 	{
-		float Frequency = bUseStunAnimation 
-			? Data->StunAnimationFrequency 
-			: Data->SubstateSwitchedAnimationFrequency;
-		float Angle = bUseStunAnimation 
-			? Data->StunAnimationAngle 
-			: Data->SubstateSwitchedAnimationAngle;
+		case EZeroEnemyState::RushAttackResolve:
+		case EZeroEnemyState::Stun:
+		{
+			float Frequency = bUseStunAnimation 
+				? Data->StunAnimationFrequency 
+				: Data->SubstateSwitchedAnimationFrequency;
+			float Angle = bUseStunAnimation 
+				? Data->StunAnimationAngle 
+				: Data->SubstateSwitchedAnimationAngle;
 
-		double AngleOffset = FMath::Sin( 
-			GetGameTimeSinceCreation() * Frequency 
-		) * Angle;
+			double AngleOffset = FMath::Sin( 
+				GetGameTimeSinceCreation() * Frequency 
+			) * Angle;
 
-		SetActorRotation( 
-			FRotator {
-				0.0,
-				StartStunRotation.Yaw + AngleOffset,
-				0.0
-			}
-		);
+			SetActorRotation( 
+				FRotator {
+					0.0,
+					StartStunRotation.Yaw + AngleOffset,
+					0.0
+				}
+			);
 
-		return;
-	}
+			UE_VLOG( this, LogTemp, Verbose, TEXT( "Stun Tick" ) );
+			break;
+		}
+		case EZeroEnemyState::RushAttack:
+		{
+			// Get current rush time
+			FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+			float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
 
-	if ( bIsRushing )
-	{
-		// Get current rush time
-		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-		float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
-
-		// Apply new walk speed
-		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-		MovementComponent->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
+			// Apply new walk speed
+			UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+			MovementComponent->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
 		
-		// Move forward
-		AddMovementInput( GetActorForwardVector() );
+			// Move forward
+			AddMovementInput( GetActorForwardVector() );
 
-		UE_VLOG( this, LogTemp, Verbose, TEXT( "Rush Tick" ) );
+			UE_VLOG( this, LogTemp, Verbose, TEXT( "Rush Tick" ) );
+			break;
+		}
 	}
 }
 
@@ -104,6 +109,8 @@ void AZeroEnemy::OpenBulb( float OpenTime )
 	}
 
 	bIsBulbOpened = true;
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Open Bulb" ) );
 }
 
 void AZeroEnemy::CloseBulb()
@@ -115,11 +122,13 @@ void AZeroEnemy::CloseBulb()
 
 	OpeningBulbTimerHandle.Invalidate();
 	bIsBulbOpened = false;
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Close Bulb" ) );
 }
 
 void AZeroEnemy::Stun( float StunTime, bool bUseDefaultAnimation )
 {
-	bIsStun = true;
+	State = EZeroEnemyState::Stun;
 	bUseStunAnimation = bUseDefaultAnimation;
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
@@ -132,14 +141,18 @@ void AZeroEnemy::Stun( float StunTime, bool bUseDefaultAnimation )
 	StartStunRotation = GetActorRotation();
 
 	OnStun.Broadcast();
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Start Stun" ) );
 }
 
 void AZeroEnemy::UnStun()
 {
 	StunTimerHandle.Invalidate();
-	bIsStun = false;
+	State = EZeroEnemyState::None;
 
 	OnUnStun.Broadcast();
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Stun" ) );
 }
 
 void AZeroEnemy::MakePanic()
@@ -175,7 +188,7 @@ void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 
 void AZeroEnemy::RushAttack()
 {
-	bIsRushing = true;
+	State = EZeroEnemyState::RushAttack;
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.SetTimer(
@@ -194,18 +207,49 @@ void AZeroEnemy::RushAttack()
 								* MovementComponent->MaxWalkSpeed;
 
 	OnRush.Broadcast();
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Start Rush Attack" ) );
+}
+
+void AZeroEnemy::StartResolveRushAttack()
+{
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer( RushTimerHandle );
+	RushTimerHandle.Invalidate();
+
+	State = EZeroEnemyState::RushAttackResolve;
+
+	bUseStunAnimation = true;
+	StartStunRotation = GetActorRotation();
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Start resolving Rush Attack" ) );
 }
 
 void AZeroEnemy::StopRushAttack()
 {
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer( RushTimerHandle );
 	RushTimerHandle.Invalidate();
-	bIsRushing = false;
+	State = EZeroEnemyState::None;
 
 	// Reset walk speed
 	UpdateWalkSpeed();
 	GetCharacterMovement()->RotationRate.Yaw = Data->YawRotationRate;
 
 	OnUnRush.Broadcast();
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Rush Attack" ) );
+}
+
+bool AZeroEnemy::IsBulbOpened() const
+{
+	return bIsBulbOpened;
+}
+
+bool AZeroEnemy::IsRushing() const
+{
+	return State == EZeroEnemyState::RushAttack
+		|| State == EZeroEnemyState::RushAttackResolve;
 }
 
 void AZeroEnemy::ApplyModifiers( const FZeroEnemyModifiers& NewModifiers )
@@ -220,6 +264,16 @@ void AZeroEnemy::ResetModifiers()
 	ApplyModifiers( {} );
 }
 
+void AZeroEnemy::SetState( EZeroEnemyState NewState )
+{
+	State = NewState;
+}
+
+EZeroEnemyState AZeroEnemy::GetState() const
+{
+	return State;
+}
+
 float AZeroEnemy::GetMadnessLevel() const
 {
 	int32 SubstatesCount = AISubstateManagerComponent->GetSubstatesCount();
@@ -229,16 +283,37 @@ float AZeroEnemy::GetMadnessLevel() const
 	return (float)SubstateIndex / (float)( SubstatesCount - 1 );
 }
 
+#if ENABLE_VISUAL_LOG
+void AZeroEnemy::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
+{
+	FVisualLogStatusCategory Category( TEXT( "ZeroEnemy" ) );
+	Category.Add(
+		TEXT( "State" ),
+		UEnum::GetValueAsString( GetState() )
+	);
+	Category.Add(
+		TEXT( "MadnessLevel" ),
+		FString::SanitizeFloat( GetMadnessLevel() )
+	);
+
+	Snapshot->Status.Add( Category );
+}
+#endif
+
 void AZeroEnemy::MeleeAttack_Implementation()
 {
-	bIsMeleeAttacking = true;
+	State = EZeroEnemyState::MeleeAttack;
 	OnMeleeAttack.Broadcast( true );
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Start Melee Attack" ) );
 }
 
 void AZeroEnemy::StopMeleeAttack_Implementation()
 {
-	bIsMeleeAttacking = false;
+	State = EZeroEnemyState::None;
 	OnMeleeAttack.Broadcast( false );
+
+	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Melee Attack" ) );
 }
 
 void AZeroEnemy::InitializeAISubstateManager()

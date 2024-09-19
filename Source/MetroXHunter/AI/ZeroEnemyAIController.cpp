@@ -87,8 +87,11 @@ void AZeroEnemyAIController::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) cons
 {
 	Super::GrabDebugSnapshot( Snapshot );
 
-	FVisualLogStatusCategory Category;
-	Category.Category = TEXT( "Zero Enemy AI" );
+	FVisualLogStatusCategory Category( TEXT( "ZeroEnemyAI" ) );
+	Category.Add(
+		TEXT( "State" ),
+		UEnum::GetValueAsString( GetState() )
+	);
 	Category.Add(
 		TEXT( "VelocityLength" ),
 		FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->Velocity.Length() )

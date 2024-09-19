@@ -3,10 +3,40 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AI/ZeroEnemyData.h"
+#include "VisualLogger/VisualLoggerDebugSnapshotInterface.h"
 #include "ZeroEnemy.generated.h"
 
 class UHealthComponent;
 class UAISubstateManagerComponent;
+
+UENUM( BlueprintType )
+enum class EZeroEnemyState : uint8
+{
+	/*
+	 * No specific restrictions.
+	 */
+	None,
+	/*
+	 * Unable to move for a given time, also used for animating.
+	 */
+	Stun,
+	/*
+	 * Same as Stun, specific for a different animation.
+	 */
+	//SubstateChange,
+	/*
+	 * Attacking a target by charging it.
+	 */
+	RushAttack,
+	/*
+	 * Waiting the rush to a player to be resolved by the quick time event.
+	 */
+	RushAttackResolve,
+	/*
+	 * Attacking a target with melee.
+	 */
+	MeleeAttack,
+};
 
 USTRUCT( BlueprintType )
 struct METROXHUNTER_API FZeroEnemyModifiers
@@ -18,7 +48,7 @@ struct METROXHUNTER_API FZeroEnemyModifiers
 };
 
 UCLASS()
-class METROXHUNTER_API AZeroEnemy : public ACharacter
+class METROXHUNTER_API AZeroEnemy : public ACharacter, public IVisualLoggerDebugSnapshotInterface
 {
 	GENERATED_BODY()
 
@@ -49,6 +79,8 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void RushAttack();
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void StartResolveRushAttack();
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void StopRushAttack();
 
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "ZeroEnemy" )
@@ -57,14 +89,19 @@ public:
 	void StopMeleeAttack();
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
-	bool IsBulbOpened() const { return bIsBulbOpened; }
+	bool IsBulbOpened() const;
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
-	bool IsRushing() const { return bIsRushing; }
+	bool IsRushing() const;
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ApplyModifiers( const FZeroEnemyModifiers& NewModifiers );
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ResetModifiers();
+
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void SetState( EZeroEnemyState NewState );
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	EZeroEnemyState GetState() const;
 
 	/*
 	 * Returns the madness level, representing the current progress of the AISubstateManagerComponent.
@@ -72,6 +109,10 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	float GetMadnessLevel() const;
+
+#if ENABLE_VISUAL_LOG
+	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;
+#endif
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStun );
@@ -130,11 +171,10 @@ private:
 private:
 	bool bIsBulbOpened = false;
 
+	EZeroEnemyState State = EZeroEnemyState::None;
+
 	// TODO: Refactor with states
-	bool bIsStun = false;
 	bool bUseStunAnimation = true;
-	bool bIsRushing = false;
-	bool bIsMeleeAttacking = false;
 
 	FRotator StartStunRotation {};
 
