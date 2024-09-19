@@ -16,6 +16,8 @@ public class MetroXHunter : ModuleRules
 				"InputCore",
 				"UMG",
                 "EnhancedInput",
+				"LevelSequence",
+                "CinematicCamera"
             }
 		);
 
