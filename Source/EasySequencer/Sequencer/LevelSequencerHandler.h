@@ -16,7 +16,7 @@ class USceneComponent;
  * The level sequencer handler needs to reference a level sequence and a cine camera.
  */
 UCLASS()
-class METROXHUNTER_API ALevelSequencerHandler : public AActor
+class EASYSEQUENCER_API ALevelSequencerHandler : public AActor
 {
 	GENERATED_BODY()
 

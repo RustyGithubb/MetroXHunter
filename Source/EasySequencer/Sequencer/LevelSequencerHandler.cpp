@@ -26,6 +26,4 @@ ALevelSequencerHandler::ALevelSequencerHandler()
 		GetActorTransform(),
 		SpawnParams
 	);
-
-	LevelSequenceActor->AttachToActor( this, FAttachmentTransformRules::SnapToTargetNotIncludingScale );
 }

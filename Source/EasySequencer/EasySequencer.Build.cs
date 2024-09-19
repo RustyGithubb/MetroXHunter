@@ -14,9 +14,10 @@ public class EasySequencer : ModuleRules
         PrivateDependencyModuleNames.AddRange(new[]
         {
             "Core",
-            "Slate",
-            "SlateCore",
-            "ToolMenus",
+            "CoreUObject",
+            "Engine",
+            "LevelSequence",
+            "CinematicCamera"
         });
     }
 }
