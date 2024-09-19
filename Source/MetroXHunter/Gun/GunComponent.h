@@ -34,6 +34,12 @@ public:
 
 public :
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnFire );
+	UPROPERTY( BlueprintAssignable, Category = "Gun|Events" )
+	FOnFire OnFire;
+
+public :
+
 	UFUNCTION( BlueprintCallable, Category = "Gun" )
 	void InitializeAmmo();
 
@@ -62,7 +68,6 @@ private:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Gun|Data Asset", meta = ( AllowPrivateAccess = "true" ) )
 	UGunData* GunDataAsset = nullptr;
-
 
 private :
 

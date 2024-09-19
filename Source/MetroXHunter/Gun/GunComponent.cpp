@@ -38,19 +38,11 @@ void UGunComponent::BeginPlay()
 			UE_LOG( LogTemp, Error, TEXT( "Reload System not initialized !" ) );
 		}
 	}
-
 }
 
 void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/*if ( PlayerCharacter && PlayerCharacter-> )
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "Player not initialized !" ) );
-	}*/
-
-
 }
 
 void UGunComponent::InitializeAmmo()
@@ -95,7 +87,6 @@ bool UGunComponent::CanFire()
 		UKismetSystemLibrary::PrintString( this, TEXT( "You need to reload!" ), true, true, FLinearColor( 0, 0.66f, 0 ), 2.0f );
 		return false;
 	}
-
 	return true;
 }
 
@@ -140,17 +131,17 @@ void UGunComponent::SetNewAmmoCount( int NewCount )
 
 void UGunComponent::CallOnFire()
 {
-	/*if ( CanFire() )
+	if ( CanFire() )
 	{
 		// Do the event OnFire
-		OnFire.BroadCast();
+		OnFire.Broadcast();
 
 		UE_LOG( LogTemp, Warning, TEXT( "Gun fired !" ));
 	}
 	else
 	{
 		UE_LOG( LogTemp, Warning, TEXT( " Cannot fire !" ) );
-	}*/
+	}
 }
 
 // Adjust the vector with the imprecision movement
@@ -166,7 +157,6 @@ FVector UGunComponent::GetImprecisionAdjustedVector( bool UseMovementImprecision
 		// Create Imprecision Vector
 		return FVector( RandomX, RandomY, RandomZ );
 	}
-
 	return FVector::ZeroVector;
 }
 
