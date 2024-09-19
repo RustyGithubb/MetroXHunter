@@ -25,7 +25,7 @@ public:
 	virtual void BeginPlay() override;
 	void LateBeginPlay();
 
-	UFUNCTION( BlueprintCallable , meta = ( ReturnDisplayName = "Overflow Amount") )
+	UFUNCTION( BlueprintCallable, meta = ( ReturnDisplayName = "OverflowAmount" ) )
 	int AddToInventory( EPickupType PickupType, int Amount );
 
 	UFUNCTION( BlueprintCallable )
@@ -43,19 +43,22 @@ public:
 	UFUNCTION( BlueprintPure, BlueprintCallable )
 	bool IsSyringeFull();
 
+	UFUNCTION( BlueprintCallable )
+	int GetCurrentAmoAmount() const;
+
 protected:
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Inventory|Data Asset" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Inventory|DataAsset" )
 	UInventoryData* InventoryDataAsset = nullptr;
 
-	UPROPERTY( BlueprintReadOnly, Category = "Inventory|Data Asset" )
+	UPROPERTY( BlueprintReadOnly, Category = "Inventory|DataAsset" )
 	int CurrentAmmoAmount = 0;
 
-	UPROPERTY( BlueprintReadOnly, Category = "Inventory|Data Asset" )
+	UPROPERTY( BlueprintReadOnly, Category = "Inventory|DataAsset" )
 	int CurrentSyringeSegmentAmount = 0;
 
 private:
 	AHUD* MainHUD = nullptr;
 
 private:
-	int CalculateOverflowAmount( int AmountToAdd, int& CurrentAmount, int MaxAmount);
+	int CalculateOverflowAmount( int AmountToAdd, int& CurrentAmount, int MaxAmount );
 };
