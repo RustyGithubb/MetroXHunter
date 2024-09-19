@@ -8,6 +8,8 @@
 #include "Engine/LatentActionManager.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 
 constexpr float PERCENT = 100.0f;
 
@@ -56,8 +58,7 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
 	DataAsset = NewDataAsset;
 	InputProgress = DataAsset->StartProgress / PERCENT;
 
-	PlayerController->GetPawn()->DisableInput( PlayerController );
-	PlayerController->DisableInput( PlayerController );
+	AddInputMappingContext();
 
 	SetComponentTickEnabled( true );
 
@@ -70,8 +71,7 @@ void UQuickTimeEventComponent::StopEvent( EQuickTimeEventResult EventResult )
 {
 	SetComponentTickEnabled( false );
 
-	PlayerController->GetPawn()->EnableInput( PlayerController );
-	PlayerController->EnableInput( PlayerController );
+	RemoveInputMappingContext();
 
 	Result = EventResult;
 	OnEventStopped.Broadcast( Result );
@@ -98,18 +98,44 @@ void UQuickTimeEventComponent::SetupPlayerInputComponent()
 {
 	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 	
-	verifyf(
-		InputAction != nullptr,
-		TEXT( "QuickTimeEvent must have InputActions set up!" )
-	);
+	verify( !InputAction.IsNull() );
 
 	// Set up action bindings
-	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent );
+	EnhancedInputComponent->BindAction(
+		InputAction.LoadSynchronous(), ETriggerEvent::Started,
+		this, &UQuickTimeEventComponent::OnInput
+	);
+}
+
+void UQuickTimeEventComponent::AddInputMappingContext()
+{
+	verify( !InputMappingContext.IsNull() );
+
+	auto LocalPlayer = PlayerController->GetLocalPlayer();
+	auto InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	InputSystem->AddMappingContext( 
+		InputMappingContext.LoadSynchronous(), 
+		InputMappingContextPriority 
+	);
+
+	if ( !DefaultInputMappingContext.IsNull() )
 	{
-		EnhancedInputComponent->BindAction(
-			InputAction, ETriggerEvent::Started, 
-			this, &UQuickTimeEventComponent::OnInput
-		);
+		InputSystem->RemoveMappingContext( DefaultInputMappingContext.LoadSynchronous() );
+	}
+}
+
+void UQuickTimeEventComponent::RemoveInputMappingContext()
+{
+	verify( !InputMappingContext.IsNull() );
+
+	auto LocalPlayer = PlayerController->GetLocalPlayer();
+	auto InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	InputSystem->RemoveMappingContext( InputMappingContext.LoadSynchronous() );
+	
+	if ( !DefaultInputMappingContext.IsNull() )
+	{
+		InputSystem->AddMappingContext( DefaultInputMappingContext.LoadSynchronous(), 0 );
 	}
 }
 

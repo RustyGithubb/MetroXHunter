@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "QuickTimeEventComponent.generated.h"
 
 class UQuickTimeEventData;
@@ -67,11 +68,31 @@ public:
 	FOnEventStopped OnEventStopped;
 
 public:
+	/*
+	 * Temporary : default input mapping context to disable during the event.
+	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
-	UInputAction* InputAction = nullptr;
+	TSoftObjectPtr<UInputMappingContext> DefaultInputMappingContext = nullptr;
+	/*
+	 * Input mapping context to enable during the event.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
+	TSoftObjectPtr<UInputMappingContext> InputMappingContext = nullptr;
+	/*
+	 * Priority of the input mapping context in the subsystem.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
+	int32 InputMappingContextPriority = 1;
+	/*
+	 * Temporary: input action to use.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
+	TSoftObjectPtr<UInputAction> InputAction = nullptr;
 
 private:
 	void SetupPlayerInputComponent();
+	void AddInputMappingContext();
+	void RemoveInputMappingContext();
 
 	void OnInput();
 
