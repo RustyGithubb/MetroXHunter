@@ -19,7 +19,7 @@ class UMainHUD : public UInterface
 };
 
 /**
- *
+ * Interface of the Main HUD to update the viewport.
  */
 class METROXHUNTER_API IMainHUD
 {
