@@ -2,7 +2,7 @@
 
 using UnrealBuildTool;
 
-public class MetroXHunter : ModuleRules
+public class MetroXHunter : ModuleRules  
 {
 	public MetroXHunter( ReadOnlyTargetRules Target ) : base( Target )
 	{

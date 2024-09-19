@@ -8,8 +8,8 @@
 #include "Engine/DataAsset.h"
 #include "InventoryData.generated.h"
 
-/**
- * Inventory Data asset
+/*
+ * Data asset representing the initial amounts of the player's inventory.
  */
 UCLASS()
 class METROXHUNTER_API UInventoryData : public UPrimaryDataAsset
@@ -22,8 +22,8 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|Ammo" )
 	int MaxAmmoAmountCapaicty = 999;
 	
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|Healing Syringe" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|HealingSyringe" )
 	int StartingSyringeSegment = 0;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|Healing Syringe" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|HealingSyringe" )
 	int MaxSyringeSegmentCapacity = 5;
 };

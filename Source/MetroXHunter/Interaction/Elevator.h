@@ -9,13 +9,13 @@
 #include "Elevator.generated.h"
 
  /**
-  *
+  * Elevator interactable.
+  *	Can only go down for now.
   */
 UCLASS()
 class METROXHUNTER_API AElevator : public ABaseInteractable
 {
 	GENERATED_BODY()
-
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Elevator", Meta = ( MakeEditWidget = true ) )
