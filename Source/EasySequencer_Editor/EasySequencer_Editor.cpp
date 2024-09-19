@@ -40,18 +40,20 @@ void FEasySequencer_EditorModule::RegisterMenuExtensions()
 		"LevelEditor.LevelEditorToolBar.PlayToolBar" );
 	FToolMenuSection& ToolbarSection = ToolbarMenu->FindOrAddSection( "PlatformsMenu" );
 
-	ToolbarSection.AddEntry( FToolMenuEntry::InitToolBarButton(
-		TEXT( "MyCustomButtonName" ),
-		FExecuteAction::CreateLambda(
-			[]() {
-				// Simply log for this example
-				UE_LOG( LogTemp, Log, TEXT( "Easy Sequencer Triggered" ) );
-			} 
-		),
-		INVTEXT( "ES Button" ),
-		INVTEXT( "Easy Sequencer Tool" ),
-		FSlateIcon( FAppStyle::GetAppStyleSetName(), "PlayWorld.PlayInCameraLocation" )
-	));
+	ToolbarSection.AddEntry( 
+		FToolMenuEntry::InitToolBarButton(
+			TEXT( "MyCustomButtonName" ),
+			FExecuteAction::CreateLambda(
+				[]() {
+					// Simply log for this example
+					UE_LOG( LogTemp, Log, TEXT( "Easy Sequencer Triggered" ) );
+				} 
+			),
+			INVTEXT( "ES Button" ),
+			INVTEXT( "Easy Sequencer Tool" ),
+			FSlateIcon( FAppStyle::GetAppStyleSetName(), "PlayWorld.PlayInCameraLocation" )
+		)
+	);
 }
 
 #undef LOCTEXT_NAMESPACE
