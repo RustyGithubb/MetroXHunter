@@ -35,7 +35,8 @@ void UQuickTimeEventComponent::TickComponent(
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
-	InputProgress -= DataAsset->ProgressDecreasePerSecond / PERCENT * DeltaTime;
+	float ProgressDecrease = GetProgressDecreasePerSecond();
+	InputProgress -= ProgressDecrease * DeltaTime;
 	UE_VLOG(
 		this, LogTemp, Verbose,
 		TEXT( "QuickTimeEvent is running with a progress of %f!" ), InputProgress
@@ -62,6 +63,7 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
 
 	SetComponentTickEnabled( true );
 
+	EventStartTime = GetWorld()->GetTimeSeconds();
 	OnEventStarted.Broadcast();
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "QuickTimeEvent is starting!" ) );
@@ -82,6 +84,23 @@ void UQuickTimeEventComponent::StopEvent( EQuickTimeEventResult EventResult )
 bool UQuickTimeEventComponent::IsEventRunning() const
 {
 	return IsComponentTickEnabled();
+}
+
+float UQuickTimeEventComponent::GetEventTime() const
+{
+	return GetWorld()->GetTimeSeconds() - EventStartTime;
+}
+
+float UQuickTimeEventComponent::GetProgressDecreasePerSecond() const
+{
+	auto Curve = DataAsset->ProgressDecreaseCurve;
+	if ( Curve == nullptr )
+	{
+		return DataAsset->ProgressDecreasePerSecond / PERCENT;
+	}
+	
+	float Time = GetEventTime();
+	return Curve->GetFloatValue( Time ) / PERCENT;
 }
 
 EQuickTimeEventResult UQuickTimeEventComponent::GetEventResult() const

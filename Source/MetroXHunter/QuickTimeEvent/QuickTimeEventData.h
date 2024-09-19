@@ -39,8 +39,10 @@ public:
 	float StartProgress = 50.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
 	float ProgressPerInput = 15.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam && ProgressDecreaseCurve==nullptr" ) )
 	float ProgressDecreasePerSecond = 200.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
+	UCurveFloat* ProgressDecreaseCurve = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
 	float FailUnderProgress = -10.0f;
 };

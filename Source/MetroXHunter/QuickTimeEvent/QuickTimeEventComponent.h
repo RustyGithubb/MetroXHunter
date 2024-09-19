@@ -54,6 +54,10 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	bool IsEventRunning() const;
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
+	float GetEventTime() const;
+	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
+	float GetProgressDecreasePerSecond() const;
+	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	EQuickTimeEventResult GetEventResult() const;
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	float GetInputProgress() const;
@@ -98,8 +102,10 @@ private:
 
 private:
 	EQuickTimeEventResult Result = EQuickTimeEventResult::Succeed;
-	APlayerController* PlayerController = nullptr;
 
+	APlayerController* PlayerController = nullptr;
 	UQuickTimeEventData* DataAsset = nullptr;
+
 	float InputProgress = 0.0f;
+	float EventStartTime = 0.0f;
 };
