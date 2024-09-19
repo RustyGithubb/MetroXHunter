@@ -4,11 +4,11 @@ using UnrealBuildTool;
 
 public class MetroXHunter : ModuleRules
 {
-	public MetroXHunter(ReadOnlyTargetRules Target) : base(Target)
+	public MetroXHunter( ReadOnlyTargetRules Target ) : base( Target )
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange( 
+		PublicDependencyModuleNames.AddRange(
 			new string[] {
 				"Core",
 				"CoreUObject",
@@ -21,7 +21,7 @@ public class MetroXHunter : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange( new string[] { } );
 
-		PublicIncludePaths.Add("MetroXHunter");
+		PublicIncludePaths.Add( "MetroXHunter" );
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
