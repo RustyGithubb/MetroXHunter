@@ -38,6 +38,16 @@ enum class EGunReloadState : uint8
 	FailedFinished,
 };
 
+UENUM( BlueprintType )
+enum class EReloadTelemetry : uint8
+{
+	StartReload,
+	NormalReload,
+	ActiveReload,
+	PerfectReload,
+	FailedReload,
+};
+
 /*
  * Event called when the reload state change.
  */
@@ -57,10 +67,10 @@ public:
 
 public:
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Inputs" )
 	UInputAction* ReloadAction = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo", meta = ( AllowPrivateAccess = "true" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
 	int MaxMagazineAmmoCount = 6;
 
 public:
@@ -129,6 +139,9 @@ private:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload", meta = ( AllowPrivateAccess = "true" ) )
 	bool bIsReloadActive = false;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Debug", meta = ( AllowPrivateAccess = "true" ) )
+	bool bUseInfiniteAmmo = false;
+
 private:
 
 	UFUNCTION( BlueprintCallable )
@@ -139,6 +152,15 @@ private:
 
 	UFUNCTION( BlueprintCallable )
 	void TriggerNormalReload();
+
+	UFUNCTION( BlueprintCallable )
+	void TriggerActiveReload();
+
+	UFUNCTION( BlueprintCallable )
+	void TriggerPerfectReload();
+
+	UFUNCTION( BlueprintCallable )
+	void TriggerFailedReload();
 
 	UFUNCTION( BlueprintCallable )
 	void UpdateCurrentReloadState(EGunReloadState NewState);
@@ -158,7 +180,7 @@ private:
 private:	
 
 	APlayerController* PlayerController = nullptr; 
-	AActor* CharacterGun;
+	AActor* CharacterGun = nullptr;
 	AHUD* HUD = nullptr;
 
 	FTimerHandle TimerHandle;
