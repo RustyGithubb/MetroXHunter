@@ -11,7 +11,8 @@
 class ALock;
 
 /**
- *
+ * Base class for the Doors.
+ * Handle opening & closing, and keep tracks of all the locks on a door.
  */
 UCLASS()
 class METROXHUNTER_API ABaseDoor : public ABaseInteractable
@@ -38,10 +39,10 @@ public:
 	void RemoveAllLocks();
 
 	UFUNCTION()
-	void RemoveLock( ALock* Lock);
+	void RemoveLock( ALock* Lock );
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY( EditAnywhere )
 	bool bIsLocked = false;
 
 	UPROPERTY( BlueprintReadWrite, Category = "Door" )

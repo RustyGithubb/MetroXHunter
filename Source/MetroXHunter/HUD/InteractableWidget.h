@@ -9,7 +9,8 @@
 #include "InteractableWidget.generated.h"
 
 /**
- *	The widget of the interactables
+ * The widget (Screen Position) of all interactables
+ * Check if an interactable is Targeted or Untargeted and update the widget accordingly.
  */
 UCLASS()
 class METROXHUNTER_API UInteractableWidget : public UUserWidget

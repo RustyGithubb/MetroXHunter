@@ -25,7 +25,7 @@ public:
 	virtual void BeginPlay() override;
 	void LateBeginPlay();
 
-	UFUNCTION( BlueprintCallable , meta = ( ReturnDisplayName = "Overflow Amount") )
+	UFUNCTION( BlueprintCallable, meta = ( ReturnDisplayName = "Overflow Amount" ) )
 	int AddToInventory( EPickupType PickupType, int Amount );
 
 	UFUNCTION( BlueprintCallable )
@@ -57,5 +57,5 @@ private:
 	AHUD* MainHUD = nullptr;
 
 private:
-	int CalculateOverflowAmount( int AmountToAdd, int& CurrentAmount, int MaxAmount);
+	int CalculateOverflowAmount( int AmountToAdd, int& CurrentAmount, int MaxAmount );
 };

@@ -1,5 +1,5 @@
-/*  
- * Implemented by Corentin Paya 
+/*
+ * Implemented by Corentin Paya
  */
 
 #pragma once
@@ -12,26 +12,26 @@
 class UInventoryComponent;
 enum class EPickupType : uint8;
 
-/**
- * 
+/*
+ * Base class for the PickUps
  */
 UCLASS()
 class METROXHUNTER_API ABasePickUp : public ABaseInteractable
 {
 	GENERATED_BODY()
-	
+
 public:
 	ABasePickUp();
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	int Amount = 0;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	EPickupType PickupType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	UTexture2D* Sprite;
 
 protected:

@@ -12,8 +12,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-
-#include "MXHUtilityLibrary.h"
 ALocker::ALocker()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -57,7 +55,7 @@ void ALocker::EndSkillCheck()
 void ALocker::SpawnLootItem()
 {
 	FActorSpawnParameters SpawnInfo;
-	
+
 	ABasePickUp* PickUp = GetWorld()->SpawnActor<ABasePickUp>
 		(
 			ItemToSpawn,

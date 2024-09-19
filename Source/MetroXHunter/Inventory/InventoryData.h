@@ -10,6 +10,7 @@
 
 /**
  * Inventory Data asset
+ * The starting and max amount of the Syringe & ammo of the player.
  */
 UCLASS()
 class METROXHUNTER_API UInventoryData : public UPrimaryDataAsset

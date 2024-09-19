@@ -10,9 +10,9 @@
 
 class USceneComponent;
 
- /*
-  * A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
-  */
+/*
+ * A locker with potential Pickups loot inside. To open it the Player needs to succeed a skill check.
+ */
 UCLASS()
 class METROXHUNTER_API ALocker : public ABaseInteractable
 {
@@ -25,7 +25,7 @@ public:
 	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
 	TEnumAsByte <EViewTargetBlendFunction> TargetBlendFunction = EViewTargetBlendFunction::VTBlend_EaseInOut;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	float ItemAmount = 11;
 
 	UPROPERTY( EditAnywhere, Category = "Locker|Loot" )
