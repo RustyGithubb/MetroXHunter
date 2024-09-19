@@ -6,13 +6,12 @@ using UnrealBuildTool;
 
 public class EasySequencer_Editor : ModuleRules
 {
-    public EasySequencer_Editor(ReadOnlyTargetRules Target) : base(Target)
+    public EasySequencer_Editor( ReadOnlyTargetRules Target ) : base( Target )
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PrivateIncludePaths.Add("EasySequencer_Editor");
+        PrivateIncludePaths.Add( "EasySequencer_Editor" );
 
-        PrivateDependencyModuleNames.AddRange(new[]
-        {
+        PrivateDependencyModuleNames.AddRange( new[] {
             "Core",
             "Slate",
             "SlateCore",

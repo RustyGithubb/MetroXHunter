@@ -6,13 +6,12 @@ using UnrealBuildTool;
 
 public class EasySequencer : ModuleRules
 {
-    public EasySequencer(ReadOnlyTargetRules Target) : base(Target)
+    public EasySequencer( ReadOnlyTargetRules Target ) : base( Target )
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PrivateIncludePaths.Add("EasySequencer");
+        PrivateIncludePaths.Add( "EasySequencer" );
 
-        PrivateDependencyModuleNames.AddRange(new[]
-        {
+        PrivateDependencyModuleNames.AddRange( new[] {
             "Core",
             "CoreUObject",
             "Engine",

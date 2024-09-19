@@ -11,8 +11,12 @@
 void FEasySequencer_EditorModule::StartupModule()
 {
 	// Register a function to be called when menu system is initialized
-	UToolMenus::RegisterStartupCallback( FSimpleMulticastDelegate::FDelegate::CreateRaw(
-		this, &FEasySequencer_EditorModule::RegisterMenuExtensions ) );
+	UToolMenus::RegisterStartupCallback( 
+		FSimpleMulticastDelegate::FDelegate::CreateRaw(
+			this, 
+			&FEasySequencer_EditorModule::RegisterMenuExtensions
+		)
+	);
 }
 
 void FEasySequencer_EditorModule::ShutdownModule()
@@ -38,15 +42,16 @@ void FEasySequencer_EditorModule::RegisterMenuExtensions()
 
 	ToolbarSection.AddEntry( FToolMenuEntry::InitToolBarButton(
 		TEXT( "MyCustomButtonName" ),
-		FExecuteAction::CreateLambda( []()
-			{
+		FExecuteAction::CreateLambda(
+			[]() {
 				// Simply log for this example
 				UE_LOG( LogTemp, Log, TEXT( "Easy Sequencer Triggered" ) );
-			} ),
+			} 
+		),
 		INVTEXT( "ES Button" ),
 		INVTEXT( "Easy Sequencer Tool" ),
 		FSlateIcon( FAppStyle::GetAppStyleSetName(), "PlayWorld.PlayInCameraLocation" )
-	) );
+	));
 }
 
 #undef LOCTEXT_NAMESPACE

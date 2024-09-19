@@ -22,8 +22,8 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|Ammo" )
 	int MaxAmmoAmountCapaicty = 999;
 	
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|Healing Syringe" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|HealingSyringe" )
 	int StartingSyringeSegment = 0;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|Healing Syringe" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Inventory Data|HealingSyringe" )
 	int MaxSyringeSegmentCapacity = 5;
 };

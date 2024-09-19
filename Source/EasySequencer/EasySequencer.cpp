@@ -6,15 +6,9 @@
 
 #define LOCTEXT_NAMESPACE "FEasySequencerModule"
 
-void FEasySequencerModule::StartupModule()
-{
+void FEasySequencerModule::StartupModule() {}
 
-}
-
-void FEasySequencerModule::ShutdownModule()
-{
-
-}
+void FEasySequencerModule::ShutdownModule() {}
 
 #undef LOCTEXT_NAMESPACE
 IMPLEMENT_MODULE( FEasySequencerModule, EasySequencer )
