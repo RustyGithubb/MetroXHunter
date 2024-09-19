@@ -8,9 +8,17 @@
 #include "Reload/IReloadSystemUpdate.h"
 #include "Gun/GunCommunication.h"
 #include "Inventory/InventoryComponent.h"
+#include "Interaction/PickupType.h"
+
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/HUD.h"
+
+#include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "GameplayTagContainer.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -50,6 +58,16 @@ void UReloadComponent::StartReloadSequence()
 
 }
 
+void UReloadComponent::UpdateReloadGauge()
+{
+
+}
+
+void UReloadComponent::TriggerNormalReload()
+{
+
+}
+
 void UReloadComponent::UpdateCurrentReloadState( EGunReloadState NewState )
 {
 	CurrentReloadState = NewState;
@@ -61,6 +79,11 @@ void UReloadComponent::UpdateCurrentReloadState( EGunReloadState NewState )
 			ReloadSystemInterface->UpdateReloadSystemState( CurrentReloadState );
 		}
 	}
+}
+
+void UReloadComponent::UpdateCurrentGunState( EGunState NewState )
+{
+	CurrentGunState = NewState;
 }
 
 void UReloadComponent::GetPlayerInventory()
@@ -150,7 +173,21 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 
 void UReloadComponent::UpdateAmmoCount( int NewCount )
 {
+	if ( !CharacterGun )
+	{
+		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun is not valid !" ) );
+		return;
+	}
 
+	if ( CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
+	{
+		IGunCommunication::Execute_SetNewAmmoCount( CharacterGun, NewCount );
+	}
+	else
+	{
+		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun does not implement GunCommunication interface !" ) );
+	}
+	UE_LOG( LogTemp, Warning, TEXT( "Updated Ammo Count : %d"), NewCount );
 }
 
 void UReloadComponent::GetAmmoData( int& IndexMagazine, int& MaxMagazineAmmo ) const
@@ -226,6 +263,25 @@ void UReloadComponent::GetReferences()
 	GetPlayerInventory();
 	GetHUDFromPlayerController();
 	GetGunReference();
+}
+
+void UReloadComponent::FinalizeReload( int NewAmmoCount, EGunReloadState ReloadType, float FinalWaitingTime, int InventoryAmmoCountUsed )
+{
+	// Update Reload State
+	UpdateCurrentReloadState( ReloadType );
+
+	// Delay for the final waiting time
+	UKismetSystemLibrary::Delay( this, FinalWaitingTime, FLatentActionInfo() );
+
+	// Update the ammo count after the reload
+	UpdateAmmoCount( NewAmmoCount );
+
+	// Update current Gun State
+	CurrentGunState = EGunState::Reloading;
+
+	// Multiply the number of ammo used by -1 and add them to the inventory
+	int AmmoToAdd = InventoryAmmoCountUsed * -1;
+	PlayerInventory->AddToInventory( EPickupType::Ammo, AmmoToAdd );
 }
 
 bool UReloadComponent::IsGunFireLocked() const
