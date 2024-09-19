@@ -14,12 +14,12 @@ UENUM( BlueprintType )
 enum class EQuickTimeEventType : uint8
 {
 	/*
-	* An input must be pressed repetitively to succeed.
-	*/
+	 * An input must be pressed repetitively to succeed.
+	 */
 	Spam,
 	/*
-	* A series of inputs must be pressed on the right time in the right order to succeed.
-	*/
+	 * A series of inputs must be pressed on the right time in the right order to succeed.
+	 */
 	Sequence,
 };
 

@@ -28,8 +28,7 @@ enum class EQuickTimeEventResult : uint8
 
 /*
  * Component responsible for the quick time event system.
- * Designed to be added on the Player Character as it needs its PlayerController
- * to bind the inputs.
+ * Designed to be added on the player character as it needs its controller to bind the inputs.
  */
 UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UQuickTimeEventComponent : public UActorComponent
