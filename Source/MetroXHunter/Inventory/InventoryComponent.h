@@ -25,7 +25,7 @@ public:
 	virtual void BeginPlay() override;
 	void LateBeginPlay();
 
-	UFUNCTION( BlueprintCallable, meta = ( ReturnDisplayName = "Overflow Amount" ) )
+	UFUNCTION( BlueprintCallable, meta = ( ReturnDisplayName = "OverflowAmount" ) )
 	int AddToInventory( EPickupType PickupType, int Amount );
 
 	UFUNCTION( BlueprintCallable )

@@ -11,7 +11,7 @@
 class UHealthComponent;
 
 /*
- * A lock with a Health component and an OnDeath event to control doors and other interactable objects.
+ * A lock with a HealthComponent and an OnDeath event to control doors and other interactable objects.
  */
 UCLASS()
 class METROXHUNTER_API ALock : public AActor

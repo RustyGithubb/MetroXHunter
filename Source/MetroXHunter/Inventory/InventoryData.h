@@ -9,8 +9,7 @@
 #include "InventoryData.generated.h"
 
 /*
- * Inventory Data asset
- * The starting and max amount of the Syringe & ammo of the player.
+ * Data asset representing the initial amounts of the player's inventory.
  */
 UCLASS()
 class METROXHUNTER_API UInventoryData : public UPrimaryDataAsset

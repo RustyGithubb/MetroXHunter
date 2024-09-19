@@ -37,26 +37,26 @@ int UInventoryComponent::AddToInventory( EPickupType PickupType, int Amount )
 
 	switch ( PickupType )
 	{
-	case EPickupType::Ammo:
-	{
-		OverflowAmount = CalculateOverflowAmount(
-			Amount,
-			CurrentAmmoAmount,
-			InventoryDataAsset->MaxAmmoAmountCapaicty
-		);
+		case EPickupType::Ammo:
+		{
+			OverflowAmount = CalculateOverflowAmount(
+				Amount,
+				CurrentAmmoAmount,
+				InventoryDataAsset->MaxAmmoAmountCapaicty
+			);
 
-		IMainHUD::Execute_UpdateAmmoCount( MainHUD );
-		break;
-	}
-	case EPickupType::Syringe:
-	{
-		OverflowAmount = CalculateOverflowAmount(
-			Amount,
-			CurrentSyringeSegmentAmount,
-			InventoryDataAsset->MaxSyringeSegmentCapacity
-		);
-		break;
-	}
+			IMainHUD::Execute_UpdateAmmoCount( MainHUD );
+			break;
+		}
+		case EPickupType::Syringe:
+		{
+			OverflowAmount = CalculateOverflowAmount(
+				Amount,
+				CurrentSyringeSegmentAmount,
+				InventoryDataAsset->MaxSyringeSegmentCapacity
+			);
+			break;
+		}
 	}
 
 	return OverflowAmount;

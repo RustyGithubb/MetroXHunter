@@ -54,14 +54,13 @@ void ALocker::EndSkillCheck()
 
 void ALocker::SpawnLootItem()
 {
-	FActorSpawnParameters SpawnInfo;
+	FActorSpawnParameters SpawnInfo {};
 
-	ABasePickUp* PickUp = GetWorld()->SpawnActor<ABasePickUp>
-		(
-			ItemToSpawn,
-			ItemSpawnPoint->GetComponentTransform(),
-			SpawnInfo
-		);
+	ABasePickUp* PickUp = GetWorld()->SpawnActor<ABasePickUp>(
+		ItemToSpawn,
+		ItemSpawnPoint->GetComponentTransform(),
+		SpawnInfo
+	);
 
 	PickUp->Amount = ItemAmount;
 }
