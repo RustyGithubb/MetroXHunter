@@ -5,20 +5,26 @@
 #include "Interaction/Locker.h"
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
+#include "Interaction/BasePickUp.h"
 
+#include "Components/SceneComponent.h"
+#include "Components/WidgetComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
 ALocker::ALocker()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 	SetActorTickEnabled( false );
+
+	ItemSpawnPoint = CreateDefaultSubobject<USceneComponent>( TEXT( "SceneComponent" ) );
+	ItemSpawnPoint->SetupAttachment( RootComponent );
 }
 
 void ALocker::Interact()
 {
 	ShowSkillCheckWidget();
+	Widget->SetVisibility( false );
 
 	SwitchCameraTarget();
 
@@ -31,7 +37,9 @@ void ALocker::Interact()
 void ALocker::OnCancelInteraction()
 {
 	UnbindInputs();
+
 	RemoveSkillCheckWidget();
+	Widget->SetVisibility( true );
 
 	ResetCameraTarget();
 	bIsSkillCheckActive = false;
@@ -40,6 +48,21 @@ void ALocker::OnCancelInteraction()
 void ALocker::EndSkillCheck()
 {
 	OnCancelInteraction();
+	SpawnLootItem();
+	RemoveInteractionComponent();
+}
+
+void ALocker::SpawnLootItem()
+{
+	FActorSpawnParameters SpawnInfo {};
+
+	ABasePickUp* PickUp = GetWorld()->SpawnActor<ABasePickUp>(
+		ItemToSpawn,
+		ItemSpawnPoint->GetComponentTransform(),
+		SpawnInfo
+	);
+
+	PickUp->Amount = ItemAmount;
 }
 
 void ALocker::BindToInputs()
