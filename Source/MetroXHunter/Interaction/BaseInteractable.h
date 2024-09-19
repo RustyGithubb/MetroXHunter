@@ -17,7 +17,7 @@ class UInteractableComponent;
 class UInteractionComponent;
 
 /*
- * Parent class of all Interactables
+ * Base class of all interactables
  *
  * Important: You will have to set the widget class in blueprint to WBP_Interactable for all the child class !
  */

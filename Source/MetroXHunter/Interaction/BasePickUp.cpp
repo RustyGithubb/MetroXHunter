@@ -31,7 +31,7 @@ void ABasePickUp::Interact()
 		return;
 	}
 
-	PlayerInteractionComponent->RemoveNearInteractable(InteractableComponent);
+	PlayerInteractionComponent->RemoveNearInteractable( InteractableComponent );
 	Destroy();
 }
 
