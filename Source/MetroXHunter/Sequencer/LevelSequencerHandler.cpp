@@ -14,20 +14,18 @@ ALevelSequencerHandler::ALevelSequencerHandler()
 	RootComponent = SceneRoot;
 
 	// Define the spawn parameters
-	FActorSpawnParameters SpawnParams;
+	FActorSpawnParameters SpawnParams {};
 	SpawnParams.Owner = this;
 
 	UWorld* World = GetWorld();
-	if ( !World )
-		return;
+	if ( !World ) return;
 
 	// Spawn the LevelSequenceActor at the current actor's location
-	LevelSequenceActor = World->SpawnActor<ALevelSequenceActor>
-		(
-			ALevelSequenceActor::StaticClass(),
-			GetActorTransform(),
-			SpawnParams
-		);
+	LevelSequenceActor = World->SpawnActor<ALevelSequenceActor>(
+		ALevelSequenceActor::StaticClass(),
+		GetActorTransform(),
+		SpawnParams
+	);
 
 	LevelSequenceActor->AttachToActor( this, FAttachmentTransformRules::SnapToTargetNotIncludingScale );
 }

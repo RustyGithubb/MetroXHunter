@@ -13,7 +13,7 @@ class UInventoryComponent;
 enum class EPickupType : uint8;
 
 /*
- * Base class for the PickUps
+ * Base class for the pick-ups
  */
 UCLASS()
 class METROXHUNTER_API ABasePickUp : public ABaseInteractable

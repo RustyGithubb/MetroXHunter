@@ -20,6 +20,7 @@ class METROXHUNTER_API ALevelSequencerHandler : public AActor
 public:
 	ALevelSequencerHandler();
 	
+public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
 	USceneComponent* SceneRoot = nullptr;
 

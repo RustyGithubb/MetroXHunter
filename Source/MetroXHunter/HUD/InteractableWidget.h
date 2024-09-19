@@ -10,7 +10,7 @@
 
 /**
  * The widget (Screen Position) of all interactables
- * Check if an interactable is Targeted or Untargeted and update the widget accordingly.
+ * Checks if an interactable is targeted or untargeted and update the widget accordingly.
  */
 UCLASS()
 class METROXHUNTER_API UInteractableWidget : public UUserWidget

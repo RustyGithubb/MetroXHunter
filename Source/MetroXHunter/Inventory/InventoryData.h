@@ -8,7 +8,7 @@
 #include "Engine/DataAsset.h"
 #include "InventoryData.generated.h"
 
-/**
+/*
  * Inventory Data asset
  * The starting and max amount of the Syringe & ammo of the player.
  */

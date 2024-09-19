@@ -12,7 +12,7 @@ class ALock;
 
 /**
  * Base class for the Doors.
- * Handle opening & closing, and keep tracks of all the locks on a door.
+ * Handles opening & closing, and keeps track of all the locks on a door.
  */
 UCLASS()
 class METROXHUNTER_API ABaseDoor : public ABaseInteractable
