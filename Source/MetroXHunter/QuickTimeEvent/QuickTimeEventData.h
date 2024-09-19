@@ -7,6 +7,9 @@
 #include "Engine/DataAsset.h"
 #include "QuickTimeEventData.generated.h"
 
+/*
+ * Represent the type of quick time event to use.
+ */
 UENUM( BlueprintType )
 enum class EQuickTimeEventType : uint8
 {
@@ -20,8 +23,8 @@ enum class EQuickTimeEventType : uint8
 	Sequence,
 };
 
-/**
- * 
+/*
+ * Data asset representing all info a quick time event needs to run.
  */
 UCLASS()
 class METROXHUNTER_API UQuickTimeEventData : public UDataAsset

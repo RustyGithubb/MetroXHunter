@@ -4,28 +4,33 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "LatentActions.h"
 #include "Components/ActorComponent.h"
 #include "QuickTimeEventComponent.generated.h"
 
 class UQuickTimeEventData;
 class UInputAction;
 
+/*
+ * Represent the result of the quick time event.
+ */
 UENUM( BlueprintType )
 enum class EQuickTimeEventResult : uint8
 {
+	/*
+	 * The player succeed the event.
+	 */
 	Succeed,
+	/*
+	 * The player failed the event.
+	 */
 	Failed,
 };
 
-UENUM()
-enum class EQuickTimeEventOutputPins : uint8
-{
-	OnSucceed,
-	OnFailed,
-};
-
+/*
+ * Component responsible for the quick time event system.
+ * Designed to be added on the Player Character as it needs its PlayerController
+ * to bind the inputs.
+ */
 UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UQuickTimeEventComponent : public UActorComponent
 {
@@ -45,15 +50,6 @@ public:
 	void StartEvent( UQuickTimeEventData* NewDataAsset );
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	void StopEvent( EQuickTimeEventResult EventResult );
-
-	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent", meta = ( WorldContext = "WorldContext", Latent, LatentInfo = "LatentInfo", ExpandEnumAsExecs = "OutputPins" ) )
-	static void LatentQuickTimeEvent(
-		UObject* WorldContext,
-		FLatentActionInfo LatentInfo,
-		EQuickTimeEventOutputPins& OutputPins,
-		UQuickTimeEventComponent* Component,
-		UQuickTimeEventData* DataAsset
-	);
 
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	bool IsEventRunning() const;
@@ -86,28 +82,4 @@ private:
 
 	UQuickTimeEventData* DataAsset = nullptr;
 	float InputProgress = 0.0f;
-};
-
-class FLatentQuickTimeEvent : public FPendingLatentAction
-{
-public:
-	FLatentQuickTimeEvent(
-		FLatentActionInfo& LatentInfo, EQuickTimeEventOutputPins& OutputPins,
-		UQuickTimeEventComponent* Component,
-		UQuickTimeEventData* DataAsset
-	)
-		: LatentInfo( LatentInfo ), OutputPins( OutputPins ),
-		  Component( Component ), DataAsset( DataAsset )
-	{}
-
-	virtual void UpdateOperation( FLatentResponse& Response ) override;
-
-public:
-	bool bIsInitialized = false;
-
-	FLatentActionInfo LatentInfo {};
-	EQuickTimeEventOutputPins& OutputPins;
-
-	UQuickTimeEventComponent* Component = nullptr;
-	UQuickTimeEventData* DataAsset = nullptr;
 };
