@@ -44,7 +44,7 @@ public:
 	bool IsSyringeFull();
 
 	UFUNCTION( BlueprintCallable )
-	int GetCurrentAmoAmount() const;
+	int GetCurrentAmmoAmount() const;
 
 protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Inventory|DataAsset" )
