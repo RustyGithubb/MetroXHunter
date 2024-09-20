@@ -114,6 +114,9 @@ public:
 	void GetReferences();
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void OnReloadInput();
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void FinalizeReload( int NewAmmoCount, EGunReloadState ReloadType, float FinalWaitingTime, int InventoryAmmoCountUsed );
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )

@@ -402,6 +402,19 @@ void UReloadComponent::GetReferences()
 	GetGunReference();
 }
 
+void UReloadComponent::OnReloadInput()
+{
+	// Check if the magazine is full
+	if ( bIsAmmoFull() )
+	{
+		UKismetSystemLibrary::PrintText( this, FText::FromString( TEXT( " FULL AMMO CALL SCREEN FX OR POST PROCESS" ) ), true, true, FLinearColor( 0.0, 0.66f, 1.0f ), 2.0f );
+		return;
+	}
+
+	// Check if we have ammo in inventory or infinite ammo
+	int CurrentAmmoAmount = PlayerInventory->GetCurrentAmoAmount();
+}
+
 void UReloadComponent::FinalizeReload( int NewAmmoCount, EGunReloadState ReloadType, float FinalWaitingTime, int InventoryAmmoCountUsed )
 {
 	// Update Reload State
