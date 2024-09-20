@@ -48,8 +48,8 @@ void ALocker::OnCancelInteraction()
 void ALocker::EndSkillCheck()
 {
 	OnCancelInteraction();
-	SpawnLootItem();
 	RemoveInteractionComponent();
+	SpawnLootItem();
 }
 
 void ALocker::SpawnLootItem()
