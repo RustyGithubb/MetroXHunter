@@ -11,6 +11,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "MXHUtilityLibrary.h"
+
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -154,9 +156,12 @@ void UInteractionComponent::UpdateViewport()
 {
 	AHUD* MainHUD = ( PlayerController->GetHUD() );
 
-	if ( NearInteractables.Num() > 0 )
+	if ( !NearInteractables.IsEmpty() )
 	{
-		IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
+		if ( CurrentInteractable )
+		{
+			IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
+		}
 	}
 	else
 	{
