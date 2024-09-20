@@ -108,6 +108,11 @@ EQuickTimeEventResult UQuickTimeEventComponent::GetEventResult() const
 	return Result;
 }
 
+UQuickTimeEventData* UQuickTimeEventComponent::GetEventDataAsset() const
+{
+	return DataAsset;
+}
+
 float UQuickTimeEventComponent::GetInputProgress() const
 {
 	return InputProgress;
@@ -117,14 +122,21 @@ void UQuickTimeEventComponent::SetupPlayerInputComponent()
 {
 	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 	
-	verify( !InputAction.IsNull() );
+	verify( !InputMappingContext.IsNull() );
+
+	// Retrieve all mappings of the InputMappingContext
+	auto& InputMappings = InputMappingContext.LoadSynchronous()->GetMappings();
+	verifyf( !InputMappings.IsEmpty(), TEXT( "The InputMappingContext must not be empty!" ) );
 
 	// Set up action bindings
 	auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent );
-	EnhancedInputComponent->BindAction(
-		InputAction.LoadSynchronous(), ETriggerEvent::Started,
-		this, &UQuickTimeEventComponent::OnInput
-	);
+	for ( auto& InputMapping : InputMappings )
+	{
+		EnhancedInputComponent->BindAction(
+			InputMapping.Action, ETriggerEvent::Started,
+			this, &UQuickTimeEventComponent::OnInput
+		);
+	}
 }
 
 void UQuickTimeEventComponent::AddInputMappingContext()
@@ -158,10 +170,10 @@ void UQuickTimeEventComponent::RemoveInputMappingContext()
 	}
 }
 
-void UQuickTimeEventComponent::OnInput()
+void UQuickTimeEventComponent::OnInput( const FInputActionInstance& InputInstance )
 {
-	// TODO: Avoid this by using a specific InputMappingContext for QTE inputs
-	if ( DataAsset == nullptr ) return;
+	// Compare current input to the one from DataAsset
+	if ( InputInstance.GetSourceAction() != DataAsset->InputAction ) return;
 
 	InputProgress += DataAsset->ProgressPerInput / 100.0f;
 }

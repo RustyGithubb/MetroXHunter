@@ -45,4 +45,20 @@ public:
 	UCurveFloat* ProgressDecreaseCurve = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
 	float FailUnderProgress = -10.0f;
+	/*
+	 * Deprecated: now we automatically link the input action to the data table
+	 * using the UInputAction asset name.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( EditCondition = "EventType==EQuickTimeEventType::Spam && false" ) )
+	FDataTableRowHandle InputUIRowHandle {};
+	/*
+	 * Input action to spam during the event, it must be present in the InputMappingContext 
+	 * of the component.
+	 * 
+	 * Important: We automatically use the asset name of the input action to find the icon
+	 * to show using CommonUI. Therefore, the input action name must match one of the row
+	 * inside the CommonUI action data table (minus the 'IA_' prefix).
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
+	TSoftObjectPtr<UInputAction> InputAction;
 };

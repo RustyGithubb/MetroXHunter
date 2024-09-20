@@ -60,6 +60,8 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	EQuickTimeEventResult GetEventResult() const;
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
+	UQuickTimeEventData* GetEventDataAsset() const;
+	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	float GetInputProgress() const;
 
 public:
@@ -87,18 +89,13 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
 	int32 InputMappingContextPriority = 1;
-	/*
-	 * Temporary: input action to use.
-	 */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
-	TSoftObjectPtr<UInputAction> InputAction = nullptr;
 
 private:
 	void SetupPlayerInputComponent();
 	void AddInputMappingContext();
 	void RemoveInputMappingContext();
 
-	void OnInput();
+	void OnInput( const FInputActionInstance& InputInstance );
 
 private:
 	EQuickTimeEventResult Result = EQuickTimeEventResult::Succeed;
