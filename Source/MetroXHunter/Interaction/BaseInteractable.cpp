@@ -88,11 +88,6 @@ void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 
 void ABaseInteractable::RemoveInteractionComponent()
 {
-	//if ( PlayerInteractionComponent )
-	//{
-	//	PlayerInteractionComponent->RemoveNearInteractable( InteractableComponent );
-	//}
-
 	InnerCollision->DestroyComponent();
 	OutterCollision->DestroyComponent();
 	InteractableComponent->DestroyComponent();
