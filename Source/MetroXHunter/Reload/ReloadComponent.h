@@ -39,13 +39,13 @@ enum class EGunReloadState : uint8
 };
 
 UENUM( BlueprintType )
-enum class EReloadTelemetry : uint8
+enum class EReloadState : uint8
 {
-	StartReload,
-	NormalReload,
-	ActiveReload,
-	PerfectReload,
-	FailedReload,
+	Start,
+	Normal,
+	Active,
+	Perfect,
+	Failed,
 };
 
 /*
@@ -86,6 +86,10 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUpdateCursorPosition );
 	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
 	FOnUpdateCursorPosition OnUpdateCursorPosition;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadState, EReloadState, ReloadType );
+	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+	FOnReloadState OnReloadState;
 
 public:
 
