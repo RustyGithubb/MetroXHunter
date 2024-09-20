@@ -32,3 +32,16 @@ bool UMXHUtilityLibrary::IsCVarAIDebugEnabled()
 {
     return CVarAIDebug.GetValueOnAnyThread();
 }
+
+FString UMXHUtilityLibrary::GetProjectVersion()
+{
+    FString Value = "";
+    GConfig->GetString( 
+        TEXT( "/Script/EngineSettings.GeneralProjectSettings" ),
+        TEXT( "ProjectVersion" ),
+        Value,
+        GGameIni
+    );
+
+    return Value;
+}
