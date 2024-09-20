@@ -17,7 +17,14 @@ public class EasySequencer_Editor : ModuleRules
 				"Slate",
 				"SlateCore",
 				"ToolMenus",
-			}
+
+                "CoreUObject",
+                "Engine",
+
+                "UnrealEd",
+                "UMGEditor",
+                "Blutility",
+            }
 		);
 	}
 }
