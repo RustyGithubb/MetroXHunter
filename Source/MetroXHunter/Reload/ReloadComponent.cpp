@@ -44,6 +44,12 @@ void UReloadComponent::TickComponent( float DeltaTime, ELevelTick TickType, FAct
 
 void UReloadComponent::SetupPlayerInputComponent()
 {
+	if ( !PlayerController )
+	{
+		UE_LOG( LogTemp, Warning, TEXT( "PlayerController is not initialized!" ) );
+		return;
+	}
+
 	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 
 	// Set up action bindings
@@ -53,6 +59,7 @@ void UReloadComponent::SetupPlayerInputComponent()
 		EnhancedInputComponent->BindAction( ReloadAction, ETriggerEvent::Started, this, &UReloadComponent::StartReloadSequence );
 	}
 }
+
 
 void UReloadComponent::StartReloadSequence()
 {
@@ -383,16 +390,13 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 
 	// Get the current ammo count in the magazine
 	int CurrentAmmoCount = GunInterface->GetCurrentMagazineAmmoCount();
-	int LMaxMagazineAmmoCount = this->MaxMagazineAmmoCount;
+	int AmmoToConsumeToMax = MaxMagazineAmmoCount - CurrentAmmoCount;
 
-	// Calculate how much ammo is needed to fully reload
-	int AmmoToConsumeToMax = this->MaxMagazineAmmoCount - CurrentAmmoCount;
- 
 	// Get the player's available ammo in inventory
 	int InventoryAmmo = PlayerInventory ? PlayerInventory->GetCurrentAmmoAmount() : 0;
 
 	// Determine if we have enough ammo in the inventory
-	if ( InventoryAmmo )
+	if ( InventoryAmmo >= AmmoToConsumeToMax )
 	{
 		// Full reload possible
 		NewMagazineAmmoCount = MaxMagazineAmmoCount;
@@ -405,6 +409,7 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 		InventoryAmmoConsumed = InventoryAmmo;
 	}
 }
+
 
 void UReloadComponent::GetReferences()
 {
