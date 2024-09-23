@@ -8,6 +8,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CreateAssets.generated.h"
 
+class UActorComponent;
+
  /**
   *
   */
@@ -18,10 +20,15 @@ class EASYSEQUENCER_API UCreateAssets : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION( BlueprintCallable, Category = "EasySequencer|Component" )
-	static UActorComponent* AddComponent( TSubclassOf<class UActorComponent> ComponentClass, AActor* Actor, USceneComponent* ParentComponent, FName Name );
+	static UActorComponent* AddComponent( 
+		TSubclassOf<UActorComponent> ComponentClass,
+		AActor* Actor,
+		USceneComponent* ParentComponent,
+		FName Name 
+	);
 
 	UFUNCTION( BlueprintCallable, Category = "EasySequencer|Component" )
-	static void RemoveComponent( UActorComponent* ActorComponent, AActor* Actors );
+	static void RemoveComponent( UActorComponent* ActorComponent );
 
 	UFUNCTION( BlueprintCallable, Category = "EasySequencer|Debug" )
 	static void ShowFormattedDialog( const FString& InFileName );

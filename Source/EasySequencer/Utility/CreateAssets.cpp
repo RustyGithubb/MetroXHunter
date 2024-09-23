@@ -14,7 +14,12 @@
 
 #define LOCTEXT_NAMESPACE "FEasySequencerModule"
 
-UActorComponent* UCreateAssets::AddComponent( TSubclassOf<class UActorComponent> ComponentClass, AActor* Actor, USceneComponent* ParentComponent, FName Name )
+UActorComponent* UCreateAssets::AddComponent(
+	TSubclassOf<class UActorComponent> ComponentClass,
+	AActor* Actor,
+	USceneComponent* ParentComponent,
+	FName Name
+)
 {
 	if ( !Actor ) return nullptr;
 
@@ -25,18 +30,15 @@ UActorComponent* UCreateAssets::AddComponent( TSubclassOf<class UActorComponent>
 	const UClass* NewComponentClass = ComponentClass.Get();
 	if ( !NewComponentClass ) return nullptr;
 
-	UActorComponent* Result = nullptr;
-	Result = NewObject<UActorComponent>( (UObject*)Actor, NewComponentClass, Name );
-	USceneComponent* AsSceneComponent = Cast<USceneComponent>( Result );
+	UActorComponent* Result = NewObject<UActorComponent>( Actor, NewComponentClass, Name );
 
-	if ( AsSceneComponent )
+	if ( USceneComponent* AsSceneComponent = Cast<USceneComponent>( Result ) )
 	{
-		AsSceneComponent->AttachToComponent( 
+		AsSceneComponent->AttachToComponent(
 			ParentComponent ? ParentComponent : Actor->GetRootComponent(),
 			FAttachmentTransformRules::KeepRelativeTransform
 		);
-		FTransform T;
-		AsSceneComponent->SetComponentToWorld( T );
+		AsSceneComponent->SetComponentToWorld( FTransform {} );
 	}
 
 	Actor->AddInstanceComponent( Result );
@@ -47,10 +49,11 @@ UActorComponent* UCreateAssets::AddComponent( TSubclassOf<class UActorComponent>
 	return Result;
 }
 
-void UCreateAssets::RemoveComponent( UActorComponent* ActorComponent, AActor* Actor )
+void UCreateAssets::RemoveComponent( UActorComponent* ActorComponent )
 {
-	if ( !Actor || !ActorComponent ) return;
+	if ( !ActorComponent ) return;
 
+	AActor* Actor = ActorComponent->GetOwner();
 	Actor->RemoveInstanceComponent( ActorComponent );
 	ActorComponent->DestroyComponent();
 

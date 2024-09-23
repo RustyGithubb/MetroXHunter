@@ -58,25 +58,27 @@ void FEasySequencer_EditorModule::RegisterMenuExtensions()
 
 void FEasySequencer_EditorModule::OnButtonClicked()
 {
-	const FSoftObjectPath widgetAssetPath(
+	const FSoftObjectPath WidgetAssetPath(
 		"/Game/Design/Sequencer/EditorUtilityWidget/EUW_SequencerTool.EUW_SequencerTool"
 	);
 
-	UObject* widgetAssetLoaded = widgetAssetPath.TryLoad();
-	if ( widgetAssetLoaded == nullptr ) {
+	UObject* WidgetAssetLoaded = WidgetAssetPath.TryLoad();
+	if ( WidgetAssetLoaded == nullptr )
+	{
 		UE_LOG( LogTemp, Warning, TEXT( "Missing Expected widget class at :/Game/Design/Sequencer/EditorUtilityWidget/EUW_SequencerTool.EUW_SequencerTool" ) );
 		return;
 	}
 
-	UEditorUtilityWidgetBlueprint* widget = Cast<UEditorUtilityWidgetBlueprint>( widgetAssetLoaded );
-	if ( widget == nullptr ) {
+	UEditorUtilityWidgetBlueprint* Widget = Cast<UEditorUtilityWidgetBlueprint>( WidgetAssetLoaded );
+	if ( Widget == nullptr )
+	{
 		UE_LOG( LogTemp, Warning, TEXT( "Couldnt cast /Game/Design/Sequencer/EditorUtilityWidget/EUW_SequencerTool.EUW_SequencerTool to UEditorUtilityWidgetBlueprint" ) );
 		return;
 	}
 
-	FName widgetID;
+	FName WidgetID;
 	UEditorUtilitySubsystem* EditorUtilitySubsystem = GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>();
-	EditorUtilitySubsystem->SpawnAndRegisterTabAndGetID( widget, widgetID );
+	EditorUtilitySubsystem->SpawnAndRegisterTabAndGetID( Widget, WidgetID );
 }
 
 #undef LOCTEXT_NAMESPACE
