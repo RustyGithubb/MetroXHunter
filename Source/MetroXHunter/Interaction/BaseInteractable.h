@@ -17,7 +17,7 @@ class UInteractableComponent;
 class UInteractionComponent;
 
 /*
- * Parent class of all Interactables
+ * Base class of all interactables
  *
  * Important: You will have to set the widget class in blueprint to WBP_Interactable for all the child class !
  */
@@ -69,6 +69,12 @@ protected:
 	virtual void Interact() {};
 
 	UFUNCTION()
+	virtual void OnCancelInteraction() {};
+
+	void SwitchCameraTarget();
+	void ResetCameraTarget();
+
+	UFUNCTION()
 	virtual void OnInnerCircleOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -103,6 +109,12 @@ protected:
 protected:
 	UInteractionComponent* PlayerInteractionComponent = nullptr;
 	bool bIsInteractableSleeping = false;
+
+	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
+	float BlendExp = 1.0f;
+
+	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
+	float BlendTime = 0.3f;
 
 private:
 	float InnerSphereRadius = 170.f;

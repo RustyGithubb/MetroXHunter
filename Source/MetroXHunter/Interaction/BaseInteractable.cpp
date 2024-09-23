@@ -61,6 +61,7 @@ void ABaseInteractable::BindToDelegates()
 	InteractableComponent->OnTargeted.AddDynamic( this, &ABaseInteractable::OnInteractableTargeted );
 	InteractableComponent->OnUntargeted.AddDynamic( this, &ABaseInteractable::OnInteractableUntargeted );
 	InteractableComponent->OnInteract.AddDynamic( this, &ABaseInteractable::Interact );
+	InteractableComponent->OnCancelInteract.AddDynamic( this, &ABaseInteractable::OnCancelInteraction );
 }
 
 void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
@@ -87,17 +88,41 @@ void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 
 void ABaseInteractable::RemoveInteractionComponent()
 {
-	if ( PlayerInteractionComponent )
-	{
-		PlayerInteractionComponent->RemoveNearInteractable( InteractableComponent );
-	}
-
-	InteractableComponent->DestroyComponent();
 	InnerCollision->DestroyComponent();
 	OutterCollision->DestroyComponent();
+	InteractableComponent->DestroyComponent();
 	Widget->DestroyComponent();
 
 	InteractableWidget = nullptr;
+}
+
+void ABaseInteractable::SwitchCameraTarget()
+{
+	// Smooth camera transition from the player to the Interactable's camera
+	PlayerController->SetViewTargetWithBlend(
+		this,
+		BlendTime,
+		EViewTargetBlendFunction::VTBlend_EaseInOut,
+		BlendExp
+	);
+
+	// Should refactor the inputs so we still see the Visualizer
+	PlayerController->GetPawn()->DisableInput( PlayerController );
+	PlayerController->DisableInput( PlayerController );
+}
+
+void ABaseInteractable::ResetCameraTarget()
+{
+	// Smooth camera transition from the Interactable's camera to the Player
+	PlayerController->SetViewTargetWithBlend(
+		PlayerController->GetPawn(),
+		BlendTime,
+		EViewTargetBlendFunction::VTBlend_EaseInOut,
+		BlendExp
+	);
+
+	PlayerController->GetPawn()->EnableInput( PlayerController );
+	PlayerController->EnableInput( PlayerController );
 }
 
 void ABaseInteractable::OnInnerCircleOverlapBegin(

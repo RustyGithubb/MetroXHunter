@@ -90,6 +90,11 @@ bool UInventoryComponent::IsSyringeFull()
 	return CurrentSyringeSegmentAmount == InventoryDataAsset->MaxSyringeSegmentCapacity;
 }
 
+int UInventoryComponent::GetCurrentAmmoAmount() const
+{
+	return CurrentAmmoAmount;
+}
+
 int UInventoryComponent::CalculateOverflowAmount( int AmountToAdd, int& CurrentAmount, int MaxAmount )
 {
 	int NewAmount = AmountToAdd + CurrentAmount;

@@ -197,4 +197,7 @@ public:
 	 */
 	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary|CVars" )
 	static bool IsCVarAIDebugEnabled();
+
+	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary|CVars" )
+	static FString GetProjectVersion();
 };

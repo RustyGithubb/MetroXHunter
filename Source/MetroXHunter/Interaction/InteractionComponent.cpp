@@ -63,6 +63,12 @@ void UInteractionComponent::SetupPlayerInputComponent()
 			InteractAction, ETriggerEvent::Started, this,
 			&UInteractionComponent::Interact
 		);
+
+		// Interaction
+		EnhancedInputComponent->BindAction(
+			CancelInteractAction, ETriggerEvent::Started, this,
+			&UInteractionComponent::CancelInteract
+		);
 	}
 }
 
@@ -148,9 +154,12 @@ void UInteractionComponent::UpdateViewport()
 {
 	AHUD* MainHUD = ( PlayerController->GetHUD() );
 
-	if ( NearInteractables.Num() > 0 )
+	if ( !NearInteractables.IsEmpty() )
 	{
-		IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
+		if ( CurrentInteractable )
+		{
+			IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
+		}
 	}
 	else
 	{
@@ -163,5 +172,13 @@ void UInteractionComponent::Interact()
 	if ( CurrentInteractable )
 	{
 		CurrentInteractable->OnInteract.Broadcast();
+	}
+}
+
+void UInteractionComponent::CancelInteract()
+{
+	if ( CurrentInteractable )
+	{
+		CurrentInteractable->OnCancelInteract.Broadcast();
 	}
 }

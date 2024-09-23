@@ -10,12 +10,15 @@
 
 class UHealthComponent;
 
+/*
+ * A lock with a HealthComponent and an OnDeath event to control doors and other interactable objects.
+ */
 UCLASS()
 class METROXHUNTER_API ALock : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ALock();
 
 public:
@@ -23,7 +26,7 @@ public:
 	FOnLockDown OnLockDown;
 
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY( EditAnywhere )
 	UStaticMeshComponent* StaticMesh = nullptr;
 
 	UPROPERTY( EditAnywhere )

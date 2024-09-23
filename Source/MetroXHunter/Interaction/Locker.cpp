@@ -5,32 +5,28 @@
 #include "Interaction/Locker.h"
 #include "Interaction/InteractionComponent.h"
 #include "Interaction/InteractableComponent.h"
+#include "Interaction/BasePickUp.h"
 
+#include "Components/SceneComponent.h"
+#include "Components/WidgetComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
 ALocker::ALocker()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 	SetActorTickEnabled( false );
+
+	ItemSpawnPoint = CreateDefaultSubobject<USceneComponent>( TEXT( "SceneComponent" ) );
+	ItemSpawnPoint->SetupAttachment( RootComponent );
 }
 
 void ALocker::Interact()
 {
 	ShowSkillCheckWidget();
+	Widget->SetVisibility( false );
 
-	// Smooth camera transition from the player to the Locker's camera
-	PlayerController->SetViewTargetWithBlend(
-		this,
-		BlendTime,
-		EViewTargetBlendFunction::VTBlend_EaseInOut,
-		BlendExp
-	);
-
-	// Should refactor the inputs so we still see the Visualizer
-	PlayerController->GetPawn()->DisableInput( PlayerController );
-	PlayerController->DisableInput( PlayerController );
+	SwitchCameraTarget();
 
 	bIsSkillCheckActive = true;
 	SetActorTickEnabled( true );
@@ -41,23 +37,32 @@ void ALocker::Interact()
 void ALocker::OnCancelInteraction()
 {
 	UnbindInputs();
+
 	RemoveSkillCheckWidget();
+	Widget->SetVisibility( true );
 
-	// Smooth camera transition from the Locker's camera to the Player
-	PlayerController->SetViewTargetWithBlend(
-		PlayerController->GetPawn(),
-		BlendTime,
-		EViewTargetBlendFunction::VTBlend_EaseInOut,
-		BlendExp
-	);
-
-	PlayerController->GetPawn()->EnableInput( PlayerController );
-	PlayerController->EnableInput( PlayerController );
+	ResetCameraTarget();
+	bIsSkillCheckActive = false;
 }
 
 void ALocker::EndSkillCheck()
 {
-	OnCancelInteraction(); 
+	OnCancelInteraction();
+	RemoveInteractionComponent();
+	SpawnLootItem();
+}
+
+void ALocker::SpawnLootItem()
+{
+	FActorSpawnParameters SpawnInfo {};
+
+	ABasePickUp* PickUp = GetWorld()->SpawnActor<ABasePickUp>(
+		ItemToSpawn,
+		ItemSpawnPoint->GetComponentTransform(),
+		SpawnInfo
+	);
+
+	PickUp->Amount = ItemAmount;
 }
 
 void ALocker::BindToInputs()

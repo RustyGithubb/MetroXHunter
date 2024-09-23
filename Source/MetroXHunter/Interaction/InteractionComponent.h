@@ -44,6 +44,7 @@ private:
 	void RetrieveClosestInteractable();
 	void UpdateViewport();
 	void Interact();
+	void CancelInteract();
 
 private:
 	APlayerController* PlayerController = nullptr;
