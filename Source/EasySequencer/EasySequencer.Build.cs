@@ -15,7 +15,8 @@ public class EasySequencer : ModuleRules
 			new string[] {
 				"Core",
 				"CoreUObject",
-				"Engine",
+                "UnrealEd",
+                "Engine",
 				"LevelSequence",
 				"CinematicCamera"
 			}
