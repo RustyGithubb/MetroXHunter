@@ -57,9 +57,9 @@ void UReloadComponent::SetupPlayerInputComponent()
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction( ReloadAction, ETriggerEvent::Started, this, &UReloadComponent::StartReloadSequence );
+		UE_LOG( LogTemp, Warning, TEXT( "PlayerController  initialized !" ) );
 	}
 }
-
 
 void UReloadComponent::StartReloadSequence()
 {
@@ -231,6 +231,7 @@ void UReloadComponent::GetPlayerInventory()
 	if ( Owner )
 	{
 		PlayerInventory = Cast<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
+		UE_LOG( LogTemp, Warning, TEXT( "Inventory found !" ) );
 	}
 }
 
@@ -240,6 +241,7 @@ void UReloadComponent::GetHUDFromPlayerController()
 	if ( PlayerController )
 	{
 		HUD = PlayerController->GetHUD();
+		UE_LOG( LogTemp, Warning, TEXT( "HUD found !" ) );
 	}
 }
 
@@ -256,6 +258,7 @@ void UReloadComponent::GetGunReference()
 	if ( Owner->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
 	{
 		CharacterGun = Owner;
+		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun found !" ) );
 	}
 	else
 	{
@@ -267,6 +270,7 @@ void UReloadComponent::GetGunReference()
 			if ( ChildActor && ChildActor->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
 			{
 				CharacterGun = ChildActor;
+				UE_LOG( LogTemp, Warning, TEXT( "CharacterGun found in ChildActor !" ) );
 			}
 		}
 	}
