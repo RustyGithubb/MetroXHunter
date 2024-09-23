@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "CreateAssets.generated.h"
+#include "AssetCreatorLibrary.generated.h"
 
 class UActorComponent;
 
@@ -14,7 +14,7 @@ class UActorComponent;
   *
   */
 UCLASS()
-class EASYSEQUENCER_API UCreateAssets : public UBlueprintFunctionLibrary
+class EASYSEQUENCER_API UAssetCreatorLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

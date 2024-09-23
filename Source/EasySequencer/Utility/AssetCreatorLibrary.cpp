@@ -2,7 +2,7 @@
  * Implemented by Corentin Paya
  */
 
-#include "CreateAssets.h"
+#include "AssetCreatorLibrary.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 #include "Components/SceneComponent.h"
@@ -14,7 +14,7 @@
 
 #define LOCTEXT_NAMESPACE "FEasySequencerModule"
 
-UActorComponent* UCreateAssets::AddComponent(
+UActorComponent* UAssetCreatorLibrary::AddComponent(
 	TSubclassOf<class UActorComponent> ComponentClass,
 	AActor* Actor,
 	USceneComponent* ParentComponent,
@@ -49,7 +49,7 @@ UActorComponent* UCreateAssets::AddComponent(
 	return Result;
 }
 
-void UCreateAssets::RemoveComponent( UActorComponent* ActorComponent )
+void UAssetCreatorLibrary::RemoveComponent( UActorComponent* ActorComponent )
 {
 	if ( !ActorComponent ) return;
 
@@ -60,7 +60,7 @@ void UCreateAssets::RemoveComponent( UActorComponent* ActorComponent )
 	UpdateActor( Actor );
 }
 
-void UCreateAssets::ShowFormattedDialog( const FString& InFileName )
+void UAssetCreatorLibrary::ShowFormattedDialog( const FString& InFileName )
 {
 	// Very Fancy Dialoge Prompt !
 	FText DialogText = FText::Format
@@ -74,7 +74,7 @@ void UCreateAssets::ShowFormattedDialog( const FString& InFileName )
 #endif
 }
 
-void UCreateAssets::UpdateActor( AActor* Actor )
+void UAssetCreatorLibrary::UpdateActor( AActor* Actor )
 {
 #if WITH_EDITOR
 	Actor->RerunConstructionScripts();
@@ -84,7 +84,7 @@ void UCreateAssets::UpdateActor( AActor* Actor )
 	SavePackage( Actor );
 }
 
-void UCreateAssets::SavePackage( UObject* Object )
+void UAssetCreatorLibrary::SavePackage( UObject* Object )
 {
 	if ( !Object )
 	{
