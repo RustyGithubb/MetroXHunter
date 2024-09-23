@@ -11,7 +11,8 @@
 class UActorComponent;
 
  /**
-  *
+  * A static class that allows adding and removing components from actors via the Editor Utility Widget.
+  * Registers and updates the actor, ensuring components are visible in the Outliner within the editor.
   */
 UCLASS()
 class EASYSEQUENCER_API UAssetCreatorLibrary : public UBlueprintFunctionLibrary
