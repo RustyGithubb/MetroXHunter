@@ -22,8 +22,8 @@ class METROXHUNTER_API AMetroPlayerController : public APlayerController, public
 public:
 	void BeginPlay() override;
 
-	void SetInputMappingContext_Implementation( UInputMappingContext* MappingContext );
-	void ResetInputMappingContext_Implementation();
+	void SetInputMappingContext_Implementation( UInputMappingContext* MappingContext ) override;
+	void ResetInputMappingContext_Implementation() override;
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerController|Inputs" )
