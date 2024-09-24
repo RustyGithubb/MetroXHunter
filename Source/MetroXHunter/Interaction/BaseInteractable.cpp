@@ -8,6 +8,9 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/InteractableWidget.h"
+#include "PlayerController/PlayerInputHandler.h"
+
+#include "InputMappingContext.h"
 
 constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );
 
@@ -88,12 +91,21 @@ void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 
 void ABaseInteractable::RemoveInteractionComponent()
 {
+	// TODO: Needs to check if there is still issue when opening the Locker !
 	InnerCollision->DestroyComponent();
 	OutterCollision->DestroyComponent();
 	InteractableComponent->DestroyComponent();
-	Widget->DestroyComponent();
+	Widget->SetVisibility(false);
 
-	InteractableWidget = nullptr;
+	//InteractableWidget = nullptr;
+}
+
+void ABaseInteractable::OverridePlayerMappingContext()
+{
+	IPlayerInputHandler::Execute_SetInputMappingContext(
+		PlayerController,
+		InteractableMappingContext.LoadSynchronous()
+	);
 }
 
 void ABaseInteractable::SwitchCameraTarget()
@@ -106,9 +118,7 @@ void ABaseInteractable::SwitchCameraTarget()
 		BlendExp
 	);
 
-	// Should refactor the inputs so we still see the Visualizer
-	PlayerController->GetPawn()->DisableInput( PlayerController );
-	PlayerController->DisableInput( PlayerController );
+	OverridePlayerMappingContext();
 }
 
 void ABaseInteractable::ResetCameraTarget()
@@ -121,8 +131,7 @@ void ABaseInteractable::ResetCameraTarget()
 		BlendExp
 	);
 
-	PlayerController->GetPawn()->EnableInput( PlayerController );
-	PlayerController->EnableInput( PlayerController );
+	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
 }
 
 void ABaseInteractable::OnInnerCircleOverlapBegin(
