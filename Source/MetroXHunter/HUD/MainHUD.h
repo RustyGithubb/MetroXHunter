@@ -8,7 +8,7 @@
 #include "UObject/Interface.h"
 #include "MainHUD.generated.h"
 
-class UMXHCheatManager;
+class UMetroCheatManager;
 class APlayerController;
 enum class E_InteractionType : uint8;
 
@@ -27,7 +27,7 @@ class METROXHUNTER_API IMainHUD
 
 public:
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Cheat Menu" )
-	bool ShowHideCheatMenuVisibility( UMXHCheatManager* CheatManager, APlayerController* PlayerController, bool bNewVisibility, bool bShouldToggle );
+	bool ShowHideCheatMenuVisibility( UMetroCheatManager* CheatManager, APlayerController* PlayerController, bool bNewVisibility, bool bShouldToggle );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|Interaction|Prompts" )
 	void UpdatePrompts( E_InteractionType InteractionType );

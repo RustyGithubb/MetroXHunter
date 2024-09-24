@@ -1,6 +1,6 @@
 #include "Telemetry/TelemetryComponent.h"
 
-#include "MXHUtilityLibrary.h"
+#include "UtilityLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -23,11 +23,11 @@ void UTelemetryComponent::EndPlay( const EEndPlayReason::Type Reason )
 {
 	switch ( Reason )
 	{
-	case EEndPlayReason::LevelTransition:
-	case EEndPlayReason::EndPlayInEditor:
-	case EEndPlayReason::Quit:
-		WriteDataToFile();
-		break;
+		case EEndPlayReason::LevelTransition:
+		case EEndPlayReason::EndPlayInEditor:
+		case EEndPlayReason::Quit:
+			WriteDataToFile();
+			break;
 	}
 }
 
@@ -87,7 +87,7 @@ void UTelemetryComponent::WriteDataToFile()
 	AppendToBuffer( FString::FromInt( ReloadAccuracy * 100 ) );
 
 	//  Write buffer to file
-	UMXHUtilityLibrary::SaveFileAsString( Buffer, GetFilePath( DateTimeNow, Data.CheckpointName ) );
+	UUtilityLibrary::SaveFileAsString( Buffer, GetFilePath( DateTimeNow, Data.CheckpointName ) );
 
 	ClearData();
 }
@@ -112,7 +112,7 @@ FString UTelemetryComponent::GetFilePath( const FDateTime& DateTime, const FStri
 	return FString::Printf(
 		TEXT( "%s/Playtest/%s_Data_%s_Checkpoint%s.csv" ),
 		*FPaths::ProjectSavedDir(),
-		UMXHUtilityLibrary::IsWithinEditor() ? TEXT( "PIE" ) : TEXT( "Build" ),
+		UUtilityLibrary::IsWithinEditor() ? TEXT( "PIE" ) : TEXT( "Build" ),
 		*DateTime.ToFormattedString( TEXT( "%d/%b_%H:%M:%S" ) ),
 		*CheckpointName
 	);

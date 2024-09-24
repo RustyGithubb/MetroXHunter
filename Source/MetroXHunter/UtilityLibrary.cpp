@@ -1,4 +1,4 @@
-#include "MXHUtilityLibrary.h"
+#include "UtilityLibrary.h"
 
 //  TODO: Move these CVars definitions inside a FunctionLibrary dedicated for CVars?
 
@@ -6,20 +6,20 @@ static TAutoConsoleVariable<bool> CVarAIDebug(
     TEXT( "MXH.AI.Debug" ),
     false,
     TEXT( "Set debug mode for AI.\n" ),
-    ECVF_Default 
+    ECVF_Default
 );
 
-bool UMXHUtilityLibrary::SaveFileAsString( const FString& Data, const FString& Path )
+bool UUtilityLibrary::SaveFileAsString( const FString& Data, const FString& Path )
 {
     return FFileHelper::SaveStringToFile( Data, *Path );
 }
 
-bool UMXHUtilityLibrary::LoadFileAsString( const FString& Path, FString& Data )
+bool UUtilityLibrary::LoadFileAsString( const FString& Path, FString& Data )
 {
     return FFileHelper::LoadFileToString( Data, *Path );
 }
 
-bool UMXHUtilityLibrary::IsWithinEditor()
+bool UUtilityLibrary::IsWithinEditor()
 {
 #if WITH_EDITOR
     return true;
@@ -28,15 +28,15 @@ bool UMXHUtilityLibrary::IsWithinEditor()
 #endif
 }
 
-bool UMXHUtilityLibrary::IsCVarAIDebugEnabled()
+bool UUtilityLibrary::IsCVarAIDebugEnabled()
 {
     return CVarAIDebug.GetValueOnAnyThread();
 }
 
-FString UMXHUtilityLibrary::GetProjectVersion()
+FString UUtilityLibrary::GetProjectVersion()
 {
     FString Value = "";
-    GConfig->GetString( 
+    GConfig->GetString(
         TEXT( "/Script/EngineSettings.GeneralProjectSettings" ),
         TEXT( "ProjectVersion" ),
         Value,

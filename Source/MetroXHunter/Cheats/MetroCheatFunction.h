@@ -2,14 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "MXHCheatFunction.generated.h"
+#include "MetroCheatFunction.generated.h"
 
 /**
  * Enum representing the type of a CheatFunction, preventing multiple casts to find
  * its underlying class.
  */
 UENUM( BlueprintType )
-enum class EMXHCheatFunctionType : uint8
+enum class EMetroCheatFunctionType : uint8
 {
 	Action,
 	Float,
@@ -23,7 +23,7 @@ enum class EMXHCheatFunctionType : uint8
  * feature scaling reasons.
  */
 USTRUCT( BlueprintType )
-struct FMXHCheatFunctionActionParams
+struct FMetroCheatFunctionActionParams
 {
 	GENERATED_BODY()
 
@@ -31,7 +31,7 @@ struct FMXHCheatFunctionActionParams
 	bool bIsToggled;
 };
 
-class UMXHCheatManager;
+class UMetroCheatManager;
 
 /**
  * Base class for creating cheat commands, intended to be used in the CheatMenu.
@@ -42,7 +42,7 @@ class UMXHCheatManager;
  * Docs: https://www.notion.so/metro-hunter/Cheat-Function-28fa417fea184d3dbd116b2f9b493367
  */
 UCLASS( Abstract, Blueprintable )
-class METROXHUNTER_API UMXHCheatFunction : public UObject
+class METROXHUNTER_API UMetroCheatFunction : public UObject
 {
 	GENERATED_BODY()
 
@@ -52,15 +52,15 @@ public:
 	 *
 	 * @param CheatManager	Cheat Manager to use, MUST be valid
 	 */
-	void Init( UMXHCheatManager* CheatManager );
+	void Init( UMetroCheatManager* CheatManager );
 
 	/**
 	 * Triggers cheat behaviour, eventually calling its blueprint native event 'OnCheat'.
 	 *
 	 * @param Params		Parameters to apply before the cheat triggers
 	 */
-	UFUNCTION( BlueprintCallable, Category = "Cheat Function" )
-	void Cheat( FMXHCheatFunctionActionParams Params );
+	UFUNCTION( BlueprintCallable, Category = "CheatFunction" )
+	void Cheat( FMetroCheatFunctionActionParams Params );
 	/**
 	 * Triggers cheat behaviour with default parameters, eventually calling its blueprint native
 	 * event 'OnCheat'.
@@ -89,8 +89,8 @@ public:
 	 *
 	 * @return				Cheat function type
 	 */
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "Cheat Function" )
-	virtual EMXHCheatFunctionType GetFunctionType() const { return EMXHCheatFunctionType::Action; }
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "CheatFunction" )
+	virtual EMetroCheatFunctionType GetFunctionType() const { return EMetroCheatFunctionType::Action; }
 
 	UWorld* GetWorld() const override;
 
@@ -98,43 +98,43 @@ public:
 	/**
 	 * Displayed name of the cheat
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	FText Name;
 	/**
 	 * Category name to sort the cheats inside the CheatMenu, there is a list of categories with
 	 * their own order priority inside the CheatManager, you MUST match their names.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	FText Category;
 	/**
 	 * Give identical keys to different CheatFunctions to pair them together visually in the CheatMenu.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	FText PairingKey;
 	/**
 	 * Set whether the cheat has a ON/OFF state. The toggle state will be switched when the player
 	 * press the button.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction" )
 	bool bIsTogglable = false;
 	/**
 	 * If 'bIsToggable' is set to true, it states whether the cheat should be called as toggled
 	 * after its initialization.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function", meta = ( EditCondition = "bIsTogglable" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction", meta = ( EditCondition = "bIsTogglable" ) )
 	bool bShouldStartToggled = false;
 
 	/**
 	 * If 'bIsToggable' is set to true, it represents the toggle state.
 	 */
-	UPROPERTY( BlueprintReadOnly, Category = "Cheat Function" )
+	UPROPERTY( BlueprintReadOnly, Category = "CheatFunction" )
 	bool bIsToggled = false;
 
 	/**
 	 * The CheatManager that owns this cheat.
 	 */
-	UPROPERTY( BlueprintReadOnly, Category = "Cheat Function" )
-	UMXHCheatManager* CheatManager;
+	UPROPERTY( BlueprintReadOnly, Category = "CheatFunction" )
+	UMetroCheatManager* CheatManager;
 };
 
 /*
@@ -142,44 +142,44 @@ public:
  * by the player.
  */
 UCLASS( Abstract, Blueprintable )
-class METROXHUNTER_API UMXHCheatFloatFunction : public UMXHCheatFunction
+class METROXHUNTER_API UMetroCheatFloatFunction : public UMetroCheatFunction
 {
 	GENERATED_BODY()
 
 public:
-	EMXHCheatFunctionType GetFunctionType() const override { return EMXHCheatFunctionType::Float; }
+	EMetroCheatFunctionType GetFunctionType() const override { return EMetroCheatFunctionType::Float; }
 
 public:
 	/**
 	 * Maximum and minimum bounds used to constrain the value.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter" )
 	FFloatRange ValueRange { 0.0f, 1.0f };
 	/**
 	 * Whether the value should snap to the specified 'SnapStep' when edited through the slider.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter" )
 	bool bShouldSnap = true;
 	/**
 	 * If 'bShouldSnap' is set to true, the increment with which the value is snapped to.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter", meta = ( EditCondition = "bShouldSnap" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|FloatParameter", meta = ( EditCondition = "bShouldSnap" ) )
 	float SnapStep = 0.1f;
 
 	/**
 	 * The current value selected by the player.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Float Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|Float Parameter" )
 	float Value = 0.0f;
 };
 
 UCLASS( Abstract, Blueprintable )
-class METROXHUNTER_API UMXHCheatIntFunction : public UMXHCheatFunction
+class METROXHUNTER_API UMetroCheatIntFunction : public UMetroCheatFunction
 {
 	GENERATED_BODY()
 
 public:
-	EMXHCheatFunctionType GetFunctionType() const override { return EMXHCheatFunctionType::Int; }
+	EMetroCheatFunctionType GetFunctionType() const override { return EMetroCheatFunctionType::Int; }
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )
@@ -196,7 +196,7 @@ public:
  * to the player.
  */
 UCLASS( Abstract, Blueprintable )
-class METROXHUNTER_API UMXHCheatSelectionFunction : public UMXHCheatFunction
+class METROXHUNTER_API UMetroCheatSelectionFunction : public UMetroCheatFunction
 {
 	GENERATED_BODY()
 
@@ -205,29 +205,29 @@ public:
 	 * Moves the index to the right (i.e. towards the last element) and wrap it to the first element
 	 * if it goes above the last index. Calls the cheat event afterward.
 	 */
-	UFUNCTION( BlueprintCallable, Category = "Cheat Function" )
+	UFUNCTION( BlueprintCallable, Category = "CheatFunction" )
 	void CycleToNext();
 	/**
 	 * Moves the index to the left (i.e. towards the first element) and wrap it to the last element
 	 * if it goes below zero. Calls the cheat event afterward.
 	 */
-	UFUNCTION( BlueprintCallable, Category = "Cheat Function" )
+	UFUNCTION( BlueprintCallable, Category = "CheatFunction" )
 	void CycleToPrevious();
 
-	EMXHCheatFunctionType GetFunctionType() const override { return EMXHCheatFunctionType::Selection; }
+	EMetroCheatFunctionType GetFunctionType() const override { return EMetroCheatFunctionType::Selection; }
 
 public:
 	/**
 	 * Array of strings representing the displayed names of all possible values. This array is used
 	 * to wrap the index around.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Selection Parameter" )
-	TArray<FString> ValueNames;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|SelectionParameter" )
+	TArray<FString> ValueNames {};
 	/**
 	 * Index of the currently selected value inside the 'ValueNames' array. Depending on what you're
 	 * doing, you may want to create an other array representing the actual data values which you
 	 * index with this value.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Cheat Function|Selection Parameter" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CheatFunction|SelectionParameter" )
 	int Index = 0;
 };
