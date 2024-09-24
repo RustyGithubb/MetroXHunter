@@ -1,18 +1,18 @@
-#include "MXHCheatManager.h"
+#include "MetroCheatManager.h"
 
-#include "MXHCheatFunction.h"
+#include "MetroCheatFunction.h"
 #include "UtilityLibrary.h"
 
 #include <AssetRegistry/AssetRegistryModule.h>
 
-void UMXHCheatManager::InitCheatManager()
+void UMetroCheatManager::InitCheatManager()
 {
 	ReloadCheatFunctions();
 
 	Super::InitCheatManager();
 }
 
-void UMXHCheatManager::ReloadCheatFunctions()
+void UMetroCheatManager::ReloadCheatFunctions()
 {
 	//  Clear current array
 	CheatFunctions.Empty();
@@ -27,7 +27,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 		UClass* Class = *It;
 
 		//  Filter out non-subclasses
-		if ( !Class->IsChildOf<UMXHCheatFunction>() ) continue;
+		if ( !Class->IsChildOf<UMetroCheatFunction>() ) continue;
 
 		//  Filter out the base class
 		if ( Class->HasAnyClassFlags( CLASS_Abstract ) ) continue;
@@ -54,7 +54,7 @@ void UMXHCheatManager::ReloadCheatFunctions()
 
 	//  Sort functions first by category and second by name
 	CheatFunctions.Sort(
-		[&]( const UMXHCheatFunction& a, const UMXHCheatFunction& b ) {
+		[&]( const UMetroCheatFunction& a, const UMetroCheatFunction& b ) {
 			const FString CategoryA = a.Category.ToString();
 			const FString CategoryB = b.Category.ToString();
 
@@ -72,34 +72,32 @@ void UMXHCheatManager::ReloadCheatFunctions()
 	);
 }
 
-UMXHCheatFunction* UMXHCheatManager::FindCheatFunctionOfClass( const TSubclassOf<UMXHCheatFunction> Class )
+UMetroCheatFunction* UMetroCheatManager::FindCheatFunctionOfClass( const TSubclassOf<UMetroCheatFunction> Class )
 {
-	for ( UMXHCheatFunction* CheatFunction : CheatFunctions )
+	for ( UMetroCheatFunction* CheatFunction : CheatFunctions )
 	{
-		if ( CheatFunction->GetClass() == Class )
-		{
-			return CheatFunction;
-		}
+		if ( CheatFunction->GetClass() != Class ) continue;
+		return CheatFunction;
 	}
 
 	return nullptr;
 }
 
-void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
+void UMetroCheatManager::ForceLoadAssetsAtPath( FName Path )
 {
 	//  Load asset registry module
-	FName ModuleName( "AssetRegistry" );
-	auto& AssetRegistryModule =
-		FModuleManager::LoadModuleChecked<FAssetRegistryModule>( ModuleName );
+	auto& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>( 
+		TEXT( "AssetRegistry" )
+	);
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
 	//  Scan path
-	TArray<FString> Paths;
+	TArray<FString> Paths {};
 	Paths.Add( Path.ToString() );
 	AssetRegistry.ScanPathsSynchronous( Paths );
 
 	//  Get assets in path
-	TArray<FAssetData> Assets;
+	TArray<FAssetData> Assets {};
 	AssetRegistry.GetAssetsByPath( Path, Assets, true );
 
 	//  Force loading all assets
@@ -113,11 +111,11 @@ void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 	}
 }
 
-void UMXHCheatManager::InstantiateCheatFunction(
-	const TSubclassOf<UMXHCheatFunction>& Class
+void UMetroCheatManager::InstantiateCheatFunction(
+	const TSubclassOf<UMetroCheatFunction>& Class
 )
 {
-	auto CheatFunction = NewObject<UMXHCheatFunction>( this, Class );
+	auto CheatFunction = NewObject<UMetroCheatFunction>( this, Class );
 	CheatFunction->Init( this );
 	CheatFunctions.Add( CheatFunction );
 
