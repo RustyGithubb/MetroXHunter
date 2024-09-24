@@ -66,8 +66,8 @@ public:
 	APlayerController* PlayerController = nullptr;
 
 	/*
-	* Input mapping context of the player pontroller
-	*/
+	 * Input mapping context of the interactable
+	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interactable|Inputs" )
 	TSoftObjectPtr<UInputMappingContext> InteractableMappingContext = nullptr;
 
@@ -78,7 +78,7 @@ protected:
 	UFUNCTION()
 	virtual void OnCancelInteraction() {};
 
-	virtual void OverridePlayerMappingContext();
+	void OverridePlayerMappingContext();
 	void SwitchCameraTarget();
 	void ResetCameraTarget();
 

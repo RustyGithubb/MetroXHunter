@@ -32,11 +32,13 @@ void ALocker::Interact()
 	bIsSkillCheckActive = true;
 	SetActorTickEnabled( true );
 
-	BindToInputs();
+	BindInputs();
 }
 
 void ALocker::OnCancelInteraction()
 {
+	UnBindInputs();
+
 	RemoveSkillCheckWidget();
 	Widget->SetVisibility( true );
 
@@ -64,26 +66,32 @@ void ALocker::SpawnLootItem()
 	PickUp->Amount = ItemAmount;
 }
 
-void ALocker::BindToInputs()
+void ALocker::BindInputs()
 {
 	verify( InteractAction != nullptr );
 	verify( CancelInteractAction != nullptr );
-
-	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			InteractAction, ETriggerEvent::Started, this,
-			&ALocker::OnSkillCheckAttempt
+			InteractAction.LoadSynchronous(), ETriggerEvent::Started,
+			this, &ALocker::OnSkillCheckAttempt
 		);
 
 		// Cancel Interaction
 		EnhancedInputComponent->BindAction(
-			CancelInteractAction, ETriggerEvent::Started, this,
-			&ALocker::OnCancelInteraction
+			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
+			this, &ALocker::OnCancelInteraction
 		);
+	}
+}
+
+void ALocker::UnBindInputs()
+{
+	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
+	{
+		EnhancedInputComponent->ClearActionBindings();
 	}
 }

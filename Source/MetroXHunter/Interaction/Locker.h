@@ -34,24 +34,15 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	TSubclassOf<ABasePickUp> ItemToSpawn = nullptr;
 
-	/*
-	* Input mapping context of the locker for the skill check.
-	*/
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs" )
-	TSoftObjectPtr<UInputMappingContext> InputMappingContext = nullptr;
-
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs" )
-	int32 InputMappingContextPriority = 1;
-
 	/* Controllers */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	UInputAction* InteractAction = nullptr;
+	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	UInputAction* CancelInteractAction = nullptr;
+	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	UInputAction* RotateAction = nullptr;
+	TSoftObjectPtr<UInputAction> RotateAction = nullptr;
 
 protected:
 	void Interact() override;
@@ -77,6 +68,6 @@ protected:
 	bool bIsSkillCheckActive = false;
 
 private:
-	void BindToInputs();
-	void UnbindInputs();
+	void BindInputs();
+	void UnBindInputs();
 };

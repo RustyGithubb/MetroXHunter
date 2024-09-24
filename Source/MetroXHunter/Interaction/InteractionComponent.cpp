@@ -9,7 +9,6 @@
 #include "Engine.h"
 
 #include "EnhancedInputComponent.h"
-#include "InputMappingContext.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -58,13 +57,13 @@ void UInteractionComponent::SetupPlayerInputComponent()
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			InteractAction, ETriggerEvent::Started, this,
+			InteractAction.LoadSynchronous(), ETriggerEvent::Started, this,
 			&UInteractionComponent::Interact
 		);
 
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			CancelInteractAction, ETriggerEvent::Started, this,
+			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started, this,
 			&UInteractionComponent::CancelInteract
 		);
 	}

@@ -11,8 +11,8 @@
 
 class UEnhancedInputLocalPlayerSubsystem;
 
-/**
- * Player Controller of the unique Metro X Hunter game
+/*
+ * Player Controller of the unique MetroXHunter game
  */
 UCLASS()
 class METROXHUNTER_API AMetroPlayerController : public APlayerController, public IPlayerInputHandler
@@ -26,9 +26,6 @@ public:
 	void ResetInputMappingContext_Implementation();
 
 public:
-	/*
-	* Input mapping context of the player pontroller
-	*/
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerController|Inputs" )
 	TSoftObjectPtr<UInputMappingContext> DefaultMappingContext = nullptr;
 

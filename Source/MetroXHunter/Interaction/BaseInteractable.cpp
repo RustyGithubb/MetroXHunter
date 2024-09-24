@@ -10,7 +10,6 @@
 #include "HUD/InteractableWidget.h"
 #include "PlayerController/PlayerInputHandler.h"
 
-#include "EnhancedInputComponent.h"
 #include "InputMappingContext.h"
 
 constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );

@@ -13,13 +13,13 @@ void AMetroPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	InputSystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	ResetInputMappingContext();
 }
 
 void AMetroPlayerController::SetInputMappingContext_Implementation( UInputMappingContext* MappingContext )
 {
 	InputSystem->ClearAllMappings();
-
-	InputSystem->AddMappingContext( MappingContext, 1 );
+	InputSystem->AddMappingContext( MappingContext, 0 );
 }
 
 void AMetroPlayerController::ResetInputMappingContext_Implementation()
