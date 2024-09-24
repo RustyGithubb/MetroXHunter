@@ -70,6 +70,32 @@ struct FDamageContext
 	FHitResult HitResult {};
 };
 
+UINTERFACE( Blueprintable )
+class UHealthHolder : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/*
+ * Interface designed to add control over the behavior of the UHealthComponent of an actor.
+ * This should be implemented on the owner.
+ */
+class METROXHUNTER_API IHealthHolder
+{
+	GENERATED_BODY()
+
+public:
+	/*
+	 * Function called when the HealthComponent is taking damage 
+	 * and controlling whenever the damage should be applied.
+	 * 
+	 * @param DamageContext Damage context
+	 * @return Whenever the damage should be applied
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "HealthHolder" )
+	bool TakeDamage( const FDamageContext& DamageContext );
+};
+
 /*
  * Component handling health with basic damage and heal features.
  */
@@ -89,7 +115,7 @@ public:
 	 * @param DamageContext Damage context
 	 */
 	UFUNCTION( BlueprintCallable, Category = "Health" )
-	bool TakeDamage( FDamageContext DamageContext );
+	bool TakeDamage( const FDamageContext& DamageContext );
 	/*
 	 * Heal by a given amount. Resulted health is clamped to 'MaxHealth'.
 	 *
@@ -109,7 +135,7 @@ public:
 	 *
 	 * @param DamageContext Damage context
 	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDamage, FDamageContext, DamageContext );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDamage, const FDamageContext&, DamageContext );
 	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnDamage OnDamage;
 
@@ -125,7 +151,7 @@ public:
 	 *
 	 * @param DamageContext Damage context
 	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDeath, FDamageContext, DamageContext );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDeath, const FDamageContext&, DamageContext );
 	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnDeath OnDeath;
 
@@ -139,4 +165,9 @@ public:
 	bool bIsDead = false;
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Health" )
 	bool bIsInvulnerable = false;
+
+	/*
+	 * Does the owner implement the IHealthHolder interface?
+	 */
+	bool bHasHealthHolder = false;
 };

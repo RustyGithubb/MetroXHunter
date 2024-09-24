@@ -20,7 +20,7 @@ ALock::ALock()
 	//StaticMesh->SetCollisionProfileName( "Monster" );
 }
 
-void ALock::OnDeath( FDamageContext DamageContext )
+void ALock::OnDeath( const FDamageContext& DamageContext )
 {
 	if ( OnLockDown.IsBound() )
 	{

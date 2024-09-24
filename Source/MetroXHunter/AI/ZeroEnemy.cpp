@@ -7,6 +7,7 @@
 #include "UtilityLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "Components/ArrowComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -281,6 +282,36 @@ float AZeroEnemy::GetMadnessLevel() const
 
 	int32 SubstateIndex = AISubstateManagerComponent->GetSubstateIndex();
 	return (float)SubstateIndex / (float)( SubstatesCount - 1 );
+}
+
+bool AZeroEnemy::TakeDamage_Implementation( const FDamageContext& DamageContext )
+{
+	UPrimitiveComponent* HitComponent = DamageContext.HitResult.GetComponent();
+	
+	// Check if damaged the bulb
+	if ( HitComponent == BulbMeshComponent )
+	{
+		return IsBulbOpened();
+	}
+
+	const FVector KnockbackDirection = UKismetMathLibrary::GetDirectionUnitVector(
+		DamageContext.HitResult.TraceStart,
+		DamageContext.HitResult.TraceEnd
+	);
+
+	// Check if damaged one of its body part
+	if ( HitComponent->ComponentHasTag( Data->BodyPartTag ) )
+	{
+		DestroyBodyPart( HitComponent );
+		ApplyKnockback( KnockbackDirection, Data->BodyPartHitKnockbackForce );
+		return false;
+	}
+
+	// Here, the body is hit
+
+	ApplyKnockback( KnockbackDirection, Data->WholeBodyHitKnockbackForce );
+
+	return false;
 }
 
 #if ENABLE_VISUAL_LOG

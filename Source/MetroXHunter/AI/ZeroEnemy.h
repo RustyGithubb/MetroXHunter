@@ -4,9 +4,9 @@
 #include "GameFramework/Character.h"
 #include "AI/ZeroEnemyData.h"
 #include "VisualLogger/VisualLoggerDebugSnapshotInterface.h"
+#include "Health/HealthComponent.h"
 #include "ZeroEnemy.generated.h"
 
-class UHealthComponent;
 class UAISubstateManagerComponent;
 
 UENUM( BlueprintType )
@@ -48,7 +48,8 @@ struct METROXHUNTER_API FZeroEnemyModifiers
 };
 
 UCLASS()
-class METROXHUNTER_API AZeroEnemy : public ACharacter, public IVisualLoggerDebugSnapshotInterface
+class METROXHUNTER_API AZeroEnemy :
+	public ACharacter, public IHealthHolder, public IVisualLoggerDebugSnapshotInterface
 {
 	GENERATED_BODY()
 
@@ -109,6 +110,8 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	float GetMadnessLevel() const;
+
+	bool TakeDamage_Implementation( const FDamageContext& DamageContext ) override;
 
 #if ENABLE_VISUAL_LOG
 	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;
