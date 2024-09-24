@@ -357,20 +357,22 @@ void UReloadComponent::GetAmmoData( int& IndexMagazine, int& MaxMagazineAmmo ) c
 	{
 		IndexMagazine = 0;
 		MaxMagazineAmmo = 0;
+		UE_LOG( LogTemp, Warning, TEXT( "No CharacterGun 0 AMMO" ) );
 		return;
 	}
 
 	// Cast the gun to the GunCommunication interface
-	IGunCommunication* GunInterface = Cast<IGunCommunication>( CharacterGun );
-	if ( GunInterface )
+	if ( CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
 	{
-		IndexMagazine = GunInterface->GetCurrentMagazineAmmoCount();
-		MaxMagazineAmmo = GunInterface->GetMaxMagazineInAmmoCount();
+		IndexMagazine = IGunCommunication::Execute_GetCurrentMagazineAmmoCount( CharacterGun );
+		MaxMagazineAmmo = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+		UE_LOG( LogTemp, Warning, TEXT( "INTERFACE FOUND" ) );
 	}
 	else
 	{
 		IndexMagazine = 0;
 		MaxMagazineAmmo = 0;
+		UE_LOG( LogTemp, Warning, TEXT( "NO INTERFACE 0 AMMO" ) );
 	}
 }
 
@@ -384,7 +386,12 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 	}
 
 	// Cast the gun to the GunCommunication interface
-	IGunCommunication* GunInterface = Cast<IGunCommunication>( CharacterGun );
+	IGunCommunication* GunInterface = nullptr;
+	if ( CharacterGun && CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
+	{
+		GunInterface = Cast<IGunCommunication>( CharacterGun );
+	}
+
 	if ( !GunInterface )
 	{
 		NewMagazineAmmoCount = 0;
@@ -393,7 +400,7 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 	}
 
 	// Get the current ammo count in the magazine
-	int CurrentAmmoCount = GunInterface->GetCurrentMagazineAmmoCount();
+	int CurrentAmmoCount = IGunCommunication::Execute_GetCurrentMagazineAmmoCount(CharacterGun);
 	int AmmoToConsumeToMax = MaxMagazineAmmoCount - CurrentAmmoCount;
 
 	// Get the player's available ammo in inventory
@@ -414,7 +421,6 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 	}
 }
 
-
 void UReloadComponent::GetReferences()
 {
 	GetPlayerInventory();
@@ -424,10 +430,12 @@ void UReloadComponent::GetReferences()
 
 void UReloadComponent::OnReloadInput()
 {
+	UE_LOG( LogTemp, Warning, TEXT( "ON RELOAD INPUT" ));
 	// Check if the magazine is full
 	if ( bIsAmmoFull() )
 	{
 		UKismetSystemLibrary::PrintText( this, FText::FromString( TEXT( " FULL AMMO CALL SCREEN FX OR POST PROCESS" ) ), true, true, FLinearColor( 0.0, 0.66f, 1.0f, 1.0f ), 2.0f );
+		UE_LOG( LogTemp, Warning, TEXT( "FULL AMMO CALL SCREEN FX OR POST PROCESS" ) );
 		return;
 	}
 
@@ -438,6 +446,7 @@ void UReloadComponent::OnReloadInput()
 	if ( !bHasAmmo )
 	{
 		UKismetSystemLibrary::PrintText( this, FText::FromString( TEXT( "Can't reload ! No ammo available in the inventory !" ) ), true, true, FLinearColor(1.0f, 0.0f, 0.46f,1.0f ), 5.0f);
+		UE_LOG( LogTemp, Warning, TEXT( "Can't reload ! No ammo available in the inventory !" ) );
 		return;
 	}
 
@@ -446,14 +455,17 @@ void UReloadComponent::OnReloadInput()
 	{
 	case EGunState::Idle:
 		StartReloadSequence();
+		UE_LOG( LogTemp, Warning, TEXT( "START RELOAD SEQUENCE" ) );
 		break;
 
 	case EGunState::Firing:
 		UKismetSystemLibrary::PrintText( this, FText::FromString( TEXT( "Nothing for now !" ) ), true, true, FLinearColor( 1.0f, 0.0f, 0.46f, 1.0f ), 5.0f );
+		UE_LOG( LogTemp, Warning, TEXT( "NOTHING FOR NOW" ) );
 		break;
 
 	case EGunState::Reloading:
 		UKismetSystemLibrary::K2_ClearAndInvalidateTimerHandle( this, TimerHandleReloadPlayback );
+		UE_LOG( LogTemp, Warning, TEXT( "DEFINE THE RELOAD BASED ON THE TIMING" ) );
 		break;
 
 	default:
@@ -472,6 +484,7 @@ void UReloadComponent::OnReloadInput()
 	{
 		// If in the perfect reload range call TriggerPerfectReload
 		TriggerPerfectReload();
+		UE_LOG( LogTemp, Warning, TEXT( "PERFECT RELOAD" ) );
 	}
 	else
 	{
@@ -481,16 +494,19 @@ void UReloadComponent::OnReloadInput()
 		if ( bIsBeforeActiveTime )
 		{
 			TriggerActiveReload();
+			UE_LOG( LogTemp, Warning, TEXT( "ACTIVE RELOAD" ) );
 		}
 		else
 		{
 			TriggerFailedReload();
+			UE_LOG( LogTemp, Warning, TEXT( "FAILED RELOAD" ) );
 		}
 	}
 }
 
 void UReloadComponent::FinalizeReload( int NewAmmoCount, EGunReloadState ReloadType, float FinalWaitingTime, int InventoryAmmoCountUsed )
 {
+	UE_LOG( LogTemp, Warning, TEXT( "FINALIZE RELOAD" ) );
 	// Update Reload State
 	UpdateCurrentReloadState( ReloadType );
 
@@ -521,14 +537,18 @@ bool UReloadComponent::bIsAmmoFull() const
 	}
 
 	// Cast the gun to the GunCommunication interface
-	IGunCommunication* GunInterface = Cast<IGunCommunication>( CharacterGun );
-	if ( GunInterface )
+	IGunCommunication* GunInterface = nullptr;
+	if ( CharacterGun && CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
 	{
-		int CurrentAmmo = GunInterface->GetCurrentMagazineAmmoCount();
-		int MaxAmmo = GunInterface->GetMaxMagazineInAmmoCount();
+		GunInterface = Cast<IGunCommunication>( CharacterGun );
 
-		// Check if current ammo is equal to the max ammo
-		return CurrentAmmo == MaxAmmo;
+		if ( GunInterface )
+		{
+			int CurrentAmmo = IGunCommunication::Execute_GetCurrentMagazineAmmoCount( CharacterGun );
+			int MaxAmmo = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+			// Check if current ammo is equal to the max ammo
+			return CurrentAmmo == MaxAmmo;
+		}
 	}
 	return false;
 }

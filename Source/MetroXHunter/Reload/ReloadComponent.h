@@ -143,6 +143,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = ( AllowPrivateAccess = "true" ))
 	UInventoryComponent* PlayerInventory = nullptr;
 
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload", meta = ( AllowPrivateAccess = "true" ) )
 	bool bIsReloadActive = false;
 

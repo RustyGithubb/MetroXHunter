@@ -19,7 +19,7 @@ UGunComponent::UGunComponent()
 void UGunComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InitializeAmmo();
+	/*InitializeAmmo();
 
 
 	ACharacter* LocalPlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
@@ -37,7 +37,7 @@ void UGunComponent::BeginPlay()
 		{
 			UE_LOG( LogTemp, Error, TEXT( "Reload System not initialized !" ) );
 		}
-	}
+	}*/
 }
 
 void UGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -78,6 +78,7 @@ bool UGunComponent::CanFire()
 	if ( ReloadSystemComponent && ReloadSystemComponent->IsGunFireLocked() )
 	{
 		UKismetSystemLibrary::PrintString( this, TEXT( "Gun : Fire is locked from Reload System!" ), true, true, FLinearColor( 1, 0, 0 ), 2.0f );
+		UE_LOG( LogTemp, Warning, TEXT( "Gun : Fire is locked from Reload System!" ) );
 		return false;
 	}
 
@@ -85,6 +86,7 @@ bool UGunComponent::CanFire()
 	if ( bIsGunEmpty )
 	{
 		UKismetSystemLibrary::PrintString( this, TEXT( "You need to reload!" ), true, true, FLinearColor( 0, 0.66f, 0 ), 2.0f );
+		UE_LOG( LogTemp, Warning, TEXT( "You need to reload" ) );
 		return false;
 	}
 	return true;
