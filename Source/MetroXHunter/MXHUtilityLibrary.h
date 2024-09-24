@@ -161,6 +161,12 @@ public:
 		return MoveTemp( OutComponents );
 	}
 
+	template<typename ArrayElementType>
+	static ArrayElementType& PickRandomElement( TArray<ArrayElementType>& Array )
+	{
+		return Array[FMath::RandRange( 0, Array.Num() - 1 )];
+	}
+
 	/*
 	 * Saves a string into a file at specified path. 
 	 * Path is absolute.
