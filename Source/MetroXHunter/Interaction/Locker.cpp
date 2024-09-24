@@ -9,8 +9,9 @@
 
 #include "Components/SceneComponent.h"
 #include "Components/WidgetComponent.h"
+
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 
 ALocker::ALocker()
 {
@@ -36,8 +37,6 @@ void ALocker::Interact()
 
 void ALocker::OnCancelInteraction()
 {
-	UnbindInputs();
-
 	RemoveSkillCheckWidget();
 	Widget->SetVisibility( true );
 
@@ -67,27 +66,24 @@ void ALocker::SpawnLootItem()
 
 void ALocker::BindToInputs()
 {
+	verify( InteractAction != nullptr );
+	verify( CancelInteractAction != nullptr );
+
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			PlayerInteractionComponent->InteractAction, ETriggerEvent::Started, this,
+			InteractAction, ETriggerEvent::Started, this,
 			&ALocker::OnSkillCheckAttempt
 		);
 
 		// Cancel Interaction
 		EnhancedInputComponent->BindAction(
-			PlayerInteractionComponent->CancelInteractAction, ETriggerEvent::Started, this,
+			CancelInteractAction, ETriggerEvent::Started, this,
 			&ALocker::OnCancelInteraction
 		);
-	}
-}
-
-void ALocker::UnbindInputs()
-{
-	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
-	{
-		EnhancedInputComponent->ClearActionBindings();
 	}
 }

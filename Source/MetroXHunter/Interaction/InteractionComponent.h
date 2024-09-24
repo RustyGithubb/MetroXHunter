@@ -9,6 +9,7 @@
 #include "InteractionComponent.generated.h"
 
 class UInteractableComponent;
+class UInputMappingContext;
 class UInputAction;
 
 /*

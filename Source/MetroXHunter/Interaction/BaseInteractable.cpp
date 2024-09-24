@@ -8,6 +8,10 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/InteractableWidget.h"
+#include "PlayerController/PlayerInputHandler.h"
+
+#include "EnhancedInputComponent.h"
+#include "InputMappingContext.h"
 
 constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );
 
@@ -96,6 +100,14 @@ void ABaseInteractable::RemoveInteractionComponent()
 	InteractableWidget = nullptr;
 }
 
+void ABaseInteractable::OverridePlayerMappingContext()
+{
+	IPlayerInputHandler::Execute_SetInputMappingContext(
+		PlayerController,
+		InteractableMappingContext.LoadSynchronous()
+	);
+}
+
 void ABaseInteractable::SwitchCameraTarget()
 {
 	// Smooth camera transition from the player to the Interactable's camera
@@ -106,9 +118,7 @@ void ABaseInteractable::SwitchCameraTarget()
 		BlendExp
 	);
 
-	// Should refactor the inputs so we still see the Visualizer
-	PlayerController->GetPawn()->DisableInput( PlayerController );
-	PlayerController->DisableInput( PlayerController );
+	OverridePlayerMappingContext();
 }
 
 void ABaseInteractable::ResetCameraTarget()
@@ -121,8 +131,7 @@ void ABaseInteractable::ResetCameraTarget()
 		BlendExp
 	);
 
-	PlayerController->GetPawn()->EnableInput( PlayerController );
-	PlayerController->EnableInput( PlayerController );
+	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
 }
 
 void ABaseInteractable::OnInnerCircleOverlapBegin(

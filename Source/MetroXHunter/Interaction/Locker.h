@@ -8,6 +8,8 @@
 #include "Interaction/BaseInteractable.h"
 #include "Locker.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
 class USceneComponent;
 class ABasePickUp;
 
@@ -23,9 +25,6 @@ public:
 	ALocker();
 
 public:
-	UPROPERTY( EditAnywhere, Category = "Locker|SkillCheck" )
-	TEnumAsByte <EViewTargetBlendFunction> TargetBlendFunction = EViewTargetBlendFunction::VTBlend_EaseInOut;
-
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	float ItemAmount = 11;
 
@@ -34,6 +33,25 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	TSubclassOf<ABasePickUp> ItemToSpawn = nullptr;
+
+	/*
+	* Input mapping context of the locker for the skill check.
+	*/
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs" )
+	TSoftObjectPtr<UInputMappingContext> InputMappingContext = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs" )
+	int32 InputMappingContextPriority = 1;
+
+	/* Controllers */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	UInputAction* InteractAction = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	UInputAction* CancelInteractAction = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	UInputAction* RotateAction = nullptr;
 
 protected:
 	void Interact() override;

@@ -15,6 +15,9 @@ ALock::ALock()
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health Component" ) );
 	HealthComponent->MaxHealth = 50.f;
 	HealthComponent->OnDeath.AddDynamic( this, &ALock::OnDeath );
+
+	// Needs to be fixed, can't destroy the lock with Monster profile at the moment
+	//StaticMesh->SetCollisionProfileName( "Monster" );
 }
 
 void ALock::OnDeath( FDamageContext DamageContext )

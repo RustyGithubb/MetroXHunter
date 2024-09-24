@@ -9,7 +9,7 @@
 #include "Engine.h"
 
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -48,12 +48,10 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 
 void UInteractionComponent::SetupPlayerInputComponent()
 {
-	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+	verify( InteractAction != nullptr );
+	verify( CancelInteractAction != nullptr );
 
-	verifyf(
-		InteractAction && CancelInteractAction,
-		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
-	);
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
