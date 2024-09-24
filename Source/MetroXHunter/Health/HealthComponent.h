@@ -115,7 +115,7 @@ public:
 	 * @param DamageContext Damage context
 	 */
 	UFUNCTION( BlueprintCallable, Category = "Health" )
-	bool TakeDamage( FDamageContext DamageContext );
+	bool TakeDamage( const FDamageContext& DamageContext );
 	/*
 	 * Heal by a given amount. Resulted health is clamped to 'MaxHealth'.
 	 *
@@ -135,7 +135,7 @@ public:
 	 *
 	 * @param DamageContext Damage context
 	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDamage, FDamageContext, DamageContext );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDamage, const FDamageContext&, DamageContext );
 	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnDamage OnDamage;
 
@@ -151,7 +151,7 @@ public:
 	 *
 	 * @param DamageContext Damage context
 	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDeath, FDamageContext, DamageContext );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnDeath, const FDamageContext&, DamageContext );
 	UPROPERTY( BlueprintAssignable, Category = "Health" )
 	FOnDeath OnDeath;
 

@@ -17,7 +17,7 @@ ALock::ALock()
 	HealthComponent->OnDeath.AddDynamic( this, &ALock::OnDeath );
 }
 
-void ALock::OnDeath( FDamageContext DamageContext )
+void ALock::OnDeath( const FDamageContext& DamageContext )
 {
 	if ( OnLockDown.IsBound() )
 	{
