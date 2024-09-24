@@ -1,7 +1,7 @@
 #include "AI/ZeroEnemyAIController.h"
 #include "AI/ZeroEnemy.h"
 
-#include "MXHUtilityLibrary.h"
+#include "UtilityLibrary.h"
 
 #include "Navigation/CrowdFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -41,7 +41,7 @@ void AZeroEnemyAIController::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	if ( UMXHUtilityLibrary::IsCVarAIDebugEnabled() )
+	if ( UUtilityLibrary::IsCVarAIDebugEnabled() )
 	{
 		TickDebugDraw();
 	}
@@ -67,7 +67,7 @@ void AZeroEnemyAIController::SetTarget( AActor* InTarget )
 {
 	Blackboard->SetValueAsObject( TARGET_KEYNAME, InTarget );
 
-	UMXHUtilityLibrary::PrintMessage(
+	UUtilityLibrary::PrintMessage(
 		TEXT( "AI: '%s' targeting '%s'" ),
 		*GetName(),
 		*GetNameSafe( InTarget )

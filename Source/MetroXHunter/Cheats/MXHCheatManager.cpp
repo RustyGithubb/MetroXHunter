@@ -1,7 +1,7 @@
 #include "MXHCheatManager.h"
 
 #include "MXHCheatFunction.h"
-#include "MXHUtilityLibrary.h"
+#include "UtilityLibrary.h"
 
 #include <AssetRegistry/AssetRegistryModule.h>
 
@@ -41,13 +41,13 @@ void UMXHCheatManager::ReloadCheatFunctions()
 		//  Instantiate cheat function
 		InstantiateCheatFunction( Class );
 
-		UMXHUtilityLibrary::LogMessage(
+		UUtilityLibrary::LogMessage(
 			TEXT( "New Cheat Function: %s" ),
 			*It->GetName()
 		);
 	}
 
-	UMXHUtilityLibrary::LogMessage(
+	UUtilityLibrary::LogMessage(
 		TEXT( "Total of %d Cheat Functions" ),
 		CheatFunctions.Num()
 	);
@@ -106,7 +106,7 @@ void UMXHCheatManager::ForceLoadAssetsAtPath( FName Path )
 	for ( const auto& AssetData : Assets )
 	{
 		auto Asset = AssetData.GetAsset();
-		UMXHUtilityLibrary::LogMessage(
+		UUtilityLibrary::LogMessage(
 			TEXT( "Force Load Asset: %s" ),
 			*Asset->GetPathName()
 		);
@@ -124,7 +124,7 @@ void UMXHCheatManager::InstantiateCheatFunction(
 	//  Warn of un-registered category
 	if ( !CategoriesOrder.Contains( CheatFunction->Category.ToString() ) )
 	{
-		UMXHUtilityLibrary::PrintError(
+		UUtilityLibrary::PrintError(
 			TEXT( "Cheat Function '%s' using un-registered category '%s', please update your CheatManager!" ),
 			*CheatFunction->Name.ToString(), *CheatFunction->Category.ToString()
 		);

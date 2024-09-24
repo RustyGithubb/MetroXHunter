@@ -4,7 +4,7 @@
 
 #include "Health/HealthComponent.h"
 
-#include "MXHUtilityLibrary.h"
+#include "UtilityLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -326,12 +326,12 @@ void AZeroEnemy::InitializeAISubstateManager()
 
 void AZeroEnemy::GenerateBulb()
 {
-	auto BulbSpots = UMXHUtilityLibrary::GetComponentsOfActorByTag<UArrowComponent>(
+	auto BulbSpots = UUtilityLibrary::GetComponentsOfActorByTag<UArrowComponent>(
 		this,
 		Data->BulbSpotTag
 	);
 
-	auto PickedBulbSpot = UMXHUtilityLibrary::PickRandomElement( BulbSpots );
+	auto PickedBulbSpot = UUtilityLibrary::PickRandomElement( BulbSpots );
 	BulbMeshComponent->SetRelativeLocationAndRotation(
 		PickedBulbSpot->GetRelativeLocation(),
 		PickedBulbSpot->GetRelativeRotation()
@@ -347,7 +347,7 @@ void AZeroEnemy::RetrieveReferences()
 	[[maybe_unused]] float Temp = 0.0f;
 	Data->RushSpeedCurve->GetTimeRange( Temp, MaxRushTime );
 
-	auto BodyParts = UMXHUtilityLibrary::GetComponentsOfActorByTag<UStaticMeshComponent>( 
+	auto BodyParts = UUtilityLibrary::GetComponentsOfActorByTag<UStaticMeshComponent>( 
 		this,
 		Data->BodyPartTag
 	);

@@ -2,13 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "MXHUtilityLibrary.generated.h"
+#include "UtilityLibrary.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class METROXHUNTER_API UMXHUtilityLibrary : public UBlueprintFunctionLibrary
+class METROXHUNTER_API UUtilityLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 	
