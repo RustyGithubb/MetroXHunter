@@ -13,7 +13,6 @@
 
 class UGunComponent;
 class UReloadData;
-class IGunCommunication;
 class UInventoryComponent;
 class UMainHUD;
 class UInputAction;
@@ -26,7 +25,7 @@ enum class EGunState : uint8
 	Reloading,
 };
 
-UENUM( BlueprintType )
+/*UENUM(BlueprintType)
 enum class EGunReloadState : uint8
 {
 	NormalStart,
@@ -37,7 +36,7 @@ enum class EGunReloadState : uint8
 	PerfectFinished,
 	FailedStart,
 	FailedFinished,
-};
+};*/
 
 UENUM( BlueprintType )
 enum class EReloadState : uint8
@@ -66,6 +65,39 @@ public:
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 	void SetupPlayerInputComponent();
 
+	//UFUNCTION( BlueprintCallable, Category = "Reload" )
+	//EGunReloadState GetCurrentReloadState() const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void InitializeReloadData( UReloadData* NewReloadData );
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void UpdateAmmoCount( int NewCount );
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed );
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void FinalizeReload( int NewAmmoCount, /*EGunReloadState ReloadType,*/ float FinalWaitingTime, int InventoryAmmoCountUsed );
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	bool IsGunFireLocked() const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	bool bIsAmmoFull() const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void RetrieveReferences();
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void GetAmmoData( int& IndexMagazine, int& MaxMagazineAmmo ) const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void GetNormalizedReloadTimings( float& PerfectReloadStartTime, float& ActiveReloadStartTime, float& ActiveReloadEndTime ) const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	float GetNormalizedReloadElapsedTime() const;
+
 public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Inputs" )
@@ -76,9 +108,9 @@ public:
 
 public:
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadStateUpdated, EGunReloadState, NewState );
-	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
-	FOnReloadStateUpdated OnReloadStateUpdated;
+	//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadStateUpdated, EGunReloadState, NewState );
+	//UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+	//FOnReloadStateUpdated OnReloadStateUpdated;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnAmmoCountUpdated );
 	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
@@ -88,52 +120,14 @@ public:
 	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
 	FOnUpdateCursorPosition OnUpdateCursorPosition;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadState, EReloadState, ReloadType );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadStateChanged, EReloadState, ReloadType );
 	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
-	FOnReloadState OnReloadState;
-
-public:
-
-	UFUNCTION( BlueprintCallable, Category = "Reload")
-	EGunReloadState GetCurrentReloadState() const;
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void InitializeReloadData(UReloadData* NewReloadData);
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetNormalizedReloadTimings(float& PerfectReloadStartTime, float& ActiveReloadStartTime, float& ActiveReloadEndTime) const;
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	float GetNormalizedReloadElapsedTime() const;
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void UpdateAmmoCount(int NewCount);
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetAmmoData(int& IndexMagazine, int& MaxMagazineAmmo) const;
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void ComputeReloadAmmoCount(int& NewMagazineAmmoCount, int& InventoryAmmoConsumed);
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetReferences();
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void OnReloadInput();
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void FinalizeReload( int NewAmmoCount, EGunReloadState ReloadType, float FinalWaitingTime, int InventoryAmmoCountUsed );
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	bool IsGunFireLocked() const;
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	bool bIsAmmoFull() const;
+	FOnReloadStateChanged OnReloadStateChanged;
 
 private:
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
-	EGunReloadState CurrentReloadState = EGunReloadState::NormalStart;
+	//UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
+	//EGunReloadState CurrentReloadState = EGunReloadState::NormalStart;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
 	EGunState CurrentGunState = EGunState::Idle;
@@ -144,8 +138,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = ( AllowPrivateAccess = "true" ))
 	UInventoryComponent* PlayerInventory = nullptr;
 
-
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload", meta = ( AllowPrivateAccess = "true" ) )
+	UPROPERTY( meta = ( AllowPrivateAccess = "true" ) )
 	bool bIsReloadActive = false;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Debug", meta = ( AllowPrivateAccess = "true" ) )
@@ -155,6 +148,9 @@ private:
 
 	UFUNCTION( BlueprintCallable )
 	void StartReloadSequence();
+
+	UFUNCTION( BlueprintCallable )
+	void OnReloadInput();
 
 	UFUNCTION( BlueprintCallable )
 	void UpdateReloadGauge();
@@ -171,19 +167,16 @@ private:
 	UFUNCTION( BlueprintCallable )
 	void TriggerFailedReload();
 
-	UFUNCTION( BlueprintCallable )
-	void UpdateCurrentReloadState(EGunReloadState NewState);
+	//UFUNCTION(BlueprintCallable)
+	//void UpdateCurrentReloadState(EGunReloadState NewState);
 
-	UFUNCTION( BlueprintCallable )
+	UFUNCTION(BlueprintCallable)
 	void UpdateCurrentGunState( EGunState NewState );
 
-	UFUNCTION( BlueprintCallable )
+private :
+	
 	void GetPlayerInventory();
-
-	UFUNCTION( BlueprintCallable )
 	void GetHUDFromPlayerController();
-
-	UFUNCTION( BlueprintCallable )
 	void GetGunReference();
 
 private:	
@@ -191,7 +184,6 @@ private:
 	APlayerController* PlayerController = nullptr; 
 	AActor* CharacterGun = nullptr;
 	AHUD* HUD = nullptr;
-	//IGunCommunication* GunInterface = nullptr;
 
 	FTimerHandle TimerHandle;
 	FTimerHandle TimerHandleReloadPlayback;
