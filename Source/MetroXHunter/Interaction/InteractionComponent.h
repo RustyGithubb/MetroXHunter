@@ -34,10 +34,10 @@ public:
 public:
 	/* Controllers */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	UInputAction* InteractAction = nullptr;
+	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	UInputAction* CancelInteractAction = nullptr;
+	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
 
 private:
 	void GetReferences();

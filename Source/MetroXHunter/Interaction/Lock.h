@@ -34,5 +34,5 @@ public:
 
 private:
 	UFUNCTION()
-	void OnDeath( FDamageContext DamageContext );
+	void OnDeath( const FDamageContext& DamageContext );
 };

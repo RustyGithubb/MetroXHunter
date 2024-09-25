@@ -11,11 +11,15 @@ public class EasySequencer : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrivateIncludePaths.Add( "EasySequencer" );
 
-		PrivateDependencyModuleNames.AddRange(
+        if (Target.Type == TargetType.Editor)
+        {
+            PublicDependencyModuleNames.AddRange(new string[] { "UnrealEd" });
+        }
+
+        PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"Core",
 				"CoreUObject",
-                "UnrealEd",
                 "Engine",
 				"LevelSequence",
 				"CinematicCamera"

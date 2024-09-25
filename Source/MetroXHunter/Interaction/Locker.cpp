@@ -9,8 +9,9 @@
 
 #include "Components/SceneComponent.h"
 #include "Components/WidgetComponent.h"
+
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 
 ALocker::ALocker()
 {
@@ -31,12 +32,12 @@ void ALocker::Interact()
 	bIsSkillCheckActive = true;
 	SetActorTickEnabled( true );
 
-	BindToInputs();
+	BindInputs();
 }
 
 void ALocker::OnCancelInteraction()
 {
-	UnbindInputs();
+	UnBindInputs();
 
 	RemoveSkillCheckWidget();
 	Widget->SetVisibility( true );
@@ -65,26 +66,29 @@ void ALocker::SpawnLootItem()
 	PickUp->Amount = ItemAmount;
 }
 
-void ALocker::BindToInputs()
+void ALocker::BindInputs()
 {
+	verify( InteractAction != nullptr );
+	verify( CancelInteractAction != nullptr );
+
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			PlayerInteractionComponent->InteractAction, ETriggerEvent::Started, this,
-			&ALocker::OnSkillCheckAttempt
+			InteractAction.LoadSynchronous(), ETriggerEvent::Started,
+			this, &ALocker::OnSkillCheckAttempt
 		);
 
 		// Cancel Interaction
 		EnhancedInputComponent->BindAction(
-			PlayerInteractionComponent->CancelInteractAction, ETriggerEvent::Started, this,
-			&ALocker::OnCancelInteraction
+			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
+			this, &ALocker::OnCancelInteraction
 		);
 	}
 }
 
-void ALocker::UnbindInputs()
+void ALocker::UnBindInputs()
 {
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{

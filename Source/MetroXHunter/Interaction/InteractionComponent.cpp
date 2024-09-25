@@ -9,7 +9,6 @@
 #include "Engine.h"
 
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -48,25 +47,23 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 
 void UInteractionComponent::SetupPlayerInputComponent()
 {
-	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+	verify( InteractAction != nullptr );
+	verify( CancelInteractAction != nullptr );
 
-	verifyf(
-		InteractAction && CancelInteractAction,
-		TEXT( "Please set the inputs Actions values in the Interaction Component of the player!" )
-	);
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			InteractAction, ETriggerEvent::Started, this,
+			InteractAction.LoadSynchronous(), ETriggerEvent::Started, this,
 			&UInteractionComponent::Interact
 		);
 
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			CancelInteractAction, ETriggerEvent::Started, this,
+			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started, this,
 			&UInteractionComponent::CancelInteract
 		);
 	}
