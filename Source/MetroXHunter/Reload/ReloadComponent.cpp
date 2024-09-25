@@ -68,18 +68,22 @@ void UReloadComponent::StartReloadSequence()
 		bIsReloadActive = true;
 		CurrentGunState = EGunState::Reloading;
 
+		// Notify that the reload has started
 		OnReloadState.Broadcast(EReloadState::Start);
-
+		// Update the current reload state
 		UpdateCurrentReloadState(CurrentReloadState);
+		// Start the timer to update the reload gauge
 		GetWorld()->GetTimerManager().SetTimer( TimerHandleReloadPlayback, this, &UReloadComponent::UpdateReloadGauge, ReloadDataAsset->ReloadRefreshRate, true );
 	}
 }
 
+// Updates the reload gauge over time
 void UReloadComponent::UpdateReloadGauge()
 {
 	ReloadDataAsset->ReloadElapsedTime += ReloadDataAsset->ReloadRefreshRate;
 	OnUpdateCursorPosition.Broadcast();
 
+	// If the reload has reached its normal duration, trigger a normal reload
 	if ( ReloadDataAsset->ReloadElapsedTime >= ReloadDataAsset->NormalReloadDuration )
 	{
 		GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadPlayback );
@@ -99,7 +103,7 @@ void UReloadComponent::TriggerNormalReload()
 		int NewMagazineAmmoCount;
 		int InventoryAmmoConsumed;
 
-		// Calculate the quantity of ammo to reload
+		// Calculate the amount of ammo to reload
 		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
 
 		FinalizeReload( NewMagazineAmmoCount, EGunReloadState::NormalFinished, ReloadDataAsset->NormalReloadAnimTime, 0 );
@@ -207,6 +211,7 @@ void UReloadComponent::TriggerFailedReload()
 	bIsReloadActive = false;
 }
 
+// Updates the current reload state and informs the HUD (if available)
 void UReloadComponent::UpdateCurrentReloadState( EGunReloadState NewState )
 {
 	CurrentReloadState = NewState;
@@ -245,24 +250,27 @@ void UReloadComponent::GetHUDFromPlayerController()
 	}
 }
 
+// Retrieves a reference to the gun that implements the GunCommunication interface
 void UReloadComponent::GetGunReference()
 {
 	AActor* Owner = GetOwner();
 	if ( !Owner )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "Owner not found !" ) );
+		UE_LOG( LogTemp, Warning, TEXT( "Owner not found!" ) );
 		return;
 	}
 
-	// Check if the owner implement the interface GunCommunication
+	UE_LOG( LogTemp, Warning, TEXT( "Owner found: %s" ), *Owner->GetName() );
+
+	// Find the gun that implements the GunCommunication interface
 	if ( Owner->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
 	{
 		CharacterGun = Owner;
-		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun found !" ) );
+		GunInterface = Cast<IGunCommunication>( CharacterGun );
+		UE_LOG( LogTemp, Warning, TEXT( "Owner implements GunCommunication interface" ) );
 	}
 	else
 	{
-		// Search among the child actors if not implemented by the owner
 		UChildActorComponent* ChildActorComp = Owner->FindComponentByClass<UChildActorComponent>();
 		if ( ChildActorComp )
 		{
@@ -270,21 +278,23 @@ void UReloadComponent::GetGunReference()
 			if ( ChildActor && ChildActor->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
 			{
 				CharacterGun = ChildActor;
-				UE_LOG( LogTemp, Warning, TEXT( "CharacterGun found in ChildActor !" ) );
+				GunInterface = Cast<IGunCommunication>( CharacterGun );
+				UE_LOG( LogTemp, Warning, TEXT( "ChildActor found and implements GunCommunication interface: %s" ), *ChildActor->GetName() );
 			}
 		}
 	}
 
-	// If CharacterGun is valid, get the Max capacity ammo
-	if ( CharacterGun )
+	if ( GunInterface )
 	{
-		MaxMagazineAmmoCount = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun);
+		MaxMagazineAmmoCount = GunInterface->Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+		UE_LOG( LogTemp, Warning, TEXT( "Gun interface initialized, MaxMagazineAmmoCount: %d" ), MaxMagazineAmmoCount );
 	}
 	else
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun not found or doesn't implement interface GunCommunication !" ) );
+		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun not found or doesn't implement interface GunCommunication!" ) );
 	}
 }
+
 
 EGunReloadState UReloadComponent::GetCurrentReloadState() const
 {
@@ -334,64 +344,35 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 
 void UReloadComponent::UpdateAmmoCount( int NewCount )
 {
-	if ( !CharacterGun )
+	if ( !GunInterface )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun is not valid !" ) );
+		UE_LOG( LogTemp, Warning, TEXT( "GunInterface is not valid!" ) );
 		return;
 	}
 
-	if ( CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
-	{
-		IGunCommunication::Execute_SetNewAmmoCount( CharacterGun, NewCount );
-	}
-	else
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun does not implement GunCommunication interface !" ) );
-	}
-	UE_LOG( LogTemp, Warning, TEXT( "Updated Ammo Count : %d"), NewCount );
+	GunInterface->Execute_SetNewAmmoCount( CharacterGun, NewCount );
+	UE_LOG( LogTemp, Warning, TEXT( "Updated Ammo Count : %d" ), NewCount );
 }
 
 void UReloadComponent::GetAmmoData( int& IndexMagazine, int& MaxMagazineAmmo ) const
 {
-	if ( !CharacterGun )
+	if ( !GunInterface )
 	{
 		IndexMagazine = 0;
 		MaxMagazineAmmo = 0;
-		UE_LOG( LogTemp, Warning, TEXT( "No CharacterGun 0 AMMO" ) );
+		UE_LOG( LogTemp, Warning, TEXT( "GunInterface is not valid! 0 AMMO" ) );
 		return;
 	}
 
-	// Cast the gun to the GunCommunication interface
-	if ( CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
-	{
-		IndexMagazine = IGunCommunication::Execute_GetCurrentMagazineAmmoCount( CharacterGun );
-		MaxMagazineAmmo = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
-		UE_LOG( LogTemp, Warning, TEXT( "INTERFACE FOUND" ) );
-	}
-	else
-	{
-		IndexMagazine = 0;
-		MaxMagazineAmmo = 0;
-		UE_LOG( LogTemp, Warning, TEXT( "NO INTERFACE 0 AMMO" ) );
-	}
+	// Use the already available interface pointer
+	IndexMagazine = GunInterface->Execute_GetCurrentMagazineAmmoCount( CharacterGun );
+	MaxMagazineAmmo = GunInterface->Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+	UE_LOG( LogTemp, Warning, TEXT( "Ammo data retrieved from GunInterface" ) );
 }
 
+// Computes the new ammo count after reloading based on available inventory and magazine space
 void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed )
 {
-	if ( !CharacterGun )
-	{
-		NewMagazineAmmoCount = 0;
-		InventoryAmmoConsumed = 0;
-		return;
-	}
-
-	// Cast the gun to the GunCommunication interface
-	IGunCommunication* GunInterface = nullptr;
-	if ( CharacterGun && CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
-	{
-		GunInterface = Cast<IGunCommunication>( CharacterGun );
-	}
-
 	if ( !GunInterface )
 	{
 		NewMagazineAmmoCount = 0;
@@ -399,8 +380,8 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 		return;
 	}
 
-	// Get the current ammo count in the magazine
-	int CurrentAmmoCount = IGunCommunication::Execute_GetCurrentMagazineAmmoCount(CharacterGun);
+	// Get the current ammo count in the magazine using the GunInterface
+	int CurrentAmmoCount = GunInterface->Execute_GetCurrentMagazineAmmoCount( CharacterGun );
 	int AmmoToConsumeToMax = MaxMagazineAmmoCount - CurrentAmmoCount;
 
 	// Get the player's available ammo in inventory
@@ -531,24 +512,13 @@ bool UReloadComponent::IsGunFireLocked() const
 
 bool UReloadComponent::bIsAmmoFull() const
 {
-	if ( !CharacterGun )
+	if ( !GunInterface )
 	{
 		return false;
 	}
 
-	// Cast the gun to the GunCommunication interface
-	IGunCommunication* GunInterface = nullptr;
-	if ( CharacterGun && CharacterGun->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
-	{
-		GunInterface = Cast<IGunCommunication>( CharacterGun );
-
-		if ( GunInterface )
-		{
-			int CurrentAmmo = IGunCommunication::Execute_GetCurrentMagazineAmmoCount( CharacterGun );
-			int MaxAmmo = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
-			// Check if current ammo is equal to the max ammo
-			return CurrentAmmo == MaxAmmo;
-		}
-	}
-	return false;
+	// Use GunInterface to get the ammo information
+	int CurrentAmmo = GunInterface->Execute_GetCurrentMagazineAmmoCount( CharacterGun );
+	int MaxAmmo = GunInterface->Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+	return CurrentAmmo == MaxAmmo;
 }

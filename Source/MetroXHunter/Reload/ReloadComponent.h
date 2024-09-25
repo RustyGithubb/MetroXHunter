@@ -13,6 +13,7 @@
 
 class UGunComponent;
 class UReloadData;
+class IGunCommunication;
 class UInventoryComponent;
 class UMainHUD;
 class UInputAction;
@@ -190,6 +191,7 @@ private:
 	APlayerController* PlayerController = nullptr; 
 	AActor* CharacterGun = nullptr;
 	AHUD* HUD = nullptr;
+	IGunCommunication* GunInterface = nullptr;
 
 	FTimerHandle TimerHandle;
 	FTimerHandle TimerHandleReloadPlayback;
