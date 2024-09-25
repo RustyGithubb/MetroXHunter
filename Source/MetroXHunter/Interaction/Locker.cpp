@@ -55,6 +55,8 @@ void ALocker::EndSkillCheck()
 
 void ALocker::SpawnLootItem()
 {
+	if ( !ItemToSpawn ) return; 
+
 	FActorSpawnParameters SpawnInfo {};
 
 	ABasePickUp* PickUp = GetWorld()->SpawnActor<ABasePickUp>(
