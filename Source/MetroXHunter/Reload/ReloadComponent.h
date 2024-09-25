@@ -133,10 +133,10 @@ public:
 private:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
-	EGunReloadState CurrentReloadState;
+	EGunReloadState CurrentReloadState = EGunReloadState::NormalStart;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
-	EGunState CurrentGunState;
+	EGunState CurrentGunState = EGunState::Idle;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Data Asset", meta = ( AllowPrivateAccess = "true" ) )
 	UReloadData* ReloadDataAsset = nullptr;
@@ -191,7 +191,7 @@ private:
 	APlayerController* PlayerController = nullptr; 
 	AActor* CharacterGun = nullptr;
 	AHUD* HUD = nullptr;
-	IGunCommunication* GunInterface = nullptr;
+	//IGunCommunication* GunInterface = nullptr;
 
 	FTimerHandle TimerHandle;
 	FTimerHandle TimerHandleReloadPlayback;
