@@ -93,9 +93,6 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
 	int MaxAmmoInMagazine = 6;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
-	int MaxMagazineAmmoCount = 6;
-
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnAmmoCountUpdated );
@@ -162,6 +159,6 @@ private:
 	AActor* CharacterGun = nullptr;
 	AHUD* HUD = nullptr;
 
-	FTimerHandle TimerHandle;
+	FTimerHandle TimerHandleReloadFinalize;
 	FTimerHandle TimerHandleReloadPlayback;
 };

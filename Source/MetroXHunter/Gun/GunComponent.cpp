@@ -4,7 +4,6 @@
 
 #include "Gun/GunComponent.h"
 #include "Gun/GunData.h"
-#include "Gun/GunCommunication.h"
 #include "Reload/ReloadComponent.h"
 #include"GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
