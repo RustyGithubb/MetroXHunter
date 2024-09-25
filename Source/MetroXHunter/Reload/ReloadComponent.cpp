@@ -6,7 +6,6 @@
 #include "Reload/ReloadData.h"
 #include "HUD/MainHUD.h"
 #include "Gun/GunCommunication.h"
-//#include "Reload/IReloadSystemUpdate.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/PickupType.h"
 
@@ -78,8 +77,7 @@ void UReloadComponent::StartReloadSequence()
 
 		// Notify that the reload has started
 		OnReloadStateChanged.Broadcast(EReloadState::Start);
-		// Update the current reload state
-		//UpdateCurrentReloadState(CurrentReloadState);
+
 		// Start the timer to update the reload gauge
 		GetWorld()->GetTimerManager().SetTimer( 
 			TimerHandleReloadPlayback, 
@@ -113,8 +111,7 @@ void UReloadComponent::TriggerNormalReload()
 	// Check if the player has infinite ammo
 	if ( bUseInfiniteAmmo )
 	{
-		FinalizeReload( MaxMagazineAmmoCount, 
-			//EGunReloadState::NormalFinished, 
+		FinalizeReload( MaxMagazineAmmoCount,
 			ReloadDataAsset->NormalReloadAnimTime, 
 			0 
 		);
@@ -128,16 +125,12 @@ void UReloadComponent::TriggerNormalReload()
 		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
 
 		FinalizeReload( NewMagazineAmmoCount,
-			//EGunReloadState::NormalFinished,
 			ReloadDataAsset->NormalReloadAnimTime, 
 			0 
 		);
 
 		OnReloadStateChanged.Broadcast( EReloadState::Normal);
 	}
-
-	// Update current state of reload
-	//UpdateCurrentReloadState(EGunReloadState::NormalFinished);
 
 	// Desactivate the locking of the weapon after un brief delay
 	UKismetSystemLibrary::Delay( this, ReloadDataAsset->NormalReloadAnimTime, FLatentActionInfo() );
@@ -151,8 +144,7 @@ void UReloadComponent::TriggerActiveReload()
 	// Check if the player has infinite ammo
 	if ( bUseInfiniteAmmo )
 	{
-		FinalizeReload( MaxMagazineAmmoCount, 
-			//EGunReloadState::ActiveFinished, 
+		FinalizeReload( MaxMagazineAmmoCount,
 			ReloadDataAsset->ActiveReloadAnimTime, 
 			0 
 		);
@@ -165,8 +157,7 @@ void UReloadComponent::TriggerActiveReload()
 		// Calculate the quantity of ammo to reload
 		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
 
-		FinalizeReload( NewMagazineAmmoCount, 
-			//EGunReloadState::ActiveFinished, 
+		FinalizeReload( NewMagazineAmmoCount,
 			ReloadDataAsset->ActiveReloadAnimTime, 
 			0 
 		);
@@ -176,9 +167,6 @@ void UReloadComponent::TriggerActiveReload()
 
 	// Calculate the final waiting time
 	float FinalWaitingTime = ReloadDataAsset->ActiveReloadEndTime - ReloadDataAsset->ReloadElapsedTime + ReloadDataAsset->ActiveReloadAnimTime;
-
-	// Update current state of reload
-	//UpdateCurrentReloadState(EGunReloadState::ActiveFinished);
 
 	// Indicate that the reload is done
 	bIsReloadActive = false;
@@ -190,7 +178,6 @@ void UReloadComponent::TriggerPerfectReload()
 	if ( bUseInfiniteAmmo )
 	{
 		FinalizeReload( MaxMagazineAmmoCount, 
-			//EGunReloadState::PerfectFinished, 
 			ReloadDataAsset->PerfectReloadAnimTime, 
 			0 
 		);
@@ -203,8 +190,7 @@ void UReloadComponent::TriggerPerfectReload()
 		// Calculate the quantity of ammo to reload
 		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
 
-		FinalizeReload( NewMagazineAmmoCount, 
-			//EGunReloadState::PerfectFinished,
+		FinalizeReload( NewMagazineAmmoCount,
 			ReloadDataAsset->PerfectReloadAnimTime, 
 			0 
 		);
@@ -214,9 +200,6 @@ void UReloadComponent::TriggerPerfectReload()
 
 	// Calculate the final waiting time
 	float FinalWaitingTime = ReloadDataAsset->ActiveReloadStartTime - ReloadDataAsset->ReloadElapsedTime + ReloadDataAsset->PerfectReloadAnimTime;
-
-	// Update current state of reload
-	//UpdateCurrentReloadState( EGunReloadState::PerfectFinished );
 
 	// Indicate that the reload is done
 	bIsReloadActive = false;
@@ -228,7 +211,6 @@ void UReloadComponent::TriggerFailedReload()
 	if ( bUseInfiniteAmmo )
 	{
 		FinalizeReload( MaxMagazineAmmoCount, 
-			//EGunReloadState::FailedFinished, 
 			ReloadDataAsset->FailedReloadPenaltyTime, 
 			0 
 		);
@@ -242,7 +224,6 @@ void UReloadComponent::TriggerFailedReload()
 		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
 
 		FinalizeReload( NewMagazineAmmoCount, 
-			//EGunReloadState::FailedFinished, 
 			ReloadDataAsset->FailedReloadPenaltyTime, 
 			0 
 		);
@@ -253,33 +234,16 @@ void UReloadComponent::TriggerFailedReload()
 	// Calculate the final waiting time
 	float FinalWaitingTime = ReloadDataAsset->NormalReloadDuration - ReloadDataAsset->ReloadElapsedTime + ReloadDataAsset->FailedReloadPenaltyTime;
 
-	// Update current state of reload
-	//UpdateCurrentReloadState( EGunReloadState::FailedFinished );
-
 	// Indicate that the reload is done
 	bIsReloadActive = false;
 }
-
-// Updates the current reload state and informs the HUD (if available)
-//void UReloadComponent::UpdateCurrentReloadState(EGunReloadState NewState)
-//{
-//	CurrentReloadState = NewState;
-//
-//	/*if ( HUD )
-//	{
-//		if ( IIReloadSystemUpdate* ReloadSystemInterface = Cast<IIReloadSystemUpdate>( HUD ) )
-//		{
-//			ReloadSystemInterface->UpdateReloadSystemState( CurrentReloadState );
-//		}
-//	}*/
-//}
 
 void UReloadComponent::UpdateCurrentGunState( EGunState NewState )
 {
 	CurrentGunState = NewState;
 }
 
-void UReloadComponent::GetPlayerInventory()
+void UReloadComponent::RetrievePlayerInventory()
 {
 	AActor* Owner = GetOwner();
 	if ( Owner )
@@ -291,7 +255,7 @@ void UReloadComponent::GetPlayerInventory()
 	}
 }
 
-void UReloadComponent::GetHUDFromPlayerController()
+void UReloadComponent::RetrieveHUD()
 {
 	PlayerController = UGameplayStatics::GetPlayerController( this, 0 );
 	if ( PlayerController )
@@ -300,57 +264,6 @@ void UReloadComponent::GetHUDFromPlayerController()
 		UE_LOG( LogTemp, Warning, TEXT( "HUD found !" ) );
 	}
 }
-
-// Retrieves a reference to the gun that implements the GunCommunication interface
-void UReloadComponent::GetGunReference()
-{
-	AActor* Owner = GetOwner();
-	if ( !Owner )
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "Owner not found!" ) );
-		return;
-	}
-
-	UE_LOG( LogTemp, Warning, TEXT( "Owner found: %s" ), *Owner->GetName() );
-
-	// Find the gun that implements the GunCommunication interface
-	if ( Owner->GetClass()->ImplementsInterface( UGunCommunication::StaticClass() ) )
-	{
-		CharacterGun = Owner;
-		//GunInterface = CastChecked<IGunCommunication>( CharacterGun );
-		UE_LOG( LogTemp, Warning, TEXT( "Owner implements GunCommunication interface" ) );
-	}
-	else
-	{
-		UChildActorComponent* ChildActorComp = Owner->FindComponentByClass<UChildActorComponent>();
-		if ( ChildActorComp )
-		{
-			AActor* ChildActor = ChildActorComp->GetChildActor();
-			if ( ChildActor && ChildActor->Implements<UGunCommunication>() )
-			{
-				CharacterGun = ChildActor;
-				//GunInterface = CastChecked<IGunCommunication>( CharacterGun );
-				UE_LOG( LogTemp, Warning, TEXT( "ChildActor found and implements GunCommunication interface: %s" ), *ChildActor->GetName() );
-			}
-		}
-	}
-
-	if ( CharacterGun )
-	{
-		MaxMagazineAmmoCount = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
-		UE_LOG( LogTemp, Warning, TEXT( "Gun interface initialized, MaxMagazineAmmoCount: %d" ), MaxMagazineAmmoCount );
-	}
-	else
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "CharacterGun not found or doesn't implement interface GunCommunication!" ) );
-	}
-}
-
-
-//EGunReloadState UReloadComponent::GetCurrentReloadState() const
-//{
-//	return CurrentReloadState;
-//}
 
 void UReloadComponent::InitializeReloadData( UReloadData* NewReloadData )
 {
@@ -399,31 +312,20 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 
 void UReloadComponent::UpdateAmmoCount( int NewCount )
 {
-	if ( !CharacterGun )
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "GunInterface is not valid!" ) );
-		return;
-	}
-
 	IGunCommunication::Execute_SetNewAmmoCount( CharacterGun, NewCount );
 
 	OnAmmoCountUpdated.Broadcast();
 	UE_LOG( LogTemp, Warning, TEXT( "Updated Ammo Count : %d" ), NewCount );
 }
 
-void UReloadComponent::GetAmmoData( int& IndexMagazine, int& MaxMagazineAmmo ) const
+void UReloadComponent::GetAmmoData( int& CurrentAmmo, int& MaxAmmo ) const
 {
-	if ( !CharacterGun )
-	{
-		IndexMagazine = 0;
-		MaxMagazineAmmo = 0;
-		UE_LOG( LogTemp, Warning, TEXT( "GunInterface is not valid! 0 AMMO" ) );
-		return;
-	}
+	CurrentAmmo = CurrentAmmoInMagazine;
+	MaxAmmo = MaxAmmoInMagazine;
 
-	// Use the already available interface pointer
 	IndexMagazine = IGunCommunication::Execute_GetCurrentMagazineAmmoCount( CharacterGun );
 	MaxMagazineAmmo = IGunCommunication::Execute_GetMaxMagazineInAmmoCount( CharacterGun );
+
 	UE_LOG( LogTemp, Warning, TEXT( "Ammo data retrieved from GunInterface" ) );
 }
 
@@ -461,9 +363,8 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 
 void UReloadComponent::RetrieveReferences()
 {
-	GetPlayerInventory();
-	GetHUDFromPlayerController();
-	GetGunReference();
+	RetrievePlayerInventory();
+	RetrieveHUD();
 }
 
 void UReloadComponent::OnReloadInput()
@@ -504,7 +405,6 @@ void UReloadComponent::OnReloadInput()
 
 	float CursorValue = ReloadDataAsset->ReloadCurve->GetFloatValue( GetNormalizedReloadElapsedTime()) * ReloadDataAsset->NormalReloadDuration;
 
-
 	bool bIsInPerfectReloadRange = UKismetMathLibrary::InRange_FloatFloat(
 		CursorValue,
 		ReloadDataAsset->PerfectReloadStartTime,
@@ -538,11 +438,9 @@ void UReloadComponent::OnReloadInput()
 	UE_LOG( LogTemp, Warning, TEXT( "DEFINE THE RELOAD BASED ON THE TIMING" ) );
 }
 
-void UReloadComponent::FinalizeReload( int NewAmmoCount, /*EGunReloadState ReloadType,*/ float FinalWaitingTime, int InventoryAmmoCountUsed )
+void UReloadComponent::FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed )
 {
 	UE_LOG( LogTemp, Warning, TEXT( "FINALIZE RELOAD" ) );
-	// Update Reload State
-	//UpdateCurrentReloadState( ReloadType );
 
 	// Delay for the final waiting time
 	UKismetSystemLibrary::Delay( this, FinalWaitingTime, FLatentActionInfo() );
