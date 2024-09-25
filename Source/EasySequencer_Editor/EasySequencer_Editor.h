@@ -13,4 +13,5 @@ public:
 
 private:
     void RegisterMenuExtensions();
+    void OnButtonClicked();
 };

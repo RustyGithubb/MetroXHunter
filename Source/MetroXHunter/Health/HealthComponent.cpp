@@ -10,20 +10,24 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	CurrentHealth = MaxHealth;
+	bHasHealthHolder = GetOwner()->Implements<UHealthHolder>();
 }
 
-bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
+bool UHealthComponent::TakeDamage( const FDamageContext& DamageContext )
 {
-	ensureMsgf( DamageContext.DamageAmount > 0, TEXT( "'DamageContext.DamageAmount' must be positive" ) );
+	verify( DamageContext.DamageAmount > 0 );
 
 	if ( bIsDead || bIsInvulnerable ) return false;
 
-	//  Apply damage to health
+	// Check for owner interface
+	if ( bHasHealthHolder && !IHealthHolder::Execute_TakeDamage( GetOwner(), DamageContext ) ) return false;
+
+	// Apply damage to health
 	CurrentHealth = FMath::Max( CurrentHealth - DamageContext.DamageAmount, 0 );
 	OnDamage.Broadcast( DamageContext );
 	OnHealthUpdate.Broadcast();
 
-	//  Trigger death
+	// Trigger death
 	if ( CurrentHealth <= 0 )
 	{
 		bIsDead = true;
@@ -35,9 +39,9 @@ bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
 
 void UHealthComponent::Heal( int32 Amount )
 {
-	ensureMsgf( Amount > 0, TEXT( "'Amount' must be positive" ) );
+	verify( Amount > 0 );
 
-	//  Apply heal to health
+	// Apply heal to health
 	CurrentHealth = FMath::Min( CurrentHealth + Amount, MaxHealth );
 	bIsDead = false;
 

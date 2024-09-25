@@ -8,6 +8,8 @@
 #include "Interaction/BaseInteractable.h"
 #include "Locker.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
 class USceneComponent;
 class ABasePickUp;
 
@@ -23,9 +25,6 @@ public:
 	ALocker();
 
 public:
-	UPROPERTY( EditAnywhere, Category = "Locker|SkillCheck" )
-	TEnumAsByte <EViewTargetBlendFunction> TargetBlendFunction = EViewTargetBlendFunction::VTBlend_EaseInOut;
-
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	float ItemAmount = 11;
 
@@ -34,6 +33,16 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	TSubclassOf<ABasePickUp> ItemToSpawn = nullptr;
+
+	/* Controllers */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	TSoftObjectPtr<UInputAction> RotateAction = nullptr;
 
 protected:
 	void Interact() override;
@@ -59,6 +68,6 @@ protected:
 	bool bIsSkillCheckActive = false;
 
 private:
-	void BindToInputs();
-	void UnbindInputs();
+	void BindInputs();
+	void UnBindInputs();
 };

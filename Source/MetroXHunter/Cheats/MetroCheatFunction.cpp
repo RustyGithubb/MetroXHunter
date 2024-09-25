@@ -1,12 +1,11 @@
-#include "MXHCheatFunction.h"
-
-#include "MXHCheatManager.h"
+#include "MetroCheatFunction.h"
+#include "MetroCheatManager.h"
 
 /**
  * Cheat Function
  */
 
-void UMXHCheatFunction::Init( UMXHCheatManager* _CheatManager )
+void UMetroCheatFunction::Init( UMetroCheatManager* _CheatManager )
 {
 	CheatManager = _CheatManager;
 
@@ -16,13 +15,13 @@ void UMXHCheatFunction::Init( UMXHCheatManager* _CheatManager )
 	// initialize first before activation
 	if ( bIsTogglable && bShouldStartToggled )
 	{
-		FMXHCheatFunctionActionParams Params {};
+		FMetroCheatFunctionActionParams Params {};
 		Params.bIsToggled = true;
 		Cheat( Params );
 	}
 }
 
-void UMXHCheatFunction::Cheat( FMXHCheatFunctionActionParams Params )
+void UMetroCheatFunction::Cheat( FMetroCheatFunctionActionParams Params )
 {
 	if ( bIsTogglable )
 	{
@@ -32,18 +31,18 @@ void UMXHCheatFunction::Cheat( FMXHCheatFunctionActionParams Params )
 	OnCheat();
 }
 
-void UMXHCheatFunction::Cheat()
+void UMetroCheatFunction::Cheat()
 {
-	FMXHCheatFunctionActionParams Params {};
+	FMetroCheatFunctionActionParams Params {};
 	Params.bIsToggled = bIsToggled;
 	Cheat( Params );
 }
 
-void UMXHCheatFunction::OnInit_Implementation() {}
+void UMetroCheatFunction::OnInit_Implementation() {}
 
-void UMXHCheatFunction::OnCheat_Implementation() {}
+void UMetroCheatFunction::OnCheat_Implementation() {}
 
-UWorld* UMXHCheatFunction::GetWorld() const
+UWorld* UMetroCheatFunction::GetWorld() const
 {
 	if ( !IsValid( CheatManager ) ) return nullptr;
 
@@ -54,7 +53,7 @@ UWorld* UMXHCheatFunction::GetWorld() const
  * Cheat Selection Function
  */
 
-void UMXHCheatSelectionFunction::CycleToNext()
+void UMetroCheatSelectionFunction::CycleToNext()
 {
 	//  Move index to the right and wrap it around the value names length
 	Index = ( Index + 1 ) % ValueNames.Num();
@@ -62,7 +61,7 @@ void UMXHCheatSelectionFunction::CycleToNext()
 	Cheat();
 }
 
-void UMXHCheatSelectionFunction::CycleToPrevious()
+void UMetroCheatSelectionFunction::CycleToPrevious()
 {
 	//  Move index to the left and wrap it around the value names length
 	Index = Index - 1 < 0

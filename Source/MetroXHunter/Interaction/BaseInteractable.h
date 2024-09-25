@@ -15,6 +15,7 @@ class UWidgetComponent;
 class UInteractableWidget;
 class UInteractableComponent;
 class UInteractionComponent;
+class UInputMappingContext;
 
 /*
  * Base class of all interactables
@@ -64,6 +65,12 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Player" )
 	APlayerController* PlayerController = nullptr;
 
+	/*
+	 * Input mapping context of the interactable
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interactable|Inputs" )
+	TSoftObjectPtr<UInputMappingContext> InteractableMappingContext = nullptr;
+
 protected:
 	UFUNCTION()
 	virtual void Interact() {};
@@ -71,6 +78,7 @@ protected:
 	UFUNCTION()
 	virtual void OnCancelInteraction() {};
 
+	void OverridePlayerMappingContext();
 	void SwitchCameraTarget();
 	void ResetCameraTarget();
 
