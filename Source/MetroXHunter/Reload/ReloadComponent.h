@@ -61,8 +61,8 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed );
 
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void DecrementAmmo( int DecrementedAmmo);
+	UFUNCTION( BlueprintCallable, Category = "Ammo" )
+	void DecrementAmmo();
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed );

@@ -359,17 +359,20 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 	}
 }
 
-void UReloadComponent::DecrementAmmo( int DecrementedAmmo )
+void UReloadComponent::DecrementAmmo()
 {
 	if ( CurrentAmmoInMagazine > 0 )
 	{
-		DecrementedAmmo = CurrentAmmoInMagazine - 1;
+		--CurrentAmmoInMagazine;
+		UE_LOG( LogTemp, Warning, TEXT( "Ammo decremented, remaining: %d" ), CurrentAmmoInMagazine );
+		OnAmmoCountUpdated.Broadcast();
 	}
 	else
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "No more Ammo in the magazine !" ) );
+		UE_LOG( LogTemp, Warning, TEXT( "No more Ammo in the magazine!" ) );
 	}
 }
+
 
 void UReloadComponent::RetrieveReferences()
 {
