@@ -8,6 +8,7 @@
 #include "GameFramework/Actor.h"
 #include "PossessableCorpse.generated.h"
 
+class AParasite;
 class AZeroEnemy;
 class UZeroEnemyData;
 
@@ -22,6 +23,11 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
 
+	UFUNCTION( BlueprintCallable, Category = "PossessableCorpse" )
+	bool ReserveCorpse( AParasite* Parasite );
+	UFUNCTION( BlueprintCallable, Category = "PossessableCorpse" )
+	bool IsReserved() const;
+
 public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
 	USceneComponent* SceneComponent;
@@ -34,4 +40,7 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "PossessableCorpse" )
 	TSubclassOf<AZeroEnemy> EnemyClass;
+
+private:
+	AParasite* ReservingParasite = nullptr;
 };

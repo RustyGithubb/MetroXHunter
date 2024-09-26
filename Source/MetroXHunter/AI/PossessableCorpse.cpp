@@ -3,6 +3,7 @@
  */
 
 #include "AI/PossessableCorpse.h"
+#include "AI/Parasite.h"
 #include "AI/ZeroEnemy.h"
 
 APossessableCorpse::APossessableCorpse()
@@ -27,5 +28,16 @@ void APossessableCorpse::BeginPlay()
 void APossessableCorpse::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
+}
+
+bool APossessableCorpse::ReserveCorpse( AParasite* Parasite )
+{
+	ReservingParasite = Parasite;
+	return true;
+}
+
+bool APossessableCorpse::IsReserved() const
+{
+	return IsValid( ReservingParasite );
 }
 
