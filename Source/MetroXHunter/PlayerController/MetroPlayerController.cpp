@@ -16,10 +16,17 @@ void AMetroPlayerController::BeginPlay()
 	ResetInputMappingContext_Implementation();
 }
 
-void AMetroPlayerController::SetInputMappingContext_Implementation( UInputMappingContext* MappingContext )
+void AMetroPlayerController::SetInputMappingContext_Implementation( UInputMappingContext* NewMappingContext )
 {
-	InputSystem->ClearAllMappings();
-	InputSystem->AddMappingContext( MappingContext, 0 );
+	// Remove the latest switched mapping context
+	if ( LastMappingContext != nullptr )
+	{
+		InputSystem->RemoveMappingContext( LastMappingContext );
+	}
+
+	// Switch to the new mapping context
+	InputSystem->AddMappingContext( NewMappingContext, 0 );
+	LastMappingContext = NewMappingContext;
 }
 
 void AMetroPlayerController::ResetInputMappingContext_Implementation()

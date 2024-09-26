@@ -40,4 +40,19 @@ public:
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
 	void SetUIMode( bool bShouldHideUI );
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|AimAssist" )
+	void InitializeVisualizerAimAssist( const TArray<float>& InRadiuses );
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|AimAssist" )
+	void OnVisualizerAimAssistUpdate( const TArray<float>& InRadiuses );
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|AimAssist" )
+	void OnCrossHairAimAssistUpdate( FVector2D AdjustedCrossHairLocation, FLinearColor CurrentColor, const FString& AssistState);
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|AimAssist" )
+	void ToggleVisualizerAimAssist( bool bShouldEnable );
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|AimAssist" )
+	void UpdateScreenSizeValue( FVector2D ViewportSize );
 };

@@ -5,7 +5,7 @@
 #include "QuickTimeEvent/QuickTimeEventComponent.h"
 #include "QuickTimeEvent/QuickTimeEventData.h"
 
-#include "Engine/LatentActionManager.h"
+#include "PlayerController/PlayerInputHandler.h"
 
 #include "EnhancedInputComponent.h"
 #include "InputMappingContext.h"
@@ -34,6 +34,7 @@ void UQuickTimeEventComponent::TickComponent(
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
+	// Decrease progress over time
 	float ProgressDecrease = GetProgressDecreasePerSecond();
 	InputProgress -= ProgressDecrease * DeltaTime;
 	UE_VLOG(
@@ -41,10 +42,12 @@ void UQuickTimeEventComponent::TickComponent(
 		TEXT( "QuickTimeEvent is running with a progress of %f!" ), InputProgress
 	);
 
+	// Check for fail condition
 	if ( InputProgress < DataAsset->FailUnderProgress / PERCENT )
 	{
 		StopEvent( EQuickTimeEventResult::Failed );
 	}
+	// Check for success condition
 	else if ( InputProgress > 1.0f )
 	{
 		StopEvent( EQuickTimeEventResult::Succeed );
@@ -58,7 +61,9 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
 	DataAsset = NewDataAsset;
 	InputProgress = DataAsset->StartProgress / PERCENT;
 
-	AddInputMappingContext();
+	// Switch to quick time event's input mapping context
+	verify( !InputMappingContext.IsNull() );
+	IPlayerInputHandler::Execute_SetInputMappingContext( PlayerController, InputMappingContext.LoadSynchronous() );
 
 	SetComponentTickEnabled( true );
 
@@ -72,7 +77,7 @@ void UQuickTimeEventComponent::StopEvent( EQuickTimeEventResult EventResult )
 {
 	SetComponentTickEnabled( false );
 
-	RemoveInputMappingContext();
+	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
 
 	Result = EventResult;
 	OnEventStopped.Broadcast( Result );
@@ -135,37 +140,6 @@ void UQuickTimeEventComponent::SetupPlayerInputComponent()
 			InputMapping.Action, ETriggerEvent::Started,
 			this, &UQuickTimeEventComponent::OnInput
 		);
-	}
-}
-
-void UQuickTimeEventComponent::AddInputMappingContext()
-{
-	verify( !InputMappingContext.IsNull() );
-
-	auto LocalPlayer = PlayerController->GetLocalPlayer();
-	auto InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	InputSystem->AddMappingContext( 
-		InputMappingContext.LoadSynchronous(), 
-		InputMappingContextPriority 
-	);
-
-	if ( !DefaultInputMappingContext.IsNull() )
-	{
-		InputSystem->RemoveMappingContext( DefaultInputMappingContext.LoadSynchronous() );
-	}
-}
-
-void UQuickTimeEventComponent::RemoveInputMappingContext()
-{
-	verify( !InputMappingContext.IsNull() );
-
-	auto LocalPlayer = PlayerController->GetLocalPlayer();
-	auto InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	InputSystem->RemoveMappingContext( InputMappingContext.LoadSynchronous() );
-	
-	if ( !DefaultInputMappingContext.IsNull() )
-	{
-		InputSystem->AddMappingContext( DefaultInputMappingContext.LoadSynchronous(), 0 );
 	}
 }
 

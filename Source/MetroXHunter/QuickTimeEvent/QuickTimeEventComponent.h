@@ -75,25 +75,13 @@ public:
 
 public:
 	/*
-	 * Temporary : default input mapping context to disable during the event.
-	 */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
-	TSoftObjectPtr<UInputMappingContext> DefaultInputMappingContext = nullptr;
-	/*
 	 * Input mapping context to enable during the event.
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext = nullptr;
-	/*
-	 * Priority of the input mapping context in the subsystem.
-	 */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
-	int32 InputMappingContextPriority = 1;
 
 private:
 	void SetupPlayerInputComponent();
-	void AddInputMappingContext();
-	void RemoveInputMappingContext();
 
 	void OnInput( const FInputActionInstance& InputInstance );
 

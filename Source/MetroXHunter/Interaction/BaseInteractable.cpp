@@ -91,13 +91,10 @@ void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 
 void ABaseInteractable::RemoveInteractionComponent()
 {
-	// TODO: Needs to check if there is still issue when opening the Locker !
 	InnerCollision->DestroyComponent();
 	OutterCollision->DestroyComponent();
 	InteractableComponent->DestroyComponent();
 	Widget->SetVisibility(false);
-
-	//InteractableWidget = nullptr;
 }
 
 void ABaseInteractable::OverridePlayerMappingContext()
