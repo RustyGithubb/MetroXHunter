@@ -62,13 +62,19 @@ public:
 	void ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed );
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void DecrementAmmo( int DecrementedAmmo);
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed );
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	bool IsGunFireLocked() const;
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	bool bIsAmmoFull() const;
+	bool IsAmmoFull() const;
+
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	bool IsGunEmpty() const;
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void RetrieveReferences();
@@ -134,6 +140,9 @@ private:
 
 	UFUNCTION( BlueprintCallable )
 	void UpdateReloadGauge();
+
+	UFUNCTION (BlueprintCallable)
+	void TriggerReload();
 
 	UFUNCTION( BlueprintCallable )
 	void TriggerNormalReload();

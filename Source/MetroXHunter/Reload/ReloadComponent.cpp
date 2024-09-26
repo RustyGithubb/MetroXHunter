@@ -33,6 +33,7 @@ void UReloadComponent::BeginPlay()
 	RetrieveReferences();
 	UpdateAmmoCount( MaxAmmoInMagazine );
 	SetupPlayerInputComponent();
+
 }
 
 void UReloadComponent::TickComponent( 
@@ -103,6 +104,13 @@ void UReloadComponent::UpdateReloadGauge()
 	}
 
 	UE_LOG( LogTemp, Warning, TEXT( "Update Reload Gauge" ) );
+}
+
+void UReloadComponent::TriggerReload()
+{
+
+
+
 }
 
 void UReloadComponent::TriggerNormalReload()
@@ -329,7 +337,6 @@ void UReloadComponent::GetAmmoData( int& CurrentAmmo, int& MaxAmmo ) const
 	UE_LOG( LogTemp, Warning, TEXT( "Ammo data retrieved from ReloadComponent variables" ) );
 }
 
-
 // Computes the new ammo count after reloading based on available inventory and magazine space
 void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed )
 {
@@ -352,6 +359,17 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 	}
 }
 
+void UReloadComponent::DecrementAmmo( int DecrementedAmmo )
+{
+	if ( CurrentAmmoInMagazine > 0 )
+	{
+		DecrementedAmmo = CurrentAmmoInMagazine - 1;
+	}
+	else
+	{
+		UE_LOG( LogTemp, Warning, TEXT( "No more Ammo in the magazine !" ) );
+	}
+}
 
 void UReloadComponent::RetrieveReferences()
 {
@@ -363,7 +381,7 @@ void UReloadComponent::OnReloadInput()
 {
 	UE_LOG( LogTemp, Warning, TEXT( "ON RELOAD INPUT" ));
 	// Check if the magazine is full
-	if ( bIsAmmoFull() )
+	if ( IsAmmoFull() )
 	{
 		UE_LOG( LogTemp, Warning, TEXT( "FULL AMMO CALL SCREEN FX OR POST PROCESS" ) );
 		return;
@@ -431,7 +449,6 @@ void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, 
 {
     UE_LOG(LogTemp, Warning, TEXT("FINALIZE RELOAD"));
 
-    // Utilisation de GetWorld()->GetTimerManager() pour gérer le délai
     GetWorld()->GetTimerManager().SetTimer(
         TimerHandleReloadFinalize, [this, NewAmmoCount, InventoryAmmoCountUsed]() 
 		{
@@ -439,7 +456,7 @@ void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, 
             UpdateAmmoCount(NewAmmoCount);
             CurrentGunState = EGunState::Idle;
 
-            // Mettre à jour l'inventaire avec la quantité de munitions consommée
+            // Update inventory with consumed ammo
             int AmmoToAdd = InventoryAmmoCountUsed * -1;
             if (PlayerInventory)
             {
@@ -449,13 +466,17 @@ void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, 
         FinalWaitingTime, false);
 }
 
-
 bool UReloadComponent::IsGunFireLocked() const
 {
 	return bIsReloadActive;
 }
 
-bool UReloadComponent::bIsAmmoFull() const
+bool UReloadComponent::IsAmmoFull() const
 {
     return CurrentAmmoInMagazine == MaxAmmoInMagazine;
+}
+
+bool UReloadComponent::IsGunEmpty() const
+{
+	return CurrentAmmoInMagazine == 0;
 }
