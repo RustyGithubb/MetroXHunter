@@ -24,6 +24,7 @@
 UReloadComponent::UReloadComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 }
 
 void UReloadComponent::BeginPlay()
@@ -33,7 +34,6 @@ void UReloadComponent::BeginPlay()
 	RetrieveReferences();
 	UpdateAmmoCount( MaxAmmoInMagazine );
 	SetupPlayerInputComponent();
-
 }
 
 void UReloadComponent::TickComponent( 
@@ -43,6 +43,22 @@ void UReloadComponent::TickComponent(
 )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+
+	ReloadElapsedTime += DeltaTime;
+	OnUpdateCursorPosition.Broadcast();
+
+	// If the reload has reached its normal duration, trigger a normal reload
+	if ( ReloadElapsedTime >= ReloadDataAsset->NormalReloadDuration )
+	{
+		SetComponentTickEnabled( false );
+
+		TriggerReload( EReloadState::Normal,
+			ReloadDataAsset->NormalReloadAnimTime,
+			ReloadDataAsset->NormalReloadAnimTime
+		);
+	}
+
+	UE_LOG( LogTemp, Warning, TEXT( "Update Reload Gauge" ) );
 }
 
 void UReloadComponent::SetupPlayerInputComponent()
@@ -73,181 +89,42 @@ void UReloadComponent::StartReloadSequence()
 	{
 		bIsReloadActive = true;
 		CurrentGunState = EGunState::Reloading;
-		ReloadDataAsset->ReloadElapsedTime = 0.0f;
+		ReloadElapsedTime = 0.0f;
+
+		SetComponentTickEnabled( true );
 
 		// Notify that the reload has started
 		OnReloadStateChanged.Broadcast(EReloadState::Start);
-
-		// Start the timer to update the reload gauge
-		GetWorld()->GetTimerManager().SetTimer( 
-			TimerHandleReloadPlayback, 
-			this, &UReloadComponent::UpdateReloadGauge, 
-			ReloadDataAsset->ReloadRefreshRate, 
-			true 
-		);
 		
 		UE_LOG( LogTemp, Warning, TEXT( "START RELOAD SEQUENCE" ) );
 	}
 }
 
-// Updates the reload gauge over time
-void UReloadComponent::UpdateReloadGauge()
+void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadAnimTime, float FinalWaitingTime )
 {
-	ReloadDataAsset->ReloadElapsedTime += ReloadDataAsset->ReloadRefreshRate;
-	OnUpdateCursorPosition.Broadcast();
-
-	// If the reload has reached its normal duration, trigger a normal reload
-	if ( ReloadDataAsset->ReloadElapsedTime >= ReloadDataAsset->NormalReloadDuration )
-	{
-		GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadPlayback );
-		TriggerNormalReload();
-	}
-
-	UE_LOG( LogTemp, Warning, TEXT( "Update Reload Gauge" ) );
-}
-
-void UReloadComponent::TriggerReload()
-{
-
-
-
-}
-
-void UReloadComponent::TriggerNormalReload()
-{
-	// Check if the player has infinite ammo
 	if ( bUseInfiniteAmmo )
 	{
-		FinalizeReload( MaxAmmoInMagazine,
-			ReloadDataAsset->NormalReloadAnimTime, 
-			0 
-		);
+		FinalizeReload( MaxAmmoInMagazine, ReloadAnimTime, 0 );
 	}
 	else
 	{
-		int NewMagazineAmmoCount;
-		int InventoryAmmoConsumed;
-
-		// Calculate the amount of ammo to reload
-		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
-
-		FinalizeReload( NewMagazineAmmoCount,
-			ReloadDataAsset->NormalReloadAnimTime, 
-			0 
-		);
-
-		OnReloadStateChanged.Broadcast( EReloadState::Normal);
-	}
-
-	// Desactivate the locking of the weapon after un brief delay
-	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadPlayback, [this]() { bIsReloadActive = false; },
-		ReloadDataAsset->NormalReloadAnimTime, false 
-	);
-}
-
-void UReloadComponent::TriggerActiveReload()
-{
-	// Check if the player has infinite ammo
-	if ( bUseInfiniteAmmo )
-	{
-		FinalizeReload( MaxAmmoInMagazine,
-			ReloadDataAsset->ActiveReloadAnimTime, 
-			0 
-		);
-	}
-	else
-	{
-		int NewMagazineAmmoCount;
+		int NewAmmoInMagazine;
 		int InventoryAmmoConsumed;
 
 		// Calculate the quantity of ammo to reload
-		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
+		ComputeReloadAmmoCount(NewAmmoInMagazine, InventoryAmmoConsumed);
 
-		FinalizeReload( NewMagazineAmmoCount,
-			ReloadDataAsset->ActiveReloadAnimTime, 
-			0 
-		);
+		FinalizeReload( NewAmmoInMagazine, ReloadAnimTime, InventoryAmmoConsumed );
 
-		OnReloadStateChanged.Broadcast( EReloadState::Active );
+		OnReloadStateChanged.Broadcast(ReloadState);
 	}
 
-	// Calculate the final waiting time
-	float FinalWaitingTime = ReloadDataAsset->ActiveReloadEndTime - ReloadDataAsset->ReloadElapsedTime + ReloadDataAsset->ActiveReloadAnimTime;
-
 	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadPlayback, [this]() { bIsReloadActive = false; },
-		FinalWaitingTime, false 
+		TimerHandleReloadPlayback, [this]()
+		{ bIsReloadActive = false; },
+		FinalWaitingTime,
+		false
 	);
-}
-
-void UReloadComponent::TriggerPerfectReload()
-{
-	// Check if the player has infinite ammo
-	if ( bUseInfiniteAmmo )
-	{
-		FinalizeReload( MaxAmmoInMagazine, 
-			ReloadDataAsset->PerfectReloadAnimTime, 
-			0 
-		);
-	}
-	else
-	{
-		int NewMagazineAmmoCount;
-		int InventoryAmmoConsumed;
-
-		// Calculate the quantity of ammo to reload
-		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
-
-		FinalizeReload( NewMagazineAmmoCount,
-			ReloadDataAsset->PerfectReloadAnimTime, 
-			0 
-		);
-
-		OnReloadStateChanged.Broadcast( EReloadState::Perfect );
-	}
-
-	// Calculate the final waiting time
-	float FinalWaitingTime = ReloadDataAsset->ActiveReloadStartTime - ReloadDataAsset->ReloadElapsedTime + ReloadDataAsset->PerfectReloadAnimTime;
-
-	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadPlayback, [this]() { bIsReloadActive = false; },
-		FinalWaitingTime, false 
-	);
-}
-
-void UReloadComponent::TriggerFailedReload()
-{
-	// Check if the player has infinite ammo
-	if ( bUseInfiniteAmmo )
-	{
-		FinalizeReload( MaxAmmoInMagazine, 
-			ReloadDataAsset->FailedReloadPenaltyTime, 
-			0 
-		);
-	}
-	else
-	{
-		int NewMagazineAmmoCount;
-		int InventoryAmmoConsumed;
-
-		// Calculate the quantity of ammo to reload
-		ComputeReloadAmmoCount( NewMagazineAmmoCount, InventoryAmmoConsumed );
-
-		FinalizeReload( NewMagazineAmmoCount, 
-			ReloadDataAsset->FailedReloadPenaltyTime, 
-			0 
-		);
-
-		OnReloadStateChanged.Broadcast( EReloadState::Failed );
-	}
-
-	// Calculate the final waiting time
-	float FinalWaitingTime = ReloadDataAsset->NormalReloadDuration - ReloadDataAsset->ReloadElapsedTime + ReloadDataAsset->FailedReloadPenaltyTime;
-
-	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadPlayback, [this]() { bIsReloadActive = false; },
-		FinalWaitingTime, false );
 }
 
 void UReloadComponent::UpdateCurrentGunState( EGunState NewState )
@@ -260,12 +137,18 @@ void UReloadComponent::RetrievePlayerInventory()
 	AActor* Owner = GetOwner();
 	if ( Owner )
 	{
-		PlayerInventory = Cast<UInventoryComponent>( Owner->GetComponentByClass(
-			UInventoryComponent::StaticClass() ) 
-		);
-		UE_LOG( LogTemp, Warning, TEXT( "Inventory found !" ) );
+		PlayerInventory = Cast<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
+		if ( !PlayerInventory )
+		{
+			UE_LOG( LogTemp, Warning, TEXT( "Player inventory is not valid!" ) );
+		}
+		else
+		{
+			UE_LOG( LogTemp, Warning, TEXT( "Inventory found with %d ammo!" ), PlayerInventory->GetCurrentAmmoAmount() );
+		}
 	}
 }
+
 
 void UReloadComponent::RetrieveHUD()
 {
@@ -314,7 +197,7 @@ float UReloadComponent::GetNormalizedReloadElapsedTime() const
 {
 	if ( ReloadDataAsset && ReloadDataAsset->NormalReloadDuration > 0.0f )
 	{
-		return ReloadDataAsset->ReloadElapsedTime / ReloadDataAsset->NormalReloadDuration;
+		return ReloadElapsedTime / ReloadDataAsset->NormalReloadDuration;
 	}
 	else
 	{
@@ -342,22 +225,26 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 {
 	int AmmoToConsumeToMax = MaxAmmoInMagazine - CurrentAmmoInMagazine;
 
-	// Get the player's available ammo in inventory
+	// Obtenir les munitions disponibles dans l'inventaire
 	int InventoryAmmo = PlayerInventory ? PlayerInventory->GetCurrentAmmoAmount() : 0;
+	UE_LOG( LogTemp, Warning, TEXT( "Inventory Ammo: %d" ), InventoryAmmo );
 
 	if ( InventoryAmmo >= AmmoToConsumeToMax )
 	{
-		// Full reload possible
+		// Recharge complète possible
 		NewMagazineAmmoCount = MaxAmmoInMagazine;
 		InventoryAmmoConsumed = AmmoToConsumeToMax;
+		UE_LOG( LogTemp, Warning, TEXT( "Full Reload: %d" ), InventoryAmmoConsumed );
 	}
 	else
 	{
-		// Partial Reload
+		// Recharge partielle
 		NewMagazineAmmoCount = CurrentAmmoInMagazine + InventoryAmmo;
 		InventoryAmmoConsumed = InventoryAmmo;
+		UE_LOG( LogTemp, Warning, TEXT( "Partial Reload: %d" ), InventoryAmmoConsumed );
 	}
 }
+
 
 void UReloadComponent::DecrementAmmo()
 {
@@ -372,7 +259,6 @@ void UReloadComponent::DecrementAmmo()
 		UE_LOG( LogTemp, Warning, TEXT( "No more Ammo in the magazine!" ) );
 	}
 }
-
 
 void UReloadComponent::RetrieveReferences()
 {
@@ -408,12 +294,14 @@ void UReloadComponent::OnReloadInput()
 	if ( CurrentGunState == EGunState::Firing )
 	{
 		UE_LOG( LogTemp, Warning, TEXT( "NOTHING FOR NOW" ) );
-		return;
+		return; 
 	}
 
-	GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadPlayback );
+	SetComponentTickEnabled( false);
 
-	float CursorValue = ReloadDataAsset->ReloadCurve->GetFloatValue( GetNormalizedReloadElapsedTime()) * ReloadDataAsset->NormalReloadDuration;
+	float CursorValue = ReloadDataAsset->ReloadCurve->GetFloatValue( 
+		GetNormalizedReloadElapsedTime()) * 
+		ReloadDataAsset->NormalReloadDuration;
 
 	bool bIsInPerfectReloadRange = UKismetMathLibrary::InRange_FloatFloat(
 		CursorValue,
@@ -426,7 +314,15 @@ void UReloadComponent::OnReloadInput()
 	if ( bIsInPerfectReloadRange )
 	{
 		// If in the perfect reload range call TriggerPerfectReload
-		TriggerPerfectReload();
+		float FinalPerfectWaitingTime = 
+			ReloadDataAsset->ActiveReloadStartTime - 
+			ReloadElapsedTime + 
+			ReloadDataAsset->PerfectReloadAnimTime;
+
+		TriggerReload(EReloadState::Perfect, 
+			ReloadDataAsset->PerfectReloadAnimTime, 
+			FinalPerfectWaitingTime
+		);
 		UE_LOG( LogTemp, Warning, TEXT( "PERFECT RELOAD" ) );
 	}
 	else
@@ -436,12 +332,28 @@ void UReloadComponent::OnReloadInput()
 
 		if ( bIsBeforeActiveTime && CursorValue > ReloadDataAsset->PerfectReloadStartTime)
 		{
-			TriggerActiveReload();
+			float FinalActiveWaitingTime = 
+				ReloadDataAsset->ActiveReloadEndTime - 
+				ReloadElapsedTime + 
+				ReloadDataAsset->ActiveReloadAnimTime;
+
+			TriggerReload( EReloadState::Active, 
+				ReloadDataAsset->ActiveReloadAnimTime, 
+				FinalActiveWaitingTime 
+			);
 			UE_LOG( LogTemp, Warning, TEXT( "ACTIVE RELOAD" ) );
 		}
 		else
 		{
-			TriggerFailedReload();
+			float FinalFaileWaitingTime = 
+				ReloadDataAsset->NormalReloadDuration - 
+				ReloadElapsedTime + 
+				ReloadDataAsset->FailedReloadPenaltyTime;
+
+			TriggerReload(EReloadState::Failed, 
+				ReloadDataAsset->FailedReloadPenaltyTime, 
+				FinalFaileWaitingTime
+			);
 			UE_LOG( LogTemp, Warning, TEXT( "FAILED RELOAD" ) );
 		}
 	}
@@ -450,23 +362,27 @@ void UReloadComponent::OnReloadInput()
 
 void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed)
 {
-    UE_LOG(LogTemp, Warning, TEXT("FINALIZE RELOAD"));
+	UE_LOG(LogTemp, Warning, TEXT("FINALIZE RELOAD"));
 
-    GetWorld()->GetTimerManager().SetTimer(
-        TimerHandleReloadFinalize, [this, NewAmmoCount, InventoryAmmoCountUsed]() 
+	GetWorld()->GetTimerManager().SetTimer(
+		TimerHandleReloadFinalize, [this, NewAmmoCount, InventoryAmmoCountUsed]() 
 		{
-            bIsReloadActive = false;
-            UpdateAmmoCount(NewAmmoCount);
-            CurrentGunState = EGunState::Idle;
+			bIsReloadActive = false;
+			CurrentGunState = EGunState::Idle;
 
-            // Update inventory with consumed ammo
-            int AmmoToAdd = InventoryAmmoCountUsed * -1;
-            if (PlayerInventory)
-            {
-                PlayerInventory->AddToInventory(EPickupType::Ammo, AmmoToAdd);
-            }
-        },
-        FinalWaitingTime, false);
+			// Update inventory with consumed ammo
+			int AmmoToAdd = InventoryAmmoCountUsed * -1;
+
+			if ( PlayerInventory )
+			{
+				UE_LOG( LogTemp, Warning, TEXT( "Attempting to remove %d ammo from inventory" ), AmmoToAdd );
+				PlayerInventory->AddToInventory( EPickupType::Ammo, AmmoToAdd );
+				UE_LOG( LogTemp, Warning, TEXT( "Ammo after removal: %d" ), PlayerInventory->GetCurrentAmmoAmount() );
+			}
+
+			UpdateAmmoCount( NewAmmoCount );
+		},
+		FinalWaitingTime, false);
 }
 
 bool UReloadComponent::IsGunFireLocked() const
@@ -476,7 +392,7 @@ bool UReloadComponent::IsGunFireLocked() const
 
 bool UReloadComponent::IsAmmoFull() const
 {
-    return CurrentAmmoInMagazine == MaxAmmoInMagazine;
+	return CurrentAmmoInMagazine == MaxAmmoInMagazine;
 }
 
 bool UReloadComponent::IsGunEmpty() const

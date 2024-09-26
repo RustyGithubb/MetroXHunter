@@ -99,6 +99,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
 	int MaxAmmoInMagazine = 6;
 
+	UPROPERTY( BlueprintReadWrite, Category = "Reload" )
+	float ReloadElapsedTime = 0.0f;
+
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnAmmoCountUpdated );
@@ -138,23 +141,8 @@ private:
 	UFUNCTION( BlueprintCallable )
 	void OnReloadInput();
 
-	UFUNCTION( BlueprintCallable )
-	void UpdateReloadGauge();
-
 	UFUNCTION (BlueprintCallable)
-	void TriggerReload();
-
-	UFUNCTION( BlueprintCallable )
-	void TriggerNormalReload();
-
-	UFUNCTION( BlueprintCallable )
-	void TriggerActiveReload();
-
-	UFUNCTION( BlueprintCallable )
-	void TriggerPerfectReload();
-
-	UFUNCTION( BlueprintCallable )
-	void TriggerFailedReload();
+	void TriggerReload(EReloadState ReloadState, float ReloadAnimTime, float FinalWaitingTime);
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateCurrentGunState( EGunState NewState );

@@ -20,13 +20,7 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Base" )
 	float NormalReloadDuration = 2.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Base" )
-	float ReloadElapsedTime = 0.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Base" )
-	float ReloadRefreshRate = 0.016667f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Base" )
 	float NormalReloadAnimTime = 2.0f;
-	
-	bool IsActiveReload = false;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Active" )
 	float ActiveReloadStartTime = 0.55f;
