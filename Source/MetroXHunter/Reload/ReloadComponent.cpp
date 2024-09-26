@@ -57,15 +57,12 @@ void UReloadComponent::TickComponent(
 			ReloadDataAsset->NormalReloadAnimTime
 		);
 	}
-
-	UE_LOG( LogTemp, Warning, TEXT( "Update Reload Gauge" ) );
 }
 
 void UReloadComponent::SetupPlayerInputComponent()
 {
 	if ( !PlayerController )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "PlayerController is not initialized!" ) );
 		return;
 	}
 
@@ -79,7 +76,6 @@ void UReloadComponent::SetupPlayerInputComponent()
 			ReloadAction, ETriggerEvent::Started, 
 			this, &UReloadComponent::OnReloadInput 
 		);
-		UE_LOG( LogTemp, Warning, TEXT( "PlayerController  initialized !" ) );
 	}
 }
 
@@ -95,8 +91,6 @@ void UReloadComponent::StartReloadSequence()
 
 		// Notify that the reload has started
 		OnReloadStateChanged.Broadcast(EReloadState::Start);
-		
-		UE_LOG( LogTemp, Warning, TEXT( "START RELOAD SEQUENCE" ) );
 	}
 }
 
@@ -138,14 +132,6 @@ void UReloadComponent::RetrievePlayerInventory()
 	if ( Owner )
 	{
 		PlayerInventory = Cast<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
-		if ( !PlayerInventory )
-		{
-			UE_LOG( LogTemp, Warning, TEXT( "Player inventory is not valid!" ) );
-		}
-		else
-		{
-			UE_LOG( LogTemp, Warning, TEXT( "Inventory found with %d ammo!" ), PlayerInventory->GetCurrentAmmoAmount() );
-		}
 	}
 }
 
@@ -156,7 +142,6 @@ void UReloadComponent::RetrieveHUD()
 	if ( PlayerController )
 	{
 		HUD = PlayerController->GetHUD();
-		UE_LOG( LogTemp, Warning, TEXT( "HUD found !" ) );
 	}
 }
 
@@ -165,11 +150,6 @@ void UReloadComponent::InitializeReloadData( UReloadData* NewReloadData )
 	if ( NewReloadData )
 	{
 		ReloadDataAsset = NewReloadData;
-		UE_LOG( LogTemp, Warning, TEXT( "Reload Data Asset initialized !" ));
-	}
-	else
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "Failed to initialize Reload Data Asset !" ));
 	}
 }
 
@@ -210,14 +190,12 @@ void UReloadComponent::UpdateAmmoCount( int NewCount )
 	CurrentAmmoInMagazine = NewCount;
 
 	OnAmmoCountUpdated.Broadcast();
-	UE_LOG( LogTemp, Warning, TEXT( "Updated Ammo Count : %d" ), NewCount );
 }
 
 void UReloadComponent::GetAmmoData( int& CurrentAmmo, int& MaxAmmo ) const
 {
 	CurrentAmmo = CurrentAmmoInMagazine;
 	MaxAmmo = MaxAmmoInMagazine;
-	UE_LOG( LogTemp, Warning, TEXT( "Ammo data retrieved from ReloadComponent variables" ) );
 }
 
 // Computes the new ammo count after reloading based on available inventory and magazine space
@@ -227,21 +205,18 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 
 	// Obtenir les munitions disponibles dans l'inventaire
 	int InventoryAmmo = PlayerInventory ? PlayerInventory->GetCurrentAmmoAmount() : 0;
-	UE_LOG( LogTemp, Warning, TEXT( "Inventory Ammo: %d" ), InventoryAmmo );
 
 	if ( InventoryAmmo >= AmmoToConsumeToMax )
 	{
 		// Recharge complète possible
 		NewMagazineAmmoCount = MaxAmmoInMagazine;
 		InventoryAmmoConsumed = AmmoToConsumeToMax;
-		UE_LOG( LogTemp, Warning, TEXT( "Full Reload: %d" ), InventoryAmmoConsumed );
 	}
 	else
 	{
 		// Recharge partielle
 		NewMagazineAmmoCount = CurrentAmmoInMagazine + InventoryAmmo;
 		InventoryAmmoConsumed = InventoryAmmo;
-		UE_LOG( LogTemp, Warning, TEXT( "Partial Reload: %d" ), InventoryAmmoConsumed );
 	}
 }
 
@@ -251,12 +226,7 @@ void UReloadComponent::DecrementAmmo()
 	if ( CurrentAmmoInMagazine > 0 )
 	{
 		--CurrentAmmoInMagazine;
-		UE_LOG( LogTemp, Warning, TEXT( "Ammo decremented, remaining: %d" ), CurrentAmmoInMagazine );
 		OnAmmoCountUpdated.Broadcast();
-	}
-	else
-	{
-		UE_LOG( LogTemp, Warning, TEXT( "No more Ammo in the magazine!" ) );
 	}
 }
 
@@ -268,11 +238,9 @@ void UReloadComponent::RetrieveReferences()
 
 void UReloadComponent::OnReloadInput()
 {
-	UE_LOG( LogTemp, Warning, TEXT( "ON RELOAD INPUT" ));
 	// Check if the magazine is full
 	if ( IsAmmoFull() )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "FULL AMMO CALL SCREEN FX OR POST PROCESS" ) );
 		return;
 	}
 
@@ -280,7 +248,6 @@ void UReloadComponent::OnReloadInput()
 	int CurrentAmmoAmount = PlayerInventory->GetCurrentAmmoAmount();
 	if ( !bUseInfiniteAmmo && CurrentAmmoAmount == 0 )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "Can't reload ! No ammo available in the inventory !" ) );
 		return;
 	}
 
@@ -293,7 +260,6 @@ void UReloadComponent::OnReloadInput()
 
 	if ( CurrentGunState == EGunState::Firing )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "NOTHING FOR NOW" ) );
 		return; 
 	}
 
@@ -323,7 +289,6 @@ void UReloadComponent::OnReloadInput()
 			ReloadDataAsset->PerfectReloadAnimTime, 
 			FinalPerfectWaitingTime
 		);
-		UE_LOG( LogTemp, Warning, TEXT( "PERFECT RELOAD" ) );
 	}
 	else
 	{
@@ -341,7 +306,6 @@ void UReloadComponent::OnReloadInput()
 				ReloadDataAsset->ActiveReloadAnimTime, 
 				FinalActiveWaitingTime 
 			);
-			UE_LOG( LogTemp, Warning, TEXT( "ACTIVE RELOAD" ) );
 		}
 		else
 		{
@@ -354,16 +318,12 @@ void UReloadComponent::OnReloadInput()
 				ReloadDataAsset->FailedReloadPenaltyTime, 
 				FinalFaileWaitingTime
 			);
-			UE_LOG( LogTemp, Warning, TEXT( "FAILED RELOAD" ) );
 		}
 	}
-	UE_LOG( LogTemp, Warning, TEXT( "DEFINE THE RELOAD BASED ON THE TIMING" ) );
 }
 
 void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed)
 {
-	UE_LOG(LogTemp, Warning, TEXT("FINALIZE RELOAD"));
-
 	GetWorld()->GetTimerManager().SetTimer(
 		TimerHandleReloadFinalize, [this, NewAmmoCount, InventoryAmmoCountUsed]() 
 		{
@@ -375,9 +335,7 @@ void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, 
 
 			if ( PlayerInventory )
 			{
-				UE_LOG( LogTemp, Warning, TEXT( "Attempting to remove %d ammo from inventory" ), AmmoToAdd );
 				PlayerInventory->AddToInventory( EPickupType::Ammo, AmmoToAdd );
-				UE_LOG( LogTemp, Warning, TEXT( "Ammo after removal: %d" ), PlayerInventory->GetCurrentAmmoAmount() );
 			}
 
 			UpdateAmmoCount( NewAmmoCount );
