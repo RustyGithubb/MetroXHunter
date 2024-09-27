@@ -35,7 +35,7 @@ enum class EZeroEnemyAIState : uint8
 /**
  * 
  */
-UCLASS()
+UCLASS( Abstract )
 class METROXHUNTER_API AZeroEnemyAIController : public AAIController
 {
 	GENERATED_BODY()

@@ -47,7 +47,7 @@ struct METROXHUNTER_API FZeroEnemyModifiers
 	float WalkSpeedMultiplier = 1.0f;
 };
 
-UCLASS()
+UCLASS( Abstract )
 class METROXHUNTER_API AZeroEnemy :
 	public ACharacter, public IHealthHolder, public IVisualLoggerDebugSnapshotInterface
 {
