@@ -12,8 +12,6 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/HUD.h"
 
-#include "Kismet/KismetMathLibrary.h"
-
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -243,13 +241,8 @@ void UReloadComponent::OnReloadInput()
 		GetNormalizedReloadElapsedTime()) * 
 		ReloadDataAsset->NormalReloadDuration;
 
-	bool bIsInPerfectRange = UKismetMathLibrary::InRange_FloatFloat(
-		CursorValue,
-		ReloadDataAsset->PerfectReloadStartTime,
-		ReloadDataAsset->ActiveReloadStartTime,
-		true, // Min inclusif
-		true // Max inclusif
-	);
+	bool bIsInPerfectRange = ( CursorValue >= ReloadDataAsset->PerfectReloadStartTime &&
+							  CursorValue <= ReloadDataAsset->ActiveReloadStartTime );
 
 	if ( bIsInPerfectRange )
 	{
@@ -263,36 +256,43 @@ void UReloadComponent::OnReloadInput()
 			ReloadDataAsset->PerfectReloadAnimTime, 
 			FinalPerfectWaitingTime
 		);
+		return;
 	}
-	else
+
+	// Compare the ReloadElapsedTime with the ActiveReloadStartTime
+	bool bIsInActiveRange = CursorValue < ReloadDataAsset->ActiveReloadEndTime;
+
+	if ( bIsInActiveRange && CursorValue > ReloadDataAsset->PerfectReloadStartTime )
 	{
-		// Compare the ReloadElapsedTime with the ActiveReloadStartTime
-		bool bIsBeforeActiveTime = CursorValue < ReloadDataAsset->ActiveReloadEndTime;
+		float FinalActiveWaitingTime =
+			ReloadDataAsset->ActiveReloadEndTime -
+			ReloadElapsedTime +
+			ReloadDataAsset->ActiveReloadAnimTime;
 
-		if ( bIsBeforeActiveTime && CursorValue > ReloadDataAsset->PerfectReloadStartTime )
-		{
-			float FinalActiveWaitingTime = 
-				ReloadDataAsset->ActiveReloadEndTime - 
-				ReloadElapsedTime + 
-				ReloadDataAsset->ActiveReloadAnimTime;
+		TriggerReload( EReloadState::Active,
+			ReloadDataAsset->ActiveReloadAnimTime,
+			FinalActiveWaitingTime
+		);
+		return;
+	}
 
-			TriggerReload( EReloadState::Active, 
-				ReloadDataAsset->ActiveReloadAnimTime, 
-				FinalActiveWaitingTime 
-			);
-		}
-		else
-		{
-			float FinalFaileWaitingTime = 
-				ReloadDataAsset->NormalReloadDuration - 
-				ReloadElapsedTime + 
-				ReloadDataAsset->FailedReloadPenaltyTime;
+	// Check if cursor is out of succeed range
+	bool bIsInFailedRange = ( CursorValue < ReloadDataAsset->PerfectReloadStartTime ) ||
+							( CursorValue > ReloadDataAsset->ActiveReloadEndTime );
 
-			TriggerReload(EReloadState::Failed, 
-				ReloadDataAsset->FailedReloadPenaltyTime, 
-				FinalFaileWaitingTime
-			);
-		}
+	if ( bIsInFailedRange && ( CursorValue >= 0.0f && CursorValue <= ReloadDataAsset->NormalReloadDuration ) )
+	{
+		float FinalFailedWaitingTime = 
+			ReloadDataAsset->NormalReloadDuration -
+			ReloadElapsedTime +
+			ReloadDataAsset->FailedReloadPenaltyTime;
+
+		// Trigger Failed reload if out of Active or Perfect Range
+		TriggerReload( EReloadState::Failed,
+			ReloadDataAsset->FailedReloadPenaltyTime,
+			FinalFailedWaitingTime
+		);
+		return;
 	}
 }
 
