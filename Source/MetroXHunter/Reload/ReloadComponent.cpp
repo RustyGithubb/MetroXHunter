@@ -25,6 +25,8 @@ void UReloadComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	verify( IsValid( ReloadDataAsset ) );
+
 	RetrieveReferences();
 	SetAmmoCount( MaxAmmoInMagazine );
 	SetupPlayerInputComponent();
