@@ -3,12 +3,12 @@
  */
 
 #pragma once
-#include "CoreMinimal.h"
+
 #include "Engine/DataAsset.h"
 #include "ReloadData.generated.h"
 
 /**
- * Reload Data Asset.
+ * Data asset for the reload component
  */
 UCLASS()
 class METROXHUNTER_API UReloadData : public UDataAsset
@@ -16,29 +16,28 @@ class METROXHUNTER_API UReloadData : public UDataAsset
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Base" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadBase" )
 	float NormalReloadDuration = 2.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Base" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadBase" )
 	float NormalReloadAnimTime = 2.0f;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Active" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadActive" )
 	float ActiveReloadStartTime = 0.55f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Active" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadActive" )
 	float ActiveReloadEndTime = 1.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Active" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadActive" )
 	float ActiveReloadAnimTime = 0.75f;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Perfect" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect" )
 	float PerfectReloadStartTime = 0.4f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Perfect" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect" )
 	float PerfectReloadBonusTime = 2.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Perfect" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect" )
 	float PerfectReloadAnimTime = 0.5f;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Failed" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadFailed" )
 	float FailedReloadPenaltyTime = 2.0f;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload Data|Reload Curve" )
-	TObjectPtr<UCurveFloat> ReloadCurve;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadCurve" )
+	UCurveFloat* ReloadCurve = nullptr;
 };

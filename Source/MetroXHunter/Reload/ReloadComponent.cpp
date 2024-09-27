@@ -12,11 +12,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/HUD.h"
 
-#include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Kismet/GameplayStatics.h"
-
-#include "GameplayTagContainer.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -32,7 +28,7 @@ void UReloadComponent::BeginPlay()
 	Super::BeginPlay();
 
 	RetrieveReferences();
-	UpdateAmmoCount( MaxAmmoInMagazine );
+	SetAmmoCount( MaxAmmoInMagazine );
 	SetupPlayerInputComponent();
 }
 
@@ -61,37 +57,30 @@ void UReloadComponent::TickComponent(
 
 void UReloadComponent::SetupPlayerInputComponent()
 {
-	if ( !PlayerController )
-	{
-		return;
-	}
-
 	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 
 	// Set up action bindings
-	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
-	{
-		// Interaction
-		EnhancedInputComponent->BindAction( 
-			ReloadAction, ETriggerEvent::Started, 
-			this, &UReloadComponent::OnReloadInput 
-		);
-	}
+	auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent );
+
+	// Interaction
+	EnhancedInputComponent->BindAction(
+		ReloadAction, ETriggerEvent::Started,
+		this, &UReloadComponent::OnReloadInput
+	);
 }
 
 void UReloadComponent::StartReloadSequence()
 {
-	if ( !bIsReloadActive && !IsGunFireLocked() )
-	{
-		bIsReloadActive = true;
-		CurrentGunState = EGunState::Reloading;
-		ReloadElapsedTime = 0.0f;
+	if ( IsReloading() ) return;
 
-		SetComponentTickEnabled( true );
+	bIsReloadActive = true;
+	CurrentGunState = EGunState::Reloading;
+	ReloadElapsedTime = 0.0f;
 
-		// Notify that the reload has started
-		OnReloadStateChanged.Broadcast(EReloadState::Start);
-	}
+	SetComponentTickEnabled( true );
+
+	// Notify that the reload has started
+	OnReloadStateChanged.Broadcast( EReloadState::Start );
 }
 
 void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadAnimTime, float FinalWaitingTime )
@@ -106,24 +95,20 @@ void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadAnim
 		int InventoryAmmoConsumed;
 
 		// Calculate the quantity of ammo to reload
-		ComputeReloadAmmoCount(NewAmmoInMagazine, InventoryAmmoConsumed);
+		ComputeReloadAmmoCount( NewAmmoInMagazine, InventoryAmmoConsumed );
 
 		FinalizeReload( NewAmmoInMagazine, ReloadAnimTime, InventoryAmmoConsumed );
 
-		OnReloadStateChanged.Broadcast(ReloadState);
+		OnReloadStateChanged.Broadcast( ReloadState );
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadPlayback, [this]()
+		TimerHandleReloadPlayback, 
+		[this]()
 		{ bIsReloadActive = false; },
 		FinalWaitingTime,
 		false
 	);
-}
-
-void UReloadComponent::UpdateCurrentGunState( EGunState NewState )
-{
-	CurrentGunState = NewState;
 }
 
 void UReloadComponent::RetrievePlayerInventory()
@@ -131,18 +116,16 @@ void UReloadComponent::RetrievePlayerInventory()
 	AActor* Owner = GetOwner();
 	if ( Owner )
 	{
-		PlayerInventory = Cast<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
+		PlayerInventory = CastChecked<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
 	}
 }
 
-
 void UReloadComponent::RetrieveHUD()
 {
-	PlayerController = UGameplayStatics::GetPlayerController( this, 0 );
-	if ( PlayerController )
-	{
-		HUD = PlayerController->GetHUD();
-	}
+	PlayerController = GetOwner()->GetInstigator()->GetLocalViewingPlayerController();
+	verify( IsValid( PlayerController ) );
+
+	HUD = PlayerController->GetHUD();
 }
 
 void UReloadComponent::InitializeReloadData( UReloadData* NewReloadData )
@@ -159,42 +142,50 @@ void UReloadComponent::GetNormalizedReloadTimings(
 	float& OutActiveReloadEndTime 
 ) const
 {
-	if ( ReloadDataAsset && ReloadDataAsset->NormalReloadDuration > 0.0f )
-	{
-		OutPerfectReloadStartTime = ReloadDataAsset->PerfectReloadStartTime / ReloadDataAsset->NormalReloadDuration;
-		OutActiveReloadStartTime = ReloadDataAsset->ActiveReloadStartTime / ReloadDataAsset->NormalReloadDuration;
-		OutActiveReloadEndTime = ReloadDataAsset->ActiveReloadEndTime / ReloadDataAsset->NormalReloadDuration;
-	}
-	else
+	if ( ReloadDataAsset == nullptr || ReloadDataAsset->NormalReloadDuration <= 0.0f )
 	{
 		OutPerfectReloadStartTime = 0.0f;
 		OutActiveReloadStartTime = 0.0f;
 		OutActiveReloadEndTime = 0.0f;
+		return;
 	}
+
+	OutPerfectReloadStartTime = ReloadDataAsset->PerfectReloadStartTime / ReloadDataAsset->NormalReloadDuration;
+	OutActiveReloadStartTime = ReloadDataAsset->ActiveReloadStartTime / ReloadDataAsset->NormalReloadDuration;
+	OutActiveReloadEndTime = ReloadDataAsset->ActiveReloadEndTime / ReloadDataAsset->NormalReloadDuration;
 }
 
 float UReloadComponent::GetNormalizedReloadElapsedTime() const
 {
-	if ( ReloadDataAsset && ReloadDataAsset->NormalReloadDuration > 0.0f )
-	{
-		return ReloadElapsedTime / ReloadDataAsset->NormalReloadDuration;
-	}
-	else
+	if ( ReloadDataAsset == nullptr || ReloadDataAsset->NormalReloadDuration <= 0.0f )
 	{
 		return 0.0f;
 	}
+	return ReloadElapsedTime / ReloadDataAsset->NormalReloadDuration;
 }
 
-void UReloadComponent::UpdateAmmoCount( int NewCount )
+void UReloadComponent::SetAmmoCount( int NewCount )
 {
 	CurrentAmmoInMagazine = NewCount;
 
 	OnAmmoCountUpdated.Broadcast();
 }
 
-void UReloadComponent::GetAmmoData( int& CurrentAmmo, int& MaxAmmo ) const
+void UReloadComponent::DecrementAmmo()
+{
+	if ( CurrentAmmoInMagazine > 0 )
+	{
+		SetAmmoCount( CurrentAmmoInMagazine - 1 );
+	}
+}
+
+void UReloadComponent::GetCurrentAmmo( int& CurrentAmmo ) const
 {
 	CurrentAmmo = CurrentAmmoInMagazine;
+}
+
+void UReloadComponent::GetMaxAmmo( int& MaxAmmo ) const
+{
 	MaxAmmo = MaxAmmoInMagazine;
 }
 
@@ -203,30 +194,20 @@ void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& I
 {
 	int AmmoToConsumeToMax = MaxAmmoInMagazine - CurrentAmmoInMagazine;
 
-	// Obtenir les munitions disponibles dans l'inventaire
-	int InventoryAmmo = PlayerInventory ? PlayerInventory->GetCurrentAmmoAmount() : 0;
+	// Get available ammo in the inventory
+	int InventoryAmmo = PlayerInventory->GetCurrentAmmoAmount();
 
 	if ( InventoryAmmo >= AmmoToConsumeToMax )
 	{
-		// Recharge complète possible
+		// Full reload possible
 		NewMagazineAmmoCount = MaxAmmoInMagazine;
 		InventoryAmmoConsumed = AmmoToConsumeToMax;
 	}
 	else
 	{
-		// Recharge partielle
+		// Partial reload possible
 		NewMagazineAmmoCount = CurrentAmmoInMagazine + InventoryAmmo;
 		InventoryAmmoConsumed = InventoryAmmo;
-	}
-}
-
-
-void UReloadComponent::DecrementAmmo()
-{
-	if ( CurrentAmmoInMagazine > 0 )
-	{
-		--CurrentAmmoInMagazine;
-		OnAmmoCountUpdated.Broadcast();
 	}
 }
 
@@ -239,17 +220,13 @@ void UReloadComponent::RetrieveReferences()
 void UReloadComponent::OnReloadInput()
 {
 	// Check if the magazine is full
-	if ( IsAmmoFull() )
-	{
-		return;
-	}
+	if ( IsAmmoFull() ) return;
 
-	// Check if we have ammo in inventory or infinite ammo
+	// Get ammo in inventory
 	int CurrentAmmoAmount = PlayerInventory->GetCurrentAmmoAmount();
-	if ( !bUseInfiniteAmmo && CurrentAmmoAmount == 0 )
-	{
-		return;
-	}
+
+	// Check if we have infinite ammo or 0 in the inventory
+	if ( !bUseInfiniteAmmo && CurrentAmmoAmount == 0 ) return;
 
 	// Switch on the current Gun State
 	if ( CurrentGunState == EGunState::Idle )
@@ -258,10 +235,7 @@ void UReloadComponent::OnReloadInput()
 		return;
 	}
 
-	if ( CurrentGunState == EGunState::Firing )
-	{
-		return; 
-	}
+	if ( CurrentGunState == EGunState::Firing ) return; 
 
 	SetComponentTickEnabled( false);
 
@@ -269,7 +243,7 @@ void UReloadComponent::OnReloadInput()
 		GetNormalizedReloadElapsedTime()) * 
 		ReloadDataAsset->NormalReloadDuration;
 
-	bool bIsInPerfectReloadRange = UKismetMathLibrary::InRange_FloatFloat(
+	bool bIsInPerfectRange = UKismetMathLibrary::InRange_FloatFloat(
 		CursorValue,
 		ReloadDataAsset->PerfectReloadStartTime,
 		ReloadDataAsset->ActiveReloadStartTime,
@@ -277,7 +251,7 @@ void UReloadComponent::OnReloadInput()
 		true // Max inclusif
 	);
 
-	if ( bIsInPerfectReloadRange )
+	if ( bIsInPerfectRange )
 	{
 		// If in the perfect reload range call TriggerPerfectReload
 		float FinalPerfectWaitingTime = 
@@ -295,7 +269,7 @@ void UReloadComponent::OnReloadInput()
 		// Compare the ReloadElapsedTime with the ActiveReloadStartTime
 		bool bIsBeforeActiveTime = CursorValue < ReloadDataAsset->ActiveReloadEndTime;
 
-		if ( bIsBeforeActiveTime && CursorValue > ReloadDataAsset->PerfectReloadStartTime)
+		if ( bIsBeforeActiveTime && CursorValue > ReloadDataAsset->PerfectReloadStartTime )
 		{
 			float FinalActiveWaitingTime = 
 				ReloadDataAsset->ActiveReloadEndTime - 
@@ -322,28 +296,31 @@ void UReloadComponent::OnReloadInput()
 	}
 }
 
-void UReloadComponent::FinalizeReload(int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed)
+void UReloadComponent::FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed )
 {
 	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadFinalize, [this, NewAmmoCount, InventoryAmmoCountUsed]() 
+		TimerHandleReloadFinalize, 
+		[this, NewAmmoCount, InventoryAmmoCountUsed]() 
 		{
 			bIsReloadActive = false;
 			CurrentGunState = EGunState::Idle;
 
 			// Update inventory with consumed ammo
-			int AmmoToAdd = InventoryAmmoCountUsed * -1;
+			int AmmoToAdd = -InventoryAmmoCountUsed;
 
 			if ( PlayerInventory )
 			{
 				PlayerInventory->AddToInventory( EPickupType::Ammo, AmmoToAdd );
 			}
 
-			UpdateAmmoCount( NewAmmoCount );
+			SetAmmoCount( NewAmmoCount );
 		},
-		FinalWaitingTime, false);
+		FinalWaitingTime, 
+		false
+	);
 }
 
-bool UReloadComponent::IsGunFireLocked() const
+bool UReloadComponent::IsReloading() const
 {
 	return bIsReloadActive;
 }

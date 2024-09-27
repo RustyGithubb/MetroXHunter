@@ -74,7 +74,7 @@ bool UGunComponent::IsGunEmpty() const
 
 bool UGunComponent::CanFire()
 {
-	if ( ReloadSystemComponent && ReloadSystemComponent->IsGunFireLocked() )
+	if ( ReloadSystemComponent && ReloadSystemComponent->IsReloading() )
 	{
 		UKismetSystemLibrary::PrintString( this, TEXT( "Gun : Fire is locked from Reload System!" ), true, true, FLinearColor( 1, 0, 0 ), 2.0f );
 		UE_LOG( LogTemp, Warning, TEXT( "Gun : Fire is locked from Reload System!" ) );
