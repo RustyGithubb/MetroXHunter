@@ -30,10 +30,10 @@ void UReloadComponent::BeginPlay()
 	SetupPlayerInputComponent();
 }
 
-void UReloadComponent::TickComponent( 
-	float DeltaTime, 
-	ELevelTick TickType, 
-	FActorComponentTickFunction* ThisTickFunction 
+void UReloadComponent::TickComponent(
+	float DeltaTime,
+	ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction
 )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
@@ -104,9 +104,11 @@ void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadAnim
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadPlayback, 
+		TimerHandleReloadPlayback,
 		[this]()
-		{ bIsReloadActive = false; },
+		{ 
+			bIsReloadActive = false; 
+		},
 		FinalWaitingTime,
 		false
 	);
@@ -117,7 +119,9 @@ void UReloadComponent::RetrievePlayerInventory()
 	AActor* Owner = GetOwner();
 	if ( Owner )
 	{
-		PlayerInventory = CastChecked<UInventoryComponent>( Owner->GetComponentByClass( UInventoryComponent::StaticClass() ) );
+		PlayerInventory = CastChecked<UInventoryComponent>( 
+			Owner->GetComponentByClass<UInventoryComponent>() 
+		);
 	}
 }
 
@@ -129,10 +133,10 @@ void UReloadComponent::RetrieveHUD()
 	HUD = PlayerController->GetHUD();
 }
 
-void UReloadComponent::GetNormalizedReloadTimings( 
-	float& OutPerfectReloadStartTime, 
-	float& OutActiveReloadStartTime, 
-	float& OutActiveReloadEndTime 
+void UReloadComponent::GetNormalizedReloadTimings(
+	float& OutPerfectReloadStartTime,
+	float& OutActiveReloadStartTime,
+	float& OutActiveReloadEndTime
 ) const
 {
 	if ( ReloadDataAsset == nullptr || ReloadDataAsset->NormalReloadDuration <= 0.0f )
@@ -228,14 +232,14 @@ void UReloadComponent::OnReloadInput()
 		return;
 	}
 
-	if ( CurrentGunState == EGunState::Firing ) return; 
+	if ( CurrentGunState == EGunState::Firing ) return;
 
 	if ( TimerHandleReloadPlayback.IsValid() ) return;
 
 	SetComponentTickEnabled( false );
 
-	float CursorValue = ReloadDataAsset->ReloadCurve->GetFloatValue( 
-		GetNormalizedReloadElapsedTime()) * 
+	float CursorValue = ReloadDataAsset->ReloadCurve->GetFloatValue(
+		GetNormalizedReloadElapsedTime() ) *
 		ReloadDataAsset->NormalReloadDuration;
 
 	bool bIsInPerfectRange = ( CursorValue >= ReloadDataAsset->PerfectReloadStartTime &&
@@ -244,13 +248,13 @@ void UReloadComponent::OnReloadInput()
 	if ( bIsInPerfectRange )
 	{
 		// If in the perfect reload range call TriggerPerfectReload
-		float FinalPerfectWaitingTime = 
-			ReloadDataAsset->ActiveReloadStartTime - 
-			ReloadElapsedTime + 
+		float FinalPerfectWaitingTime =
+			ReloadDataAsset->ActiveReloadStartTime -
+			ReloadElapsedTime +
 			ReloadDataAsset->PerfectReloadAnimTime;
 
-		TriggerReload(EReloadState::Perfect, 
-			ReloadDataAsset->PerfectReloadAnimTime, 
+		TriggerReload( EReloadState::Perfect,
+			ReloadDataAsset->PerfectReloadAnimTime,
 			FinalPerfectWaitingTime
 		);
 		return;
@@ -273,7 +277,7 @@ void UReloadComponent::OnReloadInput()
 		return;
 	}
 
-	float FinalFailedWaitingTime = 
+	float FinalFailedWaitingTime =
 		ReloadDataAsset->NormalReloadDuration -
 		ReloadElapsedTime +
 		ReloadDataAsset->FailedReloadPenaltyTime;
@@ -290,8 +294,8 @@ void UReloadComponent::OnReloadInput()
 void UReloadComponent::FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed )
 {
 	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandleReloadFinalize, 
-		[this, NewAmmoCount, InventoryAmmoCountUsed]() 
+		TimerHandleReloadFinalize,
+		[this, NewAmmoCount, InventoryAmmoCountUsed]()
 		{
 			bIsReloadActive = false;
 			CurrentGunState = EGunState::Idle;
@@ -306,7 +310,7 @@ void UReloadComponent::FinalizeReload( int NewAmmoCount, float FinalWaitingTime,
 
 			SetAmmoCount( NewAmmoCount );
 		},
-		FinalWaitingTime, 
+		FinalWaitingTime,
 		false
 	);
 }
