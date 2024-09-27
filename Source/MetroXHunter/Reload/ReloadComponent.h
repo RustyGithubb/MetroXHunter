@@ -49,9 +49,6 @@ public:
 	void SetupPlayerInputComponent();
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void InitializeReloadData( UReloadData* NewReloadData );
-
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void SetAmmoCount( int NewCount );
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )

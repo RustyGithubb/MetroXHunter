@@ -75,6 +75,9 @@ void UReloadComponent::StartReloadSequence()
 	CurrentGunState = EGunState::Reloading;
 	ReloadElapsedTime = 0.0f;
 
+	GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadPlayback );
+	GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadFinalize );
+
 	SetComponentTickEnabled( true );
 
 	// Notify that the reload has started
@@ -89,8 +92,8 @@ void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadAnim
 	}
 	else
 	{
-		int NewAmmoInMagazine;
-		int InventoryAmmoConsumed;
+		int NewAmmoInMagazine = 0;
+		int InventoryAmmoConsumed = 0;
 
 		// Calculate the quantity of ammo to reload
 		ComputeReloadAmmoCount( NewAmmoInMagazine, InventoryAmmoConsumed );
@@ -124,14 +127,6 @@ void UReloadComponent::RetrieveHUD()
 	verify( IsValid( PlayerController ) );
 
 	HUD = PlayerController->GetHUD();
-}
-
-void UReloadComponent::InitializeReloadData( UReloadData* NewReloadData )
-{
-	if ( NewReloadData )
-	{
-		ReloadDataAsset = NewReloadData;
-	}
 }
 
 void UReloadComponent::GetNormalizedReloadTimings( 
@@ -235,7 +230,9 @@ void UReloadComponent::OnReloadInput()
 
 	if ( CurrentGunState == EGunState::Firing ) return; 
 
-	SetComponentTickEnabled( false);
+	if ( TimerHandleReloadPlayback.IsValid() ) return;
+
+	SetComponentTickEnabled( false );
 
 	float CursorValue = ReloadDataAsset->ReloadCurve->GetFloatValue( 
 		GetNormalizedReloadElapsedTime()) * 
@@ -276,24 +273,18 @@ void UReloadComponent::OnReloadInput()
 		return;
 	}
 
-	// Check if cursor is out of succeed range
-	bool bIsInFailedRange = ( CursorValue < ReloadDataAsset->PerfectReloadStartTime ) ||
-							( CursorValue > ReloadDataAsset->ActiveReloadEndTime );
+	float FinalFailedWaitingTime = 
+		ReloadDataAsset->NormalReloadDuration -
+		ReloadElapsedTime +
+		ReloadDataAsset->FailedReloadPenaltyTime;
 
-	if ( bIsInFailedRange && ( CursorValue >= 0.0f && CursorValue <= ReloadDataAsset->NormalReloadDuration ) )
-	{
-		float FinalFailedWaitingTime = 
-			ReloadDataAsset->NormalReloadDuration -
-			ReloadElapsedTime +
-			ReloadDataAsset->FailedReloadPenaltyTime;
+	// Trigger Failed reload if out of Active or Perfect Range
+	TriggerReload( EReloadState::Failed,
+		ReloadDataAsset->FailedReloadPenaltyTime,
+		FinalFailedWaitingTime
+	);
 
-		// Trigger Failed reload if out of Active or Perfect Range
-		TriggerReload( EReloadState::Failed,
-			ReloadDataAsset->FailedReloadPenaltyTime,
-			FinalFailedWaitingTime
-		);
-		return;
-	}
+
 }
 
 void UReloadComponent::FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed )
