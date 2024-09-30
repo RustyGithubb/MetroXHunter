@@ -101,9 +101,9 @@ void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadAnim
 		ComputeReloadAmmoCount( NewAmmoInMagazine, InventoryAmmoConsumed );
 
 		FinalizeReload( NewAmmoInMagazine, ReloadAnimTime, InventoryAmmoConsumed );
-
-		OnReloadStateChanged.Broadcast( ReloadState );
 	}
+
+	OnReloadStateChanged.Broadcast( ReloadState );
 
 	GetWorld()->GetTimerManager().SetTimer(
 		TimerHandleReloadPlayback,
