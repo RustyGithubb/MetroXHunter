@@ -19,20 +19,48 @@ bool UAITargetComponent::ReserveTokens( AActor* Reserver, int32 Tokens )
 	verify( IsValid( Reserver ) );
 
 	// Check if enough tokens are available
-	if ( Tokens > GetRemainingTokens() ) return false;
+	if ( Tokens > GetRemainingTokens() ) 
+	{
+		UE_VLOG(
+			GetOwner(),
+			LogTemp, Verbose,
+			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: not enough tokens available." ),
+			Tokens, *Reserver->GetName()
+		);
+		return false;
+	}
 
 	// Add new tokens, in order to keep the already reserved tokens
 	int32 ReserverTokens = GetReservedTokens( Reserver );
-	Tokens += ReserverTokens;
+	int32 ResultingTokens = Tokens + ReserverTokens;
 
-	ReservedTokens.Add( Reserver, Tokens );
+	ReservedTokens.Add( Reserver, ResultingTokens );
+
+	UE_VLOG(
+		GetOwner(),
+		LogTemp, Verbose,
+		TEXT( "AITargetComponent: Reserved %d tokens for %s (now a total of %d tokens)" ),
+		Tokens, *Reserver->GetName(), ResultingTokens
+	);
 
 	return true;
 }
 
-void UAITargetComponent::FreeTokens( AActor* Reserver, int32 Tokens )
+bool UAITargetComponent::FreeTokens( AActor* Reserver, int32 Tokens )
 {
+	verify( IsValid( Reserver ) );
+
 	int32 ReserverTokens = GetReservedTokens( Reserver );
+	if ( ReserverTokens == 0 )
+	{
+		UE_VLOG(
+			GetOwner(),
+			LogTemp, Verbose,
+			TEXT( "AITargetComponent: Failed to free %d tokens for %s: no reservations." ),
+			Tokens, *Reserver->GetName()
+		);
+		return false;
+	}
 	
 	// Automatically fill with reserved tokens if set to zero
 	if ( Tokens == 0 )
@@ -51,6 +79,15 @@ void UAITargetComponent::FreeTokens( AActor* Reserver, int32 Tokens )
 	{
 		ReservedTokens.Add( Reserver, ResultingTokens );
 	}
+
+	UE_VLOG(
+		GetOwner(),
+		LogTemp, Verbose,
+		TEXT( "AITargetComponent: Freed %d tokens for %s (now a total of %d tokens)" ),
+		Tokens, *Reserver->GetName(), ResultingTokens
+	);
+
+	return true;
 }
 
 void UAITargetComponent::ClearTokens()
@@ -60,6 +97,8 @@ void UAITargetComponent::ClearTokens()
 
 int32 UAITargetComponent::GetReservedTokens( AActor* Reserver ) const
 {
+	verify( IsValid( Reserver ) );
+
 	auto Itr = ReservedTokens.Find( Reserver );
 	if ( Itr == nullptr ) return 0;
 
@@ -75,11 +114,13 @@ int32 UAITargetComponent::GetRemainingTokens() const
 		RemainingTokens -= Element.Value;
 	}
 
-	return MaxTokens;
+	return RemainingTokens;
 }
 
 bool UAITargetComponent::ReserveGroupPlace( AActor* Reserver, int32& GroupIndex )
 {
+	verify( IsValid( Reserver ) );
+
 	for ( int Index = 0; Index < GroupsSettings.Num(); Index++ )
 	{
 		const auto& GroupSettings = GroupsSettings[Index];
@@ -92,7 +133,7 @@ bool UAITargetComponent::ReserveGroupPlace( AActor* Reserver, int32& GroupIndex 
 		}
 
 		// If there are no remaining places, skip to the next group
-		if ( GetRemainingGroupPlaces( Index ) == 0 ) continue;
+		if ( GetRemainingGroupPlaces( Index ) <= 0 ) continue;
 	
 		GroupIndex = Index;
 		return true;
@@ -104,6 +145,8 @@ bool UAITargetComponent::ReserveGroupPlace( AActor* Reserver, int32& GroupIndex 
 
 void UAITargetComponent::MoveGroupPlace( AActor* Reserver, int32 NewGroupIndex )
 {
+	verify( IsValid( Reserver ) );
+
 	ReservedGroupPlaces.Remove( Reserver );
 	ReservedGroupPlaces.Add( Reserver, NewGroupIndex );
 
@@ -112,6 +155,8 @@ void UAITargetComponent::MoveGroupPlace( AActor* Reserver, int32 NewGroupIndex )
 
 bool UAITargetComponent::FreeGroupPlace( AActor* Reserver )
 {
+	verify( IsValid( Reserver ) );
+
 	int32 GroupIndex = GetReservedGroupPlace( Reserver );
 	if ( GroupIndex == -1 ) return false;
 
@@ -127,13 +172,15 @@ bool UAITargetComponent::FreeGroupPlace( AActor* Reserver )
 	auto Actors = ActorsByPlaces.Find( GroupIndex + 1 );
 	if ( Actors == nullptr ) return true;
 
-	MoveGroupPlace( Actors[0], GroupIndex );
+	MoveGroupPlace( Actors->Array[0], GroupIndex );
 
 	return true;
 }
 
 int32 UAITargetComponent::GetReservedGroupPlace( AActor* Reserver ) const
 {
+	verify( IsValid( Reserver ) );
+
 	auto Itr = ReservedGroupPlaces.Find( Reserver );
 	if ( Itr == nullptr ) return -1;
 
@@ -142,16 +189,38 @@ int32 UAITargetComponent::GetReservedGroupPlace( AActor* Reserver ) const
 
 int32 UAITargetComponent::GetRemainingGroupPlaces( int32 GroupIndex ) const
 {
-	return int32();
+	int32 RemainingPlacesCount = 0;
+
+	for ( const auto& Pair : ReservedGroupPlaces )
+	{
+		if ( Pair.Value != GroupIndex ) continue;
+		
+		RemainingPlacesCount++;
+	}
+
+	return GroupsSettings[GroupIndex].MaxPlaces - RemainingPlacesCount;
 }
 
-TMap<int32, AActor*> UAITargetComponent::GetActorsByGroupPlaces() const
+TMap<int32, FActorArray> UAITargetComponent::GetActorsByGroupPlaces() const
 {
-	return TMap<int32, AActor*>();
+	TMap<int32, FActorArray> ActorsByPlaces {};
+
+	for ( const auto& Pair : ReservedGroupPlaces )
+	{
+		AActor* Actor = Pair.Key;
+		int32 GroupIndex = Pair.Value;
+
+		FActorArray& GroupActors = ActorsByPlaces.FindOrAdd( GroupIndex, {} );
+		GroupActors.Array.Add( Actor );
+	}
+
+	return ActorsByPlaces;
 }
 
 void UAITargetComponent::FreeReservations( AActor* Reserver )
 {
+	verify( IsValid( Reserver ) );
+
 	FreeTokens( Reserver );
 	FreeGroupPlace( Reserver );
 }

@@ -13,8 +13,19 @@ struct FAITargetGroupSettings
 {
 	GENERATED_BODY()
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	int32 MaxPlaces = 0;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	FFloatRange PlaceDistance { 350.0f, 450.0f };
+};
+
+USTRUCT( BlueprintType )
+struct FActorArray
+{
+	GENERATED_BODY()
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	TArray<AActor*> Array {};
 };
 
 UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
@@ -30,7 +41,7 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
 	bool ReserveTokens( AActor* Reserver, int32 Tokens );
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
-	void FreeTokens( AActor* Reserver, int32 Tokens = 0 );
+	bool FreeTokens( AActor* Reserver, int32 Tokens = 0 );
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
 	void ClearTokens();
 
@@ -51,7 +62,7 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "AITarget|GroupPlaces" )
 	int32 GetRemainingGroupPlaces( int32 GroupIndex ) const;
 	UFUNCTION( BlueprintCallable, Category = "AITarget|GroupPlaces" )
-	TMap<int32, AActor*> GetActorsByGroupPlaces() const;
+	TMap<int32, FActorArray> GetActorsByGroupPlaces() const;
 
 	UFUNCTION( BlueprintCallable, Category = "AITarget" )
 	void FreeReservations( AActor* Reserver );
@@ -60,9 +71,10 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "AITarget" )
 	TArray<FAITargetGroupSettings> GroupsSettings {};
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "AITarget" )
+	int32 MaxTokens = 1;
+
 private:
 	TMap<AActor*, int32> ReservedTokens {};
 	TMap<AActor*, int32> ReservedGroupPlaces {};
-
-	int32 MaxTokens = 1;
 };
