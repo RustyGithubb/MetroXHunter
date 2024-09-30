@@ -14,9 +14,60 @@ void UAITargetComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UAITargetComponent::TickComponent( 
+	float DeltaTime,
+	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction
+)
+{
+	// Construct reservations string 
+	FString Reservations = "";
+	for ( const auto& Pair : ReservedTokens )
+	{
+		Reservations += "- " + GetNameSafe( Pair.Key ) + ": " + FString::FromInt( Pair.Value ) + "\n";
+	}
+
+	// Construct formating arguments
+	FStringFormatNamedArguments Args {};
+	Args.Add( "RemainingTokens", GetRemainingTokens() );
+	Args.Add( "MaxTokens", MaxTokens );
+	Args.Add( "TokenCooldown", GetTokenCooldown() );
+	Args.Add( "Reservations", Reservations );
+
+	// Format debug string
+	constexpr auto Format = TEXT( 
+		"[AITargetComponent]\n"
+		"Tokens: {RemainingTokens}/{MaxTokens}\n"
+		"TokenCooldown: {TokenCooldown}\n"
+		"Reservations:\n"
+		"{Reservations}\n"
+	);
+	FString DebugString = FString::Format( Format, Args );
+
+	DrawDebugString(
+		GetWorld(),
+		FVector { 0.0f, 0.0f, 50.0f },
+		DebugString,
+		GetOwner(),
+		FColor::White,
+		/* Duration */ 0.0f
+	);
+}
+
 bool UAITargetComponent::ReserveTokens( AActor* Reserver, int32 Tokens )
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
+
+	// Check for cooldown
+	if ( GetTokenCooldown() > 0.0f )
+	{
+		UE_VLOG(
+			GetOwner(),
+			LogTemp, Verbose,
+			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: token reservation in cooldown." ),
+			Tokens, *GetNameSafe( Reserver )
+		);
+		return false;
+	}
 
 	// Check if enough tokens are available
 	if ( Tokens > GetRemainingTokens() ) 
@@ -25,7 +76,7 @@ bool UAITargetComponent::ReserveTokens( AActor* Reserver, int32 Tokens )
 			GetOwner(),
 			LogTemp, Verbose,
 			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: not enough tokens available." ),
-			Tokens, *Reserver->GetName()
+			Tokens, *GetNameSafe( Reserver )
 		);
 		return false;
 	}
@@ -40,7 +91,7 @@ bool UAITargetComponent::ReserveTokens( AActor* Reserver, int32 Tokens )
 		GetOwner(),
 		LogTemp, Verbose,
 		TEXT( "AITargetComponent: Reserved %d tokens for %s (now a total of %d tokens)" ),
-		Tokens, *Reserver->GetName(), ResultingTokens
+		Tokens, *GetNameSafe( Reserver ), ResultingTokens
 	);
 
 	return true;
@@ -48,7 +99,7 @@ bool UAITargetComponent::ReserveTokens( AActor* Reserver, int32 Tokens )
 
 bool UAITargetComponent::FreeTokens( AActor* Reserver, int32 Tokens )
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
 
 	int32 ReserverTokens = GetReservedTokens( Reserver );
 	if ( ReserverTokens == 0 )
@@ -57,7 +108,7 @@ bool UAITargetComponent::FreeTokens( AActor* Reserver, int32 Tokens )
 			GetOwner(),
 			LogTemp, Verbose,
 			TEXT( "AITargetComponent: Failed to free %d tokens for %s: no reservations." ),
-			Tokens, *Reserver->GetName()
+			Tokens, *GetNameSafe( Reserver )
 		);
 		return false;
 	}
@@ -84,7 +135,7 @@ bool UAITargetComponent::FreeTokens( AActor* Reserver, int32 Tokens )
 		GetOwner(),
 		LogTemp, Verbose,
 		TEXT( "AITargetComponent: Freed %d tokens for %s (now a total of %d tokens)" ),
-		Tokens, *Reserver->GetName(), ResultingTokens
+		Tokens, *GetNameSafe( Reserver ), ResultingTokens
 	);
 
 	return true;
@@ -95,9 +146,21 @@ void UAITargetComponent::ClearTokens()
 	ReservedTokens.Empty();
 }
 
+void UAITargetComponent::SetTokenCooldown( float Seconds )
+{
+	UE_VLOG(
+		GetOwner(),
+		LogTemp, Verbose,
+		TEXT( "AITargetComponent: Set token cooldown to %.2fs" ),
+		Seconds
+	);
+
+	EndTokenCooldownTime = GetWorld()->GetTimeSeconds() + Seconds;
+}
+
 int32 UAITargetComponent::GetReservedTokens( AActor* Reserver ) const
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
 
 	auto Itr = ReservedTokens.Find( Reserver );
 	if ( Itr == nullptr ) return 0;
@@ -117,9 +180,16 @@ int32 UAITargetComponent::GetRemainingTokens() const
 	return RemainingTokens;
 }
 
+float UAITargetComponent::GetTokenCooldown() const
+{
+	return EndTokenCooldownTime - GetWorld()->GetTimeSeconds();
+}
+
 bool UAITargetComponent::ReserveGroupPlace( AActor* Reserver, int32& GroupIndex )
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
+
+	// TODO: Implement actual reservation
 
 	for ( int Index = 0; Index < GroupsSettings.Num(); Index++ )
 	{
@@ -145,7 +215,7 @@ bool UAITargetComponent::ReserveGroupPlace( AActor* Reserver, int32& GroupIndex 
 
 void UAITargetComponent::MoveGroupPlace( AActor* Reserver, int32 NewGroupIndex )
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
 
 	ReservedGroupPlaces.Remove( Reserver );
 	ReservedGroupPlaces.Add( Reserver, NewGroupIndex );
@@ -155,7 +225,7 @@ void UAITargetComponent::MoveGroupPlace( AActor* Reserver, int32 NewGroupIndex )
 
 bool UAITargetComponent::FreeGroupPlace( AActor* Reserver )
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
 
 	int32 GroupIndex = GetReservedGroupPlace( Reserver );
 	if ( GroupIndex == -1 ) return false;
@@ -179,7 +249,7 @@ bool UAITargetComponent::FreeGroupPlace( AActor* Reserver )
 
 int32 UAITargetComponent::GetReservedGroupPlace( AActor* Reserver ) const
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
 
 	auto Itr = ReservedGroupPlaces.Find( Reserver );
 	if ( Itr == nullptr ) return -1;
@@ -219,7 +289,7 @@ TMap<int32, FActorArray> UAITargetComponent::GetActorsByGroupPlaces() const
 
 void UAITargetComponent::FreeReservations( AActor* Reserver )
 {
-	verify( IsValid( Reserver ) );
+	verify( Reserver != nullptr );
 
 	FreeTokens( Reserver );
 	FreeGroupPlace( Reserver );

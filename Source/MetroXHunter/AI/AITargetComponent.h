@@ -37,6 +37,10 @@ public:
 	UAITargetComponent();
 
 	virtual void BeginPlay() override;
+	virtual void TickComponent( 
+		float DeltaTime,
+		ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction
+	) override;
 
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
 	bool ReserveTokens( AActor* Reserver, int32 Tokens );
@@ -44,11 +48,15 @@ public:
 	bool FreeTokens( AActor* Reserver, int32 Tokens = 0 );
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
 	void ClearTokens();
+	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
+	void SetTokenCooldown( float Seconds );
 
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
 	int32 GetReservedTokens( AActor* Reserver ) const;
 	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
 	int32 GetRemainingTokens() const;
+	UFUNCTION( BlueprintCallable, Category = "AITarget|Tokens" )
+	float GetTokenCooldown() const;
 
 	UFUNCTION( BlueprintCallable, Category = "AITarget|GroupPlaces" )
 	bool ReserveGroupPlace( AActor* Reserver, int32& GroupIndex );
@@ -77,4 +85,6 @@ public:
 private:
 	TMap<AActor*, int32> ReservedTokens {};
 	TMap<AActor*, int32> ReservedGroupPlaces {};
+
+	float EndTokenCooldownTime = 0.0f;
 };
