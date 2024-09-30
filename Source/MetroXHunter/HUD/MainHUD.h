@@ -36,9 +36,6 @@ public:
 	void ShowNewTextIndication( const FText& TextToShow );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
-	void UpdateAmmoCount();
-
-	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD" )
 	void SetUIMode( bool bShouldHideUI );
 
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "HUD|AimAssist" )

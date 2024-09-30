@@ -46,6 +46,15 @@ public:
 	UFUNCTION( BlueprintCallable )
 	int GetCurrentAmmoAmount() const;
 
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnAmmoUpdate, int, NewAmmoCount );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Inventory|Event" )
+	FOnAmmoUpdate OnAmmoUpdate;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnSyringeUpdate, int, NewSyringeCount );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Inventory|Event" )
+	FOnSyringeUpdate OnSyringeUpdate;
+
 protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Inventory|DataAsset" )
 	UInventoryData* InventoryDataAsset = nullptr;

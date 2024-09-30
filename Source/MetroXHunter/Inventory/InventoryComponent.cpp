@@ -28,7 +28,6 @@ void UInventoryComponent::LateBeginPlay()
 {
 	APlayerController* PlayerController = GetOwner()->GetInstigator()->GetLocalViewingPlayerController();
 	MainHUD = ( PlayerController->GetHUD() );
-	IMainHUD::Execute_UpdateAmmoCount( MainHUD );
 }
 
 int UInventoryComponent::AddToInventory( EPickupType PickupType, int Amount )
@@ -45,7 +44,7 @@ int UInventoryComponent::AddToInventory( EPickupType PickupType, int Amount )
 				InventoryDataAsset->MaxAmmoAmountCapaicty
 			);
 
-			IMainHUD::Execute_UpdateAmmoCount( MainHUD );
+			OnAmmoUpdate.Broadcast( CurrentAmmoAmount );
 			break;
 		}
 		case EPickupType::Syringe:
@@ -55,6 +54,8 @@ int UInventoryComponent::AddToInventory( EPickupType PickupType, int Amount )
 				CurrentSyringeSegmentAmount,
 				InventoryDataAsset->MaxSyringeSegmentCapacity
 			);
+
+			OnSyringeUpdate.Broadcast( CurrentSyringeSegmentAmount );
 			break;
 		}
 	}
@@ -71,18 +72,19 @@ void UInventoryComponent::ClearSyringeSegments()
 void UInventoryComponent::ClearAmmoAmount()
 {
 	CurrentAmmoAmount = 0;
-	IMainHUD::Execute_UpdateAmmoCount( MainHUD );
+	OnAmmoUpdate.Broadcast( CurrentAmmoAmount );
 }
 
 void UInventoryComponent::FullyFillSyringe()
 {
 	CurrentSyringeSegmentAmount = InventoryDataAsset->MaxSyringeSegmentCapacity;
+	OnSyringeUpdate.Broadcast( CurrentSyringeSegmentAmount );
 }
 
 void UInventoryComponent::FullyFillAmmo()
 {
 	CurrentAmmoAmount = InventoryDataAsset->MaxAmmoAmountCapaicty;
-	IMainHUD::Execute_UpdateAmmoCount( MainHUD );
+	OnAmmoUpdate.Broadcast( CurrentAmmoAmount );
 }
 
 bool UInventoryComponent::IsSyringeFull()
