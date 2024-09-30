@@ -34,9 +34,29 @@ void UQuickTimeEventComponent::TickComponent(
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
+	// Check for dead zone time
+	float EventTime = GetEventTime();
+	if ( bIsInDeadZone )
+	{
+		// Stop dead zone if we went over its time
+		if ( EventTime >= DataAsset->DeadZoneTime )
+		{
+			DecreaseOffsetTime = EventTime;
+			bIsInDeadZone = false;
+		}
+		else
+		{
+			return;
+		}
+	}
+
 	// Decrease progress over time
 	float ProgressDecrease = GetProgressDecreasePerSecond();
 	InputProgress -= ProgressDecrease * DeltaTime;
+	UE_VLOG(
+		this, LogTemp, Verbose,
+		TEXT( "QuickTimeEvent is decreasing by a progress of %f!" ), ProgressDecrease * PERCENT
+	);
 	UE_VLOG(
 		this, LogTemp, Verbose,
 		TEXT( "QuickTimeEvent is running with a progress of %f!" ), InputProgress
@@ -60,6 +80,7 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
 
 	DataAsset = NewDataAsset;
 	InputProgress = DataAsset->StartProgress / PERCENT;
+	bIsInDeadZone = true;
 
 	// Switch to quick time event's input mapping context
 	verify( !InputMappingContext.IsNull() );
@@ -103,7 +124,7 @@ float UQuickTimeEventComponent::GetProgressDecreasePerSecond() const
 		return DataAsset->ProgressDecreasePerSecond / PERCENT;
 	}
 	
-	float Time = GetEventTime();
+	float Time = GetEventTime() - DecreaseOffsetTime;
 	return Curve->GetFloatValue( Time ) / PERCENT;
 }
 
@@ -149,4 +170,11 @@ void UQuickTimeEventComponent::OnInput( const FInputActionInstance& InputInstanc
 	if ( InputInstance.GetSourceAction() != DataAsset->InputAction ) return;
 
 	InputProgress += DataAsset->ProgressPerInput / 100.0f;
+
+	// Manually stop dead zone when a correct input is received
+	if ( bIsInDeadZone )
+	{
+		DecreaseOffsetTime = GetEventTime();
+		bIsInDeadZone = false;
+	}
 }

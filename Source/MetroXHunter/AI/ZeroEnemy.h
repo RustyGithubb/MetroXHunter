@@ -119,24 +119,28 @@ public:
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStun );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
 	FOnStun OnStun;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUnStun );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
 	FOnStun OnUnStun;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnRush );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
 	FOnRush OnRush;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUnRush );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
 	FOnUnRush OnUnRush;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnMeleeAttack, bool, bIsStarting );
-	UPROPERTY( BlueprintAssignable, EditDefaultsOnly, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
 	FOnMeleeAttack OnMeleeAttack;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStateUpdate );
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
+	FOnStateUpdate OnStateUpdate;
 
 public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )

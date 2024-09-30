@@ -86,11 +86,14 @@ private:
 	void OnInput( const FInputActionInstance& InputInstance );
 
 private:
-	EQuickTimeEventResult Result = EQuickTimeEventResult::Succeed;
-
 	APlayerController* PlayerController = nullptr;
 	UQuickTimeEventData* DataAsset = nullptr;
 
 	float InputProgress = 0.0f;
 	float EventStartTime = 0.0f;
+	float DecreaseOffsetTime = 0.0f;
+
+	EQuickTimeEventResult Result = EQuickTimeEventResult::Succeed;
+
+	bool bIsInDeadZone = false;
 };
