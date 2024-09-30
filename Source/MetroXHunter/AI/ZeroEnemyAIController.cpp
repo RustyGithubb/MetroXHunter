@@ -9,7 +9,8 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 
-constexpr auto STATE_KEYNAME = TEXT( "CurrentState" );
+constexpr auto AI_KEYNAME = TEXT( "AIState" );
+constexpr auto PAWN_STATE_KEYNAME = TEXT( "PawnState" );
 constexpr auto TARGET_KEYNAME = TEXT( "TargetActor" );
 
 // Set default FollowingComponent to CrowdFollowingComponent so they move around each other
@@ -24,7 +25,8 @@ void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 	CustomPawn->OnUnStun.AddDynamic( this, &AZeroEnemyAIController::OnUnStun );
 	CustomPawn->OnRush.AddDynamic( this, &AZeroEnemyAIController::OnRush );
 	CustomPawn->OnUnRush.AddDynamic( this, &AZeroEnemyAIController::OnUnRush );
-
+	CustomPawn->OnStateUpdate.AddDynamic( this, &AZeroEnemyAIController::OnStateUpdate );
+	
 	verifyf( RunBehaviorTree( BehaviorTree ), TEXT( "Behavior Tree of %s failed to run" ), *GetName() );
 
 	// Disabling crowd simulation fixes a bug where AI can't move on navmesh; but it disables crowd 
@@ -55,12 +57,12 @@ void AZeroEnemyAIController::CombatTarget( AActor* InTarget )
 
 void AZeroEnemyAIController::SetState( EZeroEnemyAIState State )
 {
-	Blackboard->SetValueAsEnum( STATE_KEYNAME, (uint8)State );
+	Blackboard->SetValueAsEnum( AI_KEYNAME, (uint8)State );
 }
 
 EZeroEnemyAIState AZeroEnemyAIController::GetState() const
 {
-	return (EZeroEnemyAIState)Blackboard->GetValueAsEnum( STATE_KEYNAME );
+	return (EZeroEnemyAIState)Blackboard->GetValueAsEnum( AI_KEYNAME );
 }
 
 void AZeroEnemyAIController::SetTarget( AActor* InTarget )
@@ -159,12 +161,12 @@ void AZeroEnemyAIController::TickDebugDraw()
 
 void AZeroEnemyAIController::OnStun()
 {
-	SetState( EZeroEnemyAIState::Stun );
+	//SetState( EZeroEnemyAIState::Stun );
 }
 
 void AZeroEnemyAIController::OnUnStun()
 {
-	SetState( EZeroEnemyAIState::Chase );
+	//SetState( EZeroEnemyAIState::Chase );
 }
 
 void AZeroEnemyAIController::OnRush()
@@ -175,4 +177,9 @@ void AZeroEnemyAIController::OnRush()
 void AZeroEnemyAIController::OnUnRush()
 {
 	//SetState( EZeroEnemyAIState::Chase );
+}
+
+void AZeroEnemyAIController::OnStateUpdate()
+{
+	Blackboard->SetValueAsEnum( PAWN_STATE_KEYNAME, (uint8)CustomPawn->GetState() );
 }

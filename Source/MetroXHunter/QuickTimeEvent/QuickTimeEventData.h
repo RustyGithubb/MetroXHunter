@@ -35,6 +35,8 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
 	EQuickTimeEventType EventType = EQuickTimeEventType::Spam;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Seconds", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
+	float DeadZoneTime = 1.5f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
 	float StartProgress = 50.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )

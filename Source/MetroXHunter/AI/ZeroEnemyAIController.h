@@ -81,4 +81,7 @@ private:
 	void OnRush();
 	UFUNCTION()
 	void OnUnRush();
+
+	UFUNCTION()
+	void OnStateUpdate();
 };

@@ -129,7 +129,7 @@ void AZeroEnemy::CloseBulb()
 
 void AZeroEnemy::Stun( float StunTime, bool bUseDefaultAnimation )
 {
-	State = EZeroEnemyState::Stun;
+	SetState( EZeroEnemyState::Stun );
 	bUseStunAnimation = bUseDefaultAnimation;
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
@@ -148,8 +148,9 @@ void AZeroEnemy::Stun( float StunTime, bool bUseDefaultAnimation )
 
 void AZeroEnemy::UnStun()
 {
-	StunTimerHandle.Invalidate();
-	State = EZeroEnemyState::None;
+	SetState( EZeroEnemyState::None );
+
+	GetWorld()->GetTimerManager().ClearTimer( StunTimerHandle );
 
 	OnUnStun.Broadcast();
 
@@ -189,7 +190,7 @@ void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 
 void AZeroEnemy::RushAttack()
 {
-	State = EZeroEnemyState::RushAttack;
+	SetState( EZeroEnemyState::RushAttack );
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.SetTimer(
@@ -214,11 +215,9 @@ void AZeroEnemy::RushAttack()
 
 void AZeroEnemy::StartResolveRushAttack()
 {
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	TimerManager.ClearTimer( RushTimerHandle );
-	RushTimerHandle.Invalidate();
+	SetState( EZeroEnemyState::RushAttackResolve );
 
-	State = EZeroEnemyState::RushAttackResolve;
+	GetWorld()->GetTimerManager().ClearTimer( RushTimerHandle );
 
 	bUseStunAnimation = true;
 	StartStunRotation = GetActorRotation();
@@ -228,10 +227,9 @@ void AZeroEnemy::StartResolveRushAttack()
 
 void AZeroEnemy::StopRushAttack()
 {
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	TimerManager.ClearTimer( RushTimerHandle );
-	RushTimerHandle.Invalidate();
-	State = EZeroEnemyState::None;
+	SetState( EZeroEnemyState::None );
+	
+	GetWorld()->GetTimerManager().ClearTimer( RushTimerHandle );
 
 	// Reset walk speed
 	UpdateWalkSpeed();
@@ -268,6 +266,7 @@ void AZeroEnemy::ResetModifiers()
 void AZeroEnemy::SetState( EZeroEnemyState NewState )
 {
 	State = NewState;
+	OnStateUpdate.Broadcast();
 }
 
 EZeroEnemyState AZeroEnemy::GetState() const
@@ -333,7 +332,7 @@ void AZeroEnemy::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
 
 void AZeroEnemy::MeleeAttack_Implementation()
 {
-	State = EZeroEnemyState::MeleeAttack;
+	SetState( EZeroEnemyState::MeleeAttack );
 	OnMeleeAttack.Broadcast( true );
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "Start Melee Attack" ) );
@@ -341,7 +340,7 @@ void AZeroEnemy::MeleeAttack_Implementation()
 
 void AZeroEnemy::StopMeleeAttack_Implementation()
 {
-	State = EZeroEnemyState::None;
+	SetState( EZeroEnemyState::None );
 	OnMeleeAttack.Broadcast( false );
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Melee Attack" ) );
