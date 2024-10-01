@@ -48,6 +48,19 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicStunTime = 5.0f;
 
+	/*
+	 * Time to apply as a cooldown to the target's AITargetComponent
+	 * after a rush token has been freed.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "AI|Tokens", meta = ( Units = "Seconds" ) )
+	float RushTokenCooldown = 2.0f;
+	/*
+	 * Time to apply as a cooldown to the target's AITargetComponent 
+	 * after a melee token has been freed.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "AI|Tokens", meta = ( Units = "Seconds" ) )
+	float MeleeTokenCooldown = 1.5f;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Debug" )
 	bool bIsCrowdSimulationDisabled = false;
 
