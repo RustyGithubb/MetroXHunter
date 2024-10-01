@@ -65,11 +65,11 @@ public:
 	float GetInputProgress() const;
 
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnEventStarted );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FOnEventStarted, UQuickTimeEventComponent*, Component, UQuickTimeEventData*, DataAsset );
 	UPROPERTY( BlueprintAssignable, Category = "QuickTimeEvent" )
 	FOnEventStarted OnEventStarted;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnEventStopped, EQuickTimeEventResult, EventResult );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( FOnEventStopped, UQuickTimeEventComponent*, Component, UQuickTimeEventData*, DataAsset, EQuickTimeEventResult, EventResult );
 	UPROPERTY( BlueprintAssignable, Category = "QuickTimeEvent" )
 	FOnEventStopped OnEventStopped;
 

@@ -89,7 +89,7 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
 	SetComponentTickEnabled( true );
 
 	EventStartTime = GetWorld()->GetTimeSeconds();
-	OnEventStarted.Broadcast();
+	OnEventStarted.Broadcast( this, DataAsset );
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "QuickTimeEvent is starting!" ) );
 }
@@ -101,7 +101,7 @@ void UQuickTimeEventComponent::StopEvent( EQuickTimeEventResult EventResult )
 	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
 
 	Result = EventResult;
-	OnEventStopped.Broadcast( Result );
+	OnEventStopped.Broadcast( this, DataAsset, Result );
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "QuickTimeEvent has stopped!" ) );
 }

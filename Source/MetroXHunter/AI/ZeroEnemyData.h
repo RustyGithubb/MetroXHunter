@@ -5,6 +5,7 @@
 
 class UAISubstate;
 class USoundBase;
+class UQuickTimeEventData;
 
 /**
  * 
@@ -36,6 +37,11 @@ public:
 	int32 RushDamage = 50;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
 	UCurveFloat* RushSpeedCurve = nullptr;
+	/*
+	 * Data asset to use for the quick time event triggering after a rush hit the player.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
+	UQuickTimeEventData* RushQuickTimeEventDataAsset = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Melee" )
 	int32 MeleeDamage = 25;
