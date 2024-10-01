@@ -75,7 +75,7 @@ protected:
 	UFUNCTION()
 	virtual void Interact() {};
 
-	UFUNCTION()
+	UFUNCTION( BlueprintCallable )
 	virtual void OnCancelInteraction() {};
 
 	void OverridePlayerMappingContext();

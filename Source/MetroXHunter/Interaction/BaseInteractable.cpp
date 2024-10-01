@@ -115,6 +115,7 @@ void ABaseInteractable::SwitchCameraTarget()
 		BlendExp
 	);
 
+	PlayerController->GetPawn()->SetActorHiddenInGame( true );
 	OverridePlayerMappingContext();
 }
 
@@ -127,6 +128,9 @@ void ABaseInteractable::ResetCameraTarget()
 		EViewTargetBlendFunction::VTBlend_EaseInOut,
 		BlendExp
 	);
+
+	PlayerController->GetPawn()->SetActorHiddenInGame( false );
+
 
 	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
 }
