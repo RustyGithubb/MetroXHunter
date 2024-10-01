@@ -13,7 +13,7 @@ void FLatentQuickTimeEvent::UpdateOperation( FLatentResponse& Response )
 	{
 		bIsInitialized = true;
 
-		Component->StartEvent( DataAsset );
+		Component->StartEvent( DataAsset, Inflictor );
 		return;
 	}
 
@@ -47,7 +47,8 @@ void UQuickTimeEventBlueprintLibrary::LatentQuickTimeEvent(
 	FLatentActionInfo LatentInfo,
 	EQuickTimeEventOutputPins& OutputPins,
 	UQuickTimeEventComponent* Component,
-	UQuickTimeEventData* DataAsset
+	UQuickTimeEventData* DataAsset,
+	AActor* Inflictor
 )
 {
 	// Get world from context object (asserting)
@@ -63,6 +64,6 @@ void UQuickTimeEventBlueprintLibrary::LatentQuickTimeEvent(
 	if ( ExistingAction != nullptr ) return;
 
 	// Create a new action
-	auto Action = new FLatentQuickTimeEvent( LatentInfo, OutputPins, Component, DataAsset );
+	auto Action = new FLatentQuickTimeEvent( LatentInfo, OutputPins, Component, DataAsset, Inflictor );
 	LatentActionManager.AddNewAction( LatentInfo.CallbackTarget, LatentInfo.UUID, Action );
 }

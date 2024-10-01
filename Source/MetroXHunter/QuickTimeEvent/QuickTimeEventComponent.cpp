@@ -74,13 +74,16 @@ void UQuickTimeEventComponent::TickComponent(
 	}
 }
 
-void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
+void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset, AActor* NewInflictor )
 {
 	verifyf( IsValid( NewDataAsset ), TEXT( "QuickTimeEvent must start with a valid DataAsset!" ) );
 
 	DataAsset = NewDataAsset;
 	InputProgress = DataAsset->StartProgress / PERCENT;
+
+	Inflictor = NewInflictor;
 	bIsInDeadZone = true;
+	EventStartTime = GetWorld()->GetTimeSeconds();
 
 	// Switch to quick time event's input mapping context
 	verify( !InputMappingContext.IsNull() );
@@ -88,7 +91,6 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset )
 
 	SetComponentTickEnabled( true );
 
-	EventStartTime = GetWorld()->GetTimeSeconds();
 	OnEventStarted.Broadcast( this, DataAsset );
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "QuickTimeEvent is starting!" ) );
@@ -136,6 +138,11 @@ EQuickTimeEventResult UQuickTimeEventComponent::GetEventResult() const
 UQuickTimeEventData* UQuickTimeEventComponent::GetEventDataAsset() const
 {
 	return DataAsset;
+}
+
+AActor* UQuickTimeEventComponent::GetEventInflictor() const
+{
+	return Inflictor;
 }
 
 float UQuickTimeEventComponent::GetInputProgress() const

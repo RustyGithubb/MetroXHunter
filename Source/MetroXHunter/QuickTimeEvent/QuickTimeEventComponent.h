@@ -46,8 +46,20 @@ public:
 		FActorComponentTickFunction* ThisTickFunction
 	) override;
 
+	/*
+	 * Starts a quick time event given a data asset and an optional inflictor.
+	 * 
+	 * @param NewDataAsset		Data asset of the quick time event
+	 * @param NewInflictor		(optional) Actor causing the event
+	 */
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
-	void StartEvent( UQuickTimeEventData* NewDataAsset );
+	void StartEvent( UQuickTimeEventData* NewDataAsset, AActor* NewInflictor );
+	/*
+	 * Stops the current quick time event with a specific result.
+	 * This is used internally so you may not need this, unless you have specific situations.
+	 * 
+	 * @param EventResult		Result of the event, either success of failure
+	 */
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	void StopEvent( EQuickTimeEventResult EventResult );
 
@@ -61,6 +73,8 @@ public:
 	EQuickTimeEventResult GetEventResult() const;
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	UQuickTimeEventData* GetEventDataAsset() const;
+	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
+	AActor* GetEventInflictor() const;
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent" )
 	float GetInputProgress() const;
 
@@ -88,6 +102,7 @@ private:
 private:
 	APlayerController* PlayerController = nullptr;
 	UQuickTimeEventData* DataAsset = nullptr;
+	AActor* Inflictor = nullptr;
 
 	float InputProgress = 0.0f;
 	float EventStartTime = 0.0f;
