@@ -79,7 +79,11 @@ protected:
 	virtual void OnCancelInteraction() {};
 
 	void OverridePlayerMappingContext();
+
+	UFUNCTION( BlueprintCallable )
 	void SwitchCameraTarget();
+
+	UFUNCTION( BlueprintCallable )
 	void ResetCameraTarget();
 
 	UFUNCTION()

@@ -13,7 +13,6 @@
 #include "EnhancedInputComponent.h"
 #include "InputMappingContext.h"
 
-#include "UtilityLibrary.h"
 ALocker::ALocker()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -25,6 +24,8 @@ ALocker::ALocker()
 
 void ALocker::Interact()
 {
+	if ( bIsGameEnded ) return;
+
 	ShowSkillCheckWidget();
 	Widget->SetVisibility( false );
 
@@ -36,21 +37,15 @@ void ALocker::Interact()
 	BindInputs();
 }
 
-void ALocker::OnCancelInteraction()
-{
-	UnBindInputs();
-
-	RemoveSkillCheckWidget();
-	Widget->SetVisibility( true );
-
-	ResetCameraTarget();
-	UUtilityLibrary::PrintMessage( TEXT( "ON CANCEL INTERACTION" ) );
-	bIsSkillCheckActive = false;
-}
-
 void ALocker::EndSkillCheck( bool bShouldReward )
 {
-	OnCancelInteraction();
+	UnBindInputs();
+	Widget->SetVisibility( true );
+
+	bIsSkillCheckActive = false;
+	bIsGameEnded = true;
+
+	ResetCameraTarget();
 	RemoveInteractionComponent();
 
 	if ( bShouldReward )
@@ -77,7 +72,6 @@ void ALocker::SpawnLootItem()
 void ALocker::BindInputs()
 {
 	verify( InteractAction != nullptr );
-	verify( CancelInteractAction != nullptr );
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
@@ -87,12 +81,6 @@ void ALocker::BindInputs()
 			InteractAction.LoadSynchronous(), ETriggerEvent::Started,
 			this, &ALocker::OnSkillCheckAttempt
 		);
-
-		// Cancel Interaction
-		//EnhancedInputComponent->BindAction(
-		//	CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
-		//	this, &ALocker::OnCancelInteraction
-		//);
 	}
 }
 

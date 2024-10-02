@@ -38,15 +38,8 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
-
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	TSoftObjectPtr<UInputAction> RotateAction = nullptr;
-
 protected:
 	void Interact() override;
-	void OnCancelInteraction() override;
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void OnSkillCheckAttempt();
@@ -66,6 +59,9 @@ protected:
 protected:
 	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
 	bool bIsSkillCheckActive = false;
+
+	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
+	bool bIsGameEnded = false;
 
 private:
 	void BindInputs();
