@@ -13,6 +13,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputMappingContext.h"
 
+#include "UtilityLibrary.h"
 ALocker::ALocker()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -43,19 +44,24 @@ void ALocker::OnCancelInteraction()
 	Widget->SetVisibility( true );
 
 	ResetCameraTarget();
+	UUtilityLibrary::PrintMessage( TEXT( "ON CANCEL INTERACTION" ) );
 	bIsSkillCheckActive = false;
 }
 
-void ALocker::EndSkillCheck()
+void ALocker::EndSkillCheck( bool bShouldReward )
 {
 	OnCancelInteraction();
 	RemoveInteractionComponent();
-	SpawnLootItem();
+
+	if ( bShouldReward )
+	{
+		SpawnLootItem();
+	}
 }
 
 void ALocker::SpawnLootItem()
 {
-	if ( !ItemToSpawn ) return; 
+	if ( !ItemToSpawn ) return;
 
 	FActorSpawnParameters SpawnInfo {};
 
@@ -83,10 +89,10 @@ void ALocker::BindInputs()
 		);
 
 		// Cancel Interaction
-		EnhancedInputComponent->BindAction(
-			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
-			this, &ALocker::OnCancelInteraction
-		);
+		//EnhancedInputComponent->BindAction(
+		//	CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
+		//	this, &ALocker::OnCancelInteraction
+		//);
 	}
 }
 

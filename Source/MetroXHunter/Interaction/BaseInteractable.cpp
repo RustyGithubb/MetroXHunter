@@ -131,7 +131,6 @@ void ABaseInteractable::ResetCameraTarget()
 
 	PlayerController->GetPawn()->SetActorHiddenInGame( false );
 
-
 	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
 }
 

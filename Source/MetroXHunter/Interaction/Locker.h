@@ -58,13 +58,13 @@ protected:
 	void RemoveSkillCheckWidget();
 
 	UFUNCTION( BlueprintCallable, Category = "Locker|SkillCheck" )
-	void EndSkillCheck();
+	void EndSkillCheck(bool bShouldReward);
 
 	UFUNCTION( BlueprintCallable, Category = "Locker|Loot" )
 	void SpawnLootItem();
 
 protected:
-	UPROPERTY( BlueprintReadOnly, Category = "Locker|SkillCheck" )
+	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
 	bool bIsSkillCheckActive = false;
 
 private:
