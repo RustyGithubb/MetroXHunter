@@ -33,4 +33,8 @@ public:
 
 	UPROPERTY( VisibleDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	AParasite* CustomPawn = nullptr;
+
+private:
+	UFUNCTION()
+	void OnSeePawn( APawn* SeenPawn );
 };

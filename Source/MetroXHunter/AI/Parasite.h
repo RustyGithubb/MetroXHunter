@@ -10,6 +10,8 @@
 
 class AZeroEnemy;
 class APossessableCorpse;
+class UHealthComponent;
+class UPawnSensingComponent;
 
 UCLASS( Abstract )
 class METROXHUNTER_API AParasite : public ACharacter
@@ -29,11 +31,17 @@ public:
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( 
-		FOnPossess, 
+		FOnPossessCorpse, 
 		AParasite*, Parasite, 
 		APossessableCorpse*, Corpse,
 		AZeroEnemy*, Enemy 
 	);
 	UPROPERTY( BlueprintAssignable, Category = "Parasite" )
-	FOnPossess OnPossess {};
+	FOnPossessCorpse OnPossessCorpse {};
+
+public:
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "Parasite" )
+	UHealthComponent* HealthComponent = nullptr;
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "Parasite" )
+	UPawnSensingComponent* PawnSensingComponent = nullptr;
 };
