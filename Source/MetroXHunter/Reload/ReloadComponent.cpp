@@ -77,8 +77,10 @@ void UReloadComponent::StartReloadSequence()
 	CurrentGunState = EGunState::Reloading;
 	ReloadElapsedTime = 0.0f;
 
-	GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadPlayback );
-	GetWorld()->GetTimerManager().ClearTimer( TimerHandleReloadFinalize );
+	// Reset timers
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer( TimerHandleReloadPlayback );
+	TimerManager.ClearTimer( TimerHandleReloadFinalize );
 
 	SetComponentTickEnabled( true );
 
@@ -121,9 +123,8 @@ void UReloadComponent::RetrievePlayerInventory()
 	AActor* Owner = GetOwner();
 	if ( Owner )
 	{
-		PlayerInventory = CastChecked<UInventoryComponent>( 
-			Owner->GetComponentByClass<UInventoryComponent>() 
-		);
+		PlayerInventory = Owner->GetComponentByClass<UInventoryComponent>();
+		verify( IsValid( PlayerInventory ) );
 	}
 }
 
@@ -172,10 +173,9 @@ void UReloadComponent::SetAmmoCount( int NewCount )
 
 void UReloadComponent::DecrementAmmo()
 {
-	if ( CurrentAmmoInMagazine > 0 )
-	{
-		SetAmmoCount( CurrentAmmoInMagazine - 1 );
-	}
+	if ( CurrentAmmoInMagazine <= 0 ) return;
+
+	SetAmmoCount( CurrentAmmoInMagazine - 1 );
 }
 
 void UReloadComponent::GetCurrentAmmo( int& CurrentAmmo ) const
@@ -255,7 +255,8 @@ void UReloadComponent::OnReloadInput()
 			ReloadElapsedTime +
 			ReloadDataAsset->PerfectReloadAnimTime;
 
-		TriggerReload( EReloadState::Perfect,
+		TriggerReload( 
+			EReloadState::Perfect,
 			ReloadDataAsset->PerfectReloadAnimTime,
 			FinalPerfectWaitingTime
 		);
@@ -272,7 +273,8 @@ void UReloadComponent::OnReloadInput()
 			ReloadElapsedTime +
 			ReloadDataAsset->ActiveReloadAnimTime;
 
-		TriggerReload( EReloadState::Active,
+		TriggerReload( 
+			EReloadState::Active,
 			ReloadDataAsset->ActiveReloadAnimTime,
 			FinalActiveWaitingTime
 		);
@@ -285,12 +287,28 @@ void UReloadComponent::OnReloadInput()
 		ReloadDataAsset->FailedReloadPenaltyTime;
 
 	// Trigger Failed reload if out of Active or Perfect Range
-	TriggerReload( EReloadState::Failed,
+	TriggerReload( 
+		EReloadState::Failed,
 		ReloadDataAsset->FailedReloadPenaltyTime,
 		FinalFailedWaitingTime
 	);
+}
 
+void UReloadComponent::CancelReload()
+{
+	// Reset timers
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer( TimerHandleReloadPlayback );
+	TimerManager.ClearTimer( TimerHandleReloadFinalize );
 
+	bIsReloadActive = false;
+	CurrentGunState = EGunState::Idle;
+	ReloadElapsedTime = 0.0f;
+
+	SetComponentTickEnabled( false );
+
+	// Notify that the reload is canceled
+	OnReloadStateChanged.Broadcast( EReloadState::Cancel );
 }
 
 void UReloadComponent::FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed )
