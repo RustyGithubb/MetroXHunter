@@ -37,10 +37,11 @@ public:
 	FLatentQuickTimeEvent(
 		FLatentActionInfo& LatentInfo, EQuickTimeEventOutputPins& OutputPins,
 		UQuickTimeEventComponent* Component,
-		UQuickTimeEventData* DataAsset
+		UQuickTimeEventData* DataAsset,
+		AActor* Inflictor
 	)
 		: LatentInfo( LatentInfo ), OutputPins( OutputPins ),
-		  Component( Component ), DataAsset( DataAsset )
+		  Component( Component ), DataAsset( DataAsset ), Inflictor( Inflictor )
 	{}
 
 	virtual void UpdateOperation( FLatentResponse& Response ) override;
@@ -53,6 +54,7 @@ public:
 
 	UQuickTimeEventComponent* Component = nullptr;
 	UQuickTimeEventData* DataAsset = nullptr;
+	AActor* Inflictor = nullptr;
 };
 
 /*
@@ -72,7 +74,8 @@ public:
 	 * @param LatentInfo	Info of the latent action
 	 * @param OutputPins	Output execution pins to trigger
 	 * @param Component		Component to start the quick time event
-	 * @param DataAsset		Quick time event data to start
+	 * @param DataAsset		Data asset of the quick time event
+	 * @param Inflictor		(optional) Actor causing the event
 	 */
 	UFUNCTION( BlueprintCallable, Category = "QuickTimeEvent", meta = ( WorldContext = "WorldContext", Latent, LatentInfo = "LatentInfo", ExpandEnumAsExecs = "OutputPins" ) )
 	static void LatentQuickTimeEvent(
@@ -80,6 +83,7 @@ public:
 		FLatentActionInfo LatentInfo,
 		EQuickTimeEventOutputPins& OutputPins,
 		UQuickTimeEventComponent* Component,
-		UQuickTimeEventData* DataAsset
+		UQuickTimeEventData* DataAsset,
+		AActor* Inflictor
 	);
 };
