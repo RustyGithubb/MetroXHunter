@@ -19,6 +19,11 @@ bool UUtilityLibrary::LoadFileAsString( const FString& Path, FString& Data )
     return FFileHelper::LoadFileToString( Data, *Path );
 }
 
+FString UUtilityLibrary::GetSoftObjectPathAssetName( const FSoftObjectPath& Path )
+{
+    return Path.GetAssetName();
+}
+
 bool UUtilityLibrary::IsWithinEditor()
 {
 #if WITH_EDITOR

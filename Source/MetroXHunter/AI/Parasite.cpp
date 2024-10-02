@@ -6,9 +6,17 @@
 #include "AI/PossessableCorpse.h"
 #include "AI/ZeroEnemy.h"
 
+#include "Health/HealthComponent.h"
+#include "Perception/PawnSensingComponent.h"
+
 AParasite::AParasite()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "HealthComponent" ) );
+	HealthComponent->MaxHealth = 1;
+
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>( TEXT( "PawnSensingComponent" ) );
 }
 
 void AParasite::BeginPlay()
@@ -46,5 +54,5 @@ void AParasite::Possess( APossessableCorpse* Corpse )
 	Enemy->Data = Corpse->DataAsset;
 	Enemy->Stun( 2.0f, false );
 
-	OnPossess.Broadcast( this, Corpse, Enemy );
+	OnPossessCorpse.Broadcast( this, Corpse, Enemy );
 }

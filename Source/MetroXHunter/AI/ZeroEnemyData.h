@@ -5,6 +5,7 @@
 
 class UAISubstate;
 class USoundBase;
+class UQuickTimeEventData;
 
 /**
  * 
@@ -36,6 +37,11 @@ public:
 	int32 RushDamage = 50;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
 	UCurveFloat* RushSpeedCurve = nullptr;
+	/*
+	 * Data asset to use for the quick time event triggering after a rush hit the player.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Rush" )
+	UQuickTimeEventData* RushQuickTimeEventDataAsset = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Melee" )
 	int32 MeleeDamage = 25;
@@ -47,6 +53,19 @@ public:
 	float PanicBulbOpenTime = 5.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicStunTime = 5.0f;
+
+	/*
+	 * Time to apply as a cooldown to the target's AITargetComponent
+	 * after a rush token has been freed.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "AI|Tokens", meta = ( Units = "Seconds" ) )
+	float RushTokenCooldown = 2.0f;
+	/*
+	 * Time to apply as a cooldown to the target's AITargetComponent 
+	 * after a melee token has been freed.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "AI|Tokens", meta = ( Units = "Seconds" ) )
+	float MeleeTokenCooldown = 1.5f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Debug" )
 	bool bIsCrowdSimulationDisabled = false;
