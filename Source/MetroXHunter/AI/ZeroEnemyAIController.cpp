@@ -36,6 +36,10 @@ void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 		GetComponentByClass<UCrowdFollowingComponent>()->SetCrowdSimulationState( ECrowdSimulationState::Disabled );
 	}
 
+	// Update blackboard values with data asset
+	Blackboard->SetValueAsFloat( TEXT( "RushTokenCooldown" ), CustomPawn->Data->RushTokenCooldown );
+	Blackboard->SetValueAsFloat( TEXT( "MeleeTokenCooldown" ), CustomPawn->Data->MeleeTokenCooldown );
+
 	Super::OnPossess( InPawn );
 }
 

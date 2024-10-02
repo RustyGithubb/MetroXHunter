@@ -15,8 +15,9 @@ public class MetroXHunter : ModuleRules
 				"Engine",
 				"InputCore",
 				"UMG",
-                "EnhancedInput",
-            }
+				"EnhancedInput",
+				"GameplayTags",
+			}
 		);
 
 		PrivateDependencyModuleNames.AddRange( new string[] { } );

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
+#include "GameplayTagContainer.h"
 #include "QuickTimeEventData.generated.h"
 
 /*
@@ -32,6 +33,9 @@ class METROXHUNTER_API UQuickTimeEventData : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent", meta = ( Categories = "QuickTimeEvent" ) )
+	FGameplayTag EventTag {};
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
 	EQuickTimeEventType EventType = EQuickTimeEventType::Spam;
 
