@@ -30,11 +30,21 @@ void ALocker::Interact()
 	Widget->SetVisibility( false );
 
 	SwitchCameraTarget();
-
-	bIsSkillCheckActive = true;
 	SetActorTickEnabled( true );
 
 	BindInputs();
+}
+
+void ALocker::OnCancelInteraction()
+{
+	if ( bIsSkillCheckActive ) return;
+
+	UnBindInputs();
+
+	RemoveSkillCheckWidget();
+	Widget->SetVisibility( true );
+
+	ResetCameraTarget();
 }
 
 void ALocker::EndSkillCheck( bool bShouldReward )
@@ -72,6 +82,7 @@ void ALocker::SpawnLootItem()
 void ALocker::BindInputs()
 {
 	verify( InteractAction != nullptr );
+	verify( CancelInteractAction != nullptr );
 
 	// Set up action bindings
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
@@ -80,6 +91,12 @@ void ALocker::BindInputs()
 		EnhancedInputComponent->BindAction(
 			InteractAction.LoadSynchronous(), ETriggerEvent::Started,
 			this, &ALocker::OnSkillCheckAttempt
+		);
+
+		// Cancel Interaction
+		EnhancedInputComponent->BindAction(
+			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
+			this, &ALocker::OnCancelInteraction
 		);
 	}
 }

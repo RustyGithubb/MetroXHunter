@@ -42,8 +42,12 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
+
 protected:
 	void Interact() override;
+	void OnCancelInteraction() override;
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void OnSkillCheckAttempt();
