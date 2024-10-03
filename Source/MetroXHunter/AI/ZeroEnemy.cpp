@@ -2,6 +2,8 @@
 #include "AI/AISubstateManagerComponent.h"
 #include "AI/AISubstate.h"
 
+#include "AI/SpitProjectile.h"
+
 #include "Health/HealthComponent.h"
 
 #include "UtilityLibrary.h"
@@ -240,6 +242,17 @@ void AZeroEnemy::StopRushAttack()
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Rush Attack" ) );
 }
 
+void AZeroEnemy::SpitAttack( const FVector& TargetLocation )
+{
+	auto SpitProjectile = GetWorld()->SpawnActor<ASpitProjectile>( 
+		Data->SpitProjectileClass,
+		GetSpitAttackOrigin(), GetActorRotation()
+	);
+	if ( !IsValid( SpitProjectile ) ) return;
+
+	SpitProjectile->ComputeVelocityToLocation( TargetLocation, Data->SpitSpreadRange );
+}
+
 bool AZeroEnemy::IsBulbOpened() const
 {
 	return bIsBulbOpened;
@@ -299,7 +312,7 @@ bool AZeroEnemy::TakeDamage_Implementation( const FDamageContext& DamageContext 
 	);
 
 	// Check if damaged one of its body part
-	if ( HitComponent->ComponentHasTag( Data->BodyPartTag ) )
+	if ( IsValid( HitComponent ) && HitComponent->ComponentHasTag(Data->BodyPartTag) )
 	{
 		DestroyBodyPart( HitComponent );
 		ApplyKnockback( KnockbackDirection, Data->BodyPartHitKnockbackForce );

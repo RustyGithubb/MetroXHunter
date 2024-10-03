@@ -6,6 +6,7 @@
 class UAISubstate;
 class USoundBase;
 class UQuickTimeEventData;
+class ASpitProjectile;
 
 /**
  * 
@@ -46,8 +47,13 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Melee" )
 	int32 MeleeDamage = 25;
 
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Spit" )
+	TSubclassOf<ASpitProjectile> SpitProjectileClass {};
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Spit" )
+	float SpitSpreadRange = 300.0f;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Substates" )
-	TArray<TSubclassOf<UAISubstate>> SubstateClasses;
+	TArray<TSubclassOf<UAISubstate>> SubstateClasses {};
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Panic", meta = ( Units = "Seconds" ) )
 	float PanicBulbOpenTime = 5.0f;

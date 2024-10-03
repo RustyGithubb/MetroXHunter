@@ -90,6 +90,11 @@ public:
 	void StopMeleeAttack();
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void SpitAttack( const FVector& TargetLocation );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "ZeroEnemy" )
+	FVector GetSpitAttackOrigin() const;
+
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	bool IsBulbOpened() const;
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	bool IsRushing() const;
