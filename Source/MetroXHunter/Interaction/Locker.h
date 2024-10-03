@@ -12,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 class USceneComponent;
 class ABasePickUp;
+class ULockerData;
 
 /*
  * A locker with potential pickups loot inside. To open it the Player needs to succeed a skill check.
@@ -25,6 +26,9 @@ public:
 	ALocker();
 
 public:
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Data" )
+	ULockerData* LockerDataAsset;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	float ItemAmount = 11;
 

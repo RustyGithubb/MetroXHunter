@@ -39,19 +39,19 @@ void ALocker::Interact()
 
 void ALocker::EndSkillCheck( bool bShouldReward )
 {
-	UnBindInputs();
-	Widget->SetVisibility( true );
-
-	bIsSkillCheckActive = false;
 	bIsGameEnded = true;
+	bIsSkillCheckActive = false;
+
+	UnBindInputs();
 
 	ResetCameraTarget();
-	RemoveInteractionComponent();
 
 	if ( bShouldReward )
 	{
 		SpawnLootItem();
 	}
+
+	RemoveInteractionComponent();
 }
 
 void ALocker::SpawnLootItem()
