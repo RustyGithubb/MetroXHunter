@@ -28,7 +28,7 @@ public:
 	 *
 	 * @return Cheat Function instance or nullptr if not found
 	 */
-	UFUNCTION( BlueprintCallable, Category = "CheatManager" )
+	UFUNCTION( BlueprintCallable, Category = "CheatManager", meta = ( DeterminesOutputType = "Class" ) )
 	UMetroCheatFunction* FindCheatFunctionOfClass( const TSubclassOf<UMetroCheatFunction> Class );
 
 public:

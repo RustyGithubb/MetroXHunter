@@ -75,11 +75,15 @@ protected:
 	UFUNCTION()
 	virtual void Interact() {};
 
-	UFUNCTION()
+	UFUNCTION( BlueprintCallable )
 	virtual void OnCancelInteraction() {};
 
 	void OverridePlayerMappingContext();
+
+	UFUNCTION( BlueprintCallable )
 	void SwitchCameraTarget();
+
+	UFUNCTION( BlueprintCallable )
 	void ResetCameraTarget();
 
 	UFUNCTION()

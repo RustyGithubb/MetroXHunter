@@ -189,6 +189,15 @@ public:
 	static bool LoadFileAsString( const FString& Path, FString& Data );
 
 	/*
+	 * Gets the asset name out of a soft object path. For blueprint usage.
+	 * 
+	 * @param Path	Soft object file path
+	 * @return Asset name of the file path
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "UtilityLibrary", meta = ( ReturnDisplayName = "AssetName" ) )
+	static FString GetSoftObjectPathAssetName( const FSoftObjectPath& Path );
+
+	/*
 	 * Returns whenever the game's code has been built including the editor.
 	 * 
 	 * @return Whenever the editor is included

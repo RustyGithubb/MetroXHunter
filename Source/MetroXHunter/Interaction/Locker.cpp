@@ -24,12 +24,12 @@ ALocker::ALocker()
 
 void ALocker::Interact()
 {
+	if ( bIsGameEnded ) return;
+
 	ShowSkillCheckWidget();
 	Widget->SetVisibility( false );
 
 	SwitchCameraTarget();
-
-	bIsSkillCheckActive = true;
 	SetActorTickEnabled( true );
 
 	BindInputs();
@@ -37,25 +37,36 @@ void ALocker::Interact()
 
 void ALocker::OnCancelInteraction()
 {
+	if ( bIsSkillCheckActive ) return;
+
 	UnBindInputs();
 
 	RemoveSkillCheckWidget();
 	Widget->SetVisibility( true );
 
 	ResetCameraTarget();
-	bIsSkillCheckActive = false;
 }
 
-void ALocker::EndSkillCheck()
+void ALocker::EndSkillCheck( bool bShouldReward )
 {
-	OnCancelInteraction();
+	bIsGameEnded = true;
+	bIsSkillCheckActive = false;
+
+	UnBindInputs();
+
+	ResetCameraTarget();
+
+	if ( bShouldReward )
+	{
+		SpawnLootItem();
+	}
+
 	RemoveInteractionComponent();
-	SpawnLootItem();
 }
 
 void ALocker::SpawnLootItem()
 {
-	if ( !ItemToSpawn ) return; 
+	if ( !ItemToSpawn ) return;
 
 	FActorSpawnParameters SpawnInfo {};
 

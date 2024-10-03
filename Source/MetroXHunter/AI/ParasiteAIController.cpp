@@ -5,11 +5,14 @@
 #include "AI/ParasiteAIController.h"
 #include "AI/Parasite.h"
 
+#include "Perception/PawnSensingComponent.h"
 #include "Navigation/CrowdFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
- // Set default FollowingComponent to CrowdFollowingComponent so they move around each other
+constexpr auto IN_DANGER_KEYNAME = TEXT( "bInDanger" );
+
+// Set default FollowingComponent to CrowdFollowingComponent so they move around each other
 AParasiteAIController::AParasiteAIController( const FObjectInitializer& ObjectInitializer )
 	: Super( ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>( TEXT( "PathFollowingComponent" ) ) )
 {
@@ -20,6 +23,9 @@ void AParasiteAIController::OnPossess( APawn* InPawn )
 	CustomPawn = CastChecked<AParasite>( InPawn );
 
 	verifyf( RunBehaviorTree( BehaviorTree ), TEXT( "Behavior Tree of %s failed to run" ), *GetName() );
+
+	// Bind to pawn's events
+	CustomPawn->PawnSensingComponent->OnSeePawn.AddUniqueDynamic( this, &AParasiteAIController::OnSeePawn );
 
 	// Disabling crowd simulation fixes a bug where AI can't move on navmesh; but it disables crowd 
 	// simulation features so it's just a quick patch before finding the real source
@@ -49,3 +55,8 @@ void AParasiteAIController::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
 	Snapshot->Status.Add( Category );
 }
 #endif
+
+void AParasiteAIController::OnSeePawn( APawn* SeenPawn )
+{
+	Blackboard->SetValueAsBool( IN_DANGER_KEYNAME, true );
+}

@@ -12,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 class USceneComponent;
 class ABasePickUp;
+class ULockerData;
 
 /*
  * A locker with potential pickups loot inside. To open it the Player needs to succeed a skill check.
@@ -25,6 +26,9 @@ public:
 	ALocker();
 
 public:
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Data" )
+	ULockerData* LockerDataAsset;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	float ItemAmount = 11;
 
@@ -41,9 +45,6 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	TSoftObjectPtr<UInputAction> RotateAction = nullptr;
-
 protected:
 	void Interact() override;
 	void OnCancelInteraction() override;
@@ -58,14 +59,17 @@ protected:
 	void RemoveSkillCheckWidget();
 
 	UFUNCTION( BlueprintCallable, Category = "Locker|SkillCheck" )
-	void EndSkillCheck();
+	void EndSkillCheck(bool bShouldReward);
 
 	UFUNCTION( BlueprintCallable, Category = "Locker|Loot" )
 	void SpawnLootItem();
 
 protected:
-	UPROPERTY( BlueprintReadOnly, Category = "Locker|SkillCheck" )
+	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
 	bool bIsSkillCheckActive = false;
+
+	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
+	bool bIsGameEnded = false;
 
 private:
 	void BindInputs();

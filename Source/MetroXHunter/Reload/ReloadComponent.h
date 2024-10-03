@@ -30,6 +30,7 @@ enum class EReloadState : uint8
 	Active,
 	Perfect,
 	Failed,
+	Cancel,
 };
 
  /*
@@ -50,34 +51,31 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void SetAmmoCount( int NewCount );
-
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void DecrementAmmo();
-
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed );
 
+	UFUNCTION( BlueprintCallable, Category = "Reload" )
+	void CancelReload();
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed );
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	bool IsReloading() const;
-
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	bool IsAmmoFull() const;
-
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	bool IsGunEmpty() const;
 
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void GetCurrentAmmo( int& CurrentAmmo ) const;
-
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	void GetMaxAmmo( int& MaxAmmo ) const;
-
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetNormalizedReloadTimings( float& PerfectReloadStartTime, float& ActiveReloadStartTime, float& ActiveReloadEndTime ) const;
-
+	void GetNormalizedReloadTimings( 
+		float& PerfectReloadStartTime, float& ActiveReloadStartTime, float& ActiveReloadEndTime
+	) const;
 	UFUNCTION( BlueprintCallable, Category = "Reload" )
 	float GetNormalizedReloadElapsedTime() const;
 
