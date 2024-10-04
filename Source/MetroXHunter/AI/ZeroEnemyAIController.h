@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -30,6 +34,10 @@ enum class EZeroEnemyAIState : uint8
 	 * Light and close-range attack.
 	 */
 	MeleeAttack,
+	/*
+	 * Area of effect and long-range distance attack.
+	 */
+	SpitAttack,
 };
 
 /**

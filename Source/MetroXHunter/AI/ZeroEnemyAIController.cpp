@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "AI/ZeroEnemyAIController.h"
 #include "AI/ZeroEnemy.h"
 
