@@ -61,6 +61,10 @@
 		{
 			"Name": "ScriptableToolsFramework",
 			"Enabled": true
+		},
+		{
+			"Name": "NiagaraDrips",
+			"Enabled": true
 		}
 	]
 }
