@@ -17,6 +17,7 @@ public class MetroXHunter : ModuleRules
 				"UMG",
 				"EnhancedInput",
 				"GameplayTags",
+				"Niagara",
 			}
 		);
 

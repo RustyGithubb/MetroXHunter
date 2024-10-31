@@ -94,7 +94,19 @@ void ABaseInteractable::RemoveInteractionComponent()
 	InnerCollision->DestroyComponent();
 	OutterCollision->DestroyComponent();
 	InteractableComponent->DestroyComponent();
-	Widget->SetVisibility(false);
+	Widget->SetVisibility( false );
+}
+
+void ABaseInteractable::Interact()
+{
+	InteractableComponent->bIsUnderInteraction = true;
+}
+
+void ABaseInteractable::OnCancelInteraction()
+{
+	if ( !InteractableComponent->bIsUnderInteraction ) return;
+
+	InteractableComponent->bIsUnderInteraction = false;
 }
 
 void ABaseInteractable::OverridePlayerMappingContext()

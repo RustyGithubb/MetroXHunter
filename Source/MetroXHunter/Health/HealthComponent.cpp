@@ -13,7 +13,7 @@ void UHealthComponent::BeginPlay()
 	bHasHealthHolder = GetOwner()->Implements<UHealthHolder>();
 }
 
-bool UHealthComponent::TakeDamage( const FDamageContext& DamageContext )
+bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
 {
 	verify( DamageContext.DamageAmount > 0 );
 

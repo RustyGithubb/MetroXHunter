@@ -174,7 +174,7 @@ void UInteractionComponent::Interact()
 
 void UInteractionComponent::CancelInteract()
 {
-	if ( CurrentInteractable )
+	if ( CurrentInteractable && CurrentInteractable->bIsUnderInteraction )
 	{
 		CurrentInteractable->OnCancelInteract.Broadcast();
 	}

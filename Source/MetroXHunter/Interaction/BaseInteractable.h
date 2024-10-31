@@ -73,10 +73,10 @@ public:
 
 protected:
 	UFUNCTION()
-	virtual void Interact() {};
+	virtual void Interact();
 
 	UFUNCTION( BlueprintCallable )
-	virtual void OnCancelInteraction() {};
+	virtual void OnCancelInteraction();
 
 	void OverridePlayerMappingContext();
 

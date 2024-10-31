@@ -1,13 +1,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "AI/ZeroEnemyData.h"
-#include "VisualLogger/VisualLoggerDebugSnapshotInterface.h"
-#include "Health/HealthComponent.h"
-#include "ZeroEnemy.generated.h"
+#include "AI/ZeroEnemyAISubstate.h"
 
-class UAISubstateManagerComponent;
+#include "Health/HealthComponent.h"
+
+#include "GameFramework/Character.h"
+#include "VisualLogger/VisualLoggerDebugSnapshotInterface.h"
+
+#include "ZeroEnemy.generated.h"
 
 UENUM( BlueprintType )
 enum class EZeroEnemyState : uint8
@@ -72,7 +74,12 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void MakePanic();
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
-	void DestroyBodyPart( USceneComponent* BodyPart );
+	bool DestroyBodyPart(
+		USceneComponent* BodyPart,
+		const FName& BoneName,
+		const FVector& KnockbackDirection
+	);
+	int32 GetStartingBodyPartsCount() const;
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ApplyKnockback( const FVector& Direction, float Force );
@@ -100,6 +107,9 @@ public:
 	bool IsRushing() const;
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void Scream();
+
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ApplyModifiers( const FZeroEnemyModifiers& NewModifiers );
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void ResetModifiers();
@@ -109,14 +119,7 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	EZeroEnemyState GetState() const;
 
-	/*
-	 * Returns the madness level, representing the current progress of the AISubstateManagerComponent.
-	 * In range of 0.0f to 1.0f.
-	 */
-	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
-	float GetMadnessLevel() const;
-
-	bool TakeDamage_Implementation( const FDamageContext& DamageContext ) override;
+	bool TakeDamage_Implementation( FDamageContext& DamageContext ) override;
 
 #if ENABLE_VISUAL_LOG
 	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;
@@ -149,36 +152,28 @@ public:
 
 public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
-	UStaticMeshComponent* ProtoMeshComponent = nullptr;
-
-	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* BulbMeshComponent = nullptr;
 	
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UHealthComponent* HealthComponent = nullptr;
 
-	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
-	UAISubstateManagerComponent* AISubstateManagerComponent = nullptr;
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy", meta = ( ExposeOnSpawn = true ) )
 	UZeroEnemyData* Data = nullptr;
 
 	UPROPERTY( EditInstanceOnly, BlueprintReadWrite, Category = "ZeroEnemy" )
-	TSubclassOf<UAISubstate> SpawnSubstateClass;
+	TSubclassOf<UZeroEnemyAISubstate> SpawnSubstateClass;
 
 	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
 	int32 LeftBodyPartsCount = 0;
 
-	// TODO: Move to private
-	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
-	bool bIsAlive = true;
-
 private:
-	void InitializeAISubstateManager();
 	void GenerateBulb();
 	void RetrieveReferences();
 
 	void UpdateWalkSpeed();
+
+	UFUNCTION()
+	void OnDeath( const FDamageContext& DamageContext );
 
 private:
 	bool bIsBulbOpened = false;

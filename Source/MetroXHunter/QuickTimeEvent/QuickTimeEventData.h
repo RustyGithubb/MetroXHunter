@@ -8,6 +8,8 @@
 #include "GameplayTagContainer.h"
 #include "QuickTimeEventData.generated.h"
 
+class UInputAction;
+
 /*
  * Represent the type of quick time event to use.
  */

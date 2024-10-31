@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "MetroCheatManager.h"
 
 #include "MetroCheatFunction.h"
@@ -74,13 +78,30 @@ void UMetroCheatManager::ReloadCheatFunctions()
 
 UMetroCheatFunction* UMetroCheatManager::FindCheatFunctionOfClass( const TSubclassOf<UMetroCheatFunction> Class )
 {
-	for ( UMetroCheatFunction* CheatFunction : CheatFunctions )
+	for ( auto CheatFunction : CheatFunctions )
 	{
 		if ( CheatFunction->GetClass() != Class ) continue;
 		return CheatFunction;
 	}
 
 	return nullptr;
+}
+
+void UMetroCheatManager::Tick( float DeltaTime )
+{
+	if ( LastFrameTicked == GFrameCounter ) return;
+
+	for ( auto CheatFunction : CheatFunctions )
+	{
+		CheatFunction->OnTick( DeltaTime );
+	}
+
+	LastFrameTicked = GFrameCounter;
+}
+
+TStatId UMetroCheatManager::GetStatId() const
+{
+	return TStatId();
 }
 
 void UMetroCheatManager::ForceLoadAssetsAtPath( FName Path )

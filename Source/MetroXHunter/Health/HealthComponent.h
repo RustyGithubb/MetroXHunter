@@ -93,7 +93,7 @@ public:
 	 * @return Whenever the damage should be applied
 	 */
 	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "HealthHolder" )
-	bool TakeDamage( const FDamageContext& DamageContext );
+	bool TakeDamage( UPARAM( ref ) FDamageContext& DamageContext );
 };
 
 /*
@@ -115,7 +115,7 @@ public:
 	 * @param DamageContext Damage context
 	 */
 	UFUNCTION( BlueprintCallable, Category = "Health" )
-	bool TakeDamage( const FDamageContext& DamageContext );
+	bool TakeDamage( FDamageContext DamageContext );
 	/*
 	 * Heal by a given amount. Resulted health is clamped to 'MaxHealth'.
 	 *
@@ -160,6 +160,13 @@ public:
 	int32 CurrentHealth = 0;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Health" )
 	int32 MaxHealth = 0;
+
+	/*
+	 * Set whenever blood particles should be emitted when the component takes damage.
+	 * This is specifically used for the Gun.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Health" )
+	bool bShouldEmitBloodParticles = false;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Health" )
 	bool bIsDead = false;

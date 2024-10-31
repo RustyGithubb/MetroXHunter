@@ -52,4 +52,9 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
 	E_InteractionType InteractionType;
+
+	/*
+	 * If the player is under interaction with this interactable
+	 */
+	bool bIsUnderInteraction = false;
 };

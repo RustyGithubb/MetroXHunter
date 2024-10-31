@@ -17,34 +17,43 @@ void UAIAttackerComponent::BeginPlay()
 
 void UAIAttackerComponent::EndPlay( const EEndPlayReason::Type EndPlayReason )
 {
-	if ( !IsValid( CurrentTarget ) ) return;
-
-	CurrentTarget->FreeReservations( GetOwner() );
+	FreeReservations();
 }
 
-bool UAIAttackerComponent::ReserveTokens( UAITargetComponent* Target, int32 Tokens )
+void UAIAttackerComponent::SetCurrentTarget( UAITargetComponent* Target )
 {
-	verify( IsValid( Target ) );
+	if ( Target == CurrentTarget ) return;
 
-	if ( IsValid( CurrentTarget ) && Target != CurrentTarget )
+	if ( IsValid( CurrentTarget ) )
 	{
-		FreeTokens();
+		FreeReservations();
 	}
 
 	CurrentTarget = Target;
-
-	bool bIsSuccess = CurrentTarget->ReserveTokens( GetOwner(), Tokens );
-	return bIsSuccess;
 }
 
-bool UAIAttackerComponent::FreeTokens( int32 Tokens )
+void UAIAttackerComponent::FreeReservations()
 {
-	if ( !IsValid( CurrentTarget ) ) return false;
+	if ( !IsValid( CurrentTarget ) ) return;
 
-	bool bIsSuccess = CurrentTarget->FreeTokens( GetOwner(), Tokens );
-	CurrentTarget = nullptr;
+	CurrentTarget->FreeReservations( this );
+}
 
-	return bIsSuccess;
+void UAIAttackerComponent::SetGroupPlace( const int32 NewGroupIndex )
+{
+	const int32 LastGroupIndex = GroupIndex;
+	GroupIndex = NewGroupIndex;
+	OnGroupPlaceChanged.Broadcast( LastGroupIndex, NewGroupIndex );
+}
+
+int32 UAIAttackerComponent::GetGroupPlace() const
+{
+	return GroupIndex;
+}
+
+AActor* UAIAttackerComponent::GetReserver() const
+{
+	return GetOwner();
 }
 
 UAITargetComponent* UAIAttackerComponent::GetCurrentTarget() const

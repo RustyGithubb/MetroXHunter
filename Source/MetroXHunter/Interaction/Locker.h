@@ -48,6 +48,7 @@ public:
 protected:
 	void Interact() override;
 	void OnCancelInteraction() override;
+	void CancelSkillCheck();
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void OnSkillCheckAttempt();
@@ -58,8 +59,14 @@ protected:
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void RemoveSkillCheckWidget();
 
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "Locker|SkillCheck" )
+	void ResetSkillCheck();
+
 	UFUNCTION( BlueprintCallable, Category = "Locker|SkillCheck" )
 	void EndSkillCheck(bool bShouldReward);
+
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "Locker|SkillCheck" )
+	void StartSkillCheck();
 
 	UFUNCTION( BlueprintCallable, Category = "Locker|Loot" )
 	void SpawnLootItem();
