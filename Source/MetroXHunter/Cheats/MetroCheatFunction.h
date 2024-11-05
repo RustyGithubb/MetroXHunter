@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -83,6 +87,11 @@ public:
 	 */
 	UFUNCTION( BlueprintNativeEvent )
 	void OnCheat();
+	/**
+	 * Event called on each game tick.
+	 */
+	UFUNCTION( BlueprintNativeEvent )
+	void OnTick( float DeltaTime );
 
 	/**
 	 * Returns the cheat function type. Used to assume the class type of a cheat by avoiding casts.

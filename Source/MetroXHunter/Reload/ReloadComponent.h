@@ -36,7 +36,6 @@ enum class EReloadState : uint8
  /*
   * The reload component manage the differents types of reload that the player can achieve.
   */
-
 UCLASS( BlueprintType, meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UReloadComponent : public UActorComponent
 {

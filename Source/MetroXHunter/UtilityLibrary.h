@@ -69,7 +69,7 @@ public:
 	template<typename TFormat, typename... TArgs>
 	static void PrintMessage( const TFormat& Text, TArgs... Args )
 	{
-		PrintMessage( Text, FColor::Blue, 5.0f, Args... );
+		PrintMessage( Text, FColor::Cyan, 5.0f, Args... );
 	}
 	/*
 	 * Prints to screen with a custom color and time and logs a message to the output log.
@@ -82,7 +82,7 @@ public:
 	template<typename TFormat, typename... TArgs>
 	static void PrintMessage( 
 		const TFormat& Text,
-		const FColor& Color = FColor::Blue,
+		const FColor& Color = FColor::Cyan,
 		const float Time = 5.0f,
 		TArgs... Args
 	)
@@ -161,11 +161,28 @@ public:
 		return MoveTemp( OutComponents );
 	}
 
+	/*
+	 * Exported function for Blueprint usages.
+	 */
+	UFUNCTION( BlueprintCallable, Category = "UtilityLibrary" )
+	static void SetActorComponentCanEverAffectNavigation( UActorComponent* Component, bool bRelevant )
+	{
+		Component->SetCanEverAffectNavigation( bRelevant );
+	}
+
 	template<typename ArrayElementType>
 	static ArrayElementType& PickRandomElement( TArray<ArrayElementType>& Array )
 	{
 		return Array[FMath::RandRange( 0, Array.Num() - 1 )];
 	}
+
+	/*
+	 * Generates a random float in the given range.
+	 * @param Range	Range to constrain the random float
+	 * @return Random float in range
+	 */
+	UFUNCTION( BlueprintCallable, Category = "UtilityLibrary" )
+	static float RandomInRange( const FFloatRange& Range );
 
 	/*
 	 * Saves a string into a file at specified path. 
@@ -204,14 +221,6 @@ public:
 	 */
 	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary" )
 	static bool IsWithinEditor();
-
-	/*
-	 * Returns whenever the CVar 'MXH.AI.Debug' is enabled.
-	 * 
-	 * @return Whenever the CVar is enabled
-	 */
-	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary|CVars" )
-	static bool IsCVarAIDebugEnabled();
 
 	UFUNCTION( BlueprintPure, Category="MXHUtilityLibrary|CVars" )
 	static FString GetProjectVersion();

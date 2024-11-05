@@ -8,7 +8,10 @@
 #include "AIController.h"
 #include "ZeroEnemyAIController.generated.h"
 
+enum class EZeroEnemyState : uint8;
 class AZeroEnemy;
+class UAIAttackerComponent;
+class UAISubstateManagerComponent;
 
 UENUM( BlueprintType )
 enum class EZeroEnemyAIState : uint8
@@ -51,8 +54,11 @@ class METROXHUNTER_API AZeroEnemyAIController : public AAIController
 public:
 	AZeroEnemyAIController( const FObjectInitializer& ObjectInitializer );
 
-	virtual void OnPossess( APawn* InPawn ) override;
+	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
+
+	virtual void OnPossess( APawn* InPawn ) override;
+	virtual void OnUnPossess() override;
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void CombatTarget( AActor* Target );
@@ -63,22 +69,45 @@ public:
 	EZeroEnemyAIState GetState() const;
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void SetTarget( AActor* Target );
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
+	UFUNCTION( BlueprintPure, Category = "ZeroEnemy" )
 	AActor* GetTarget() const;
+
+	/*
+	 * Returns the madness level, representing the current progress of the AISubstateManagerComponent.
+	 * In range of 0.0f to 1.0f.
+	 */
+	UFUNCTION( BlueprintPure, Category = "ZeroEnemy" )
+	float GetMadnessLevel() const;
 
 #if ENABLE_VISUAL_LOG
 	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;
 #endif
 
 public:
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UAIAttackerComponent* AttackerComponent = nullptr;
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UAISubstateManagerComponent* SubstateManagerComponent = nullptr;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UBehaviorTree* BehaviorTree = nullptr;
 
-	UPROPERTY( VisibleDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
+	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
 	AZeroEnemy* CustomPawn = nullptr;
 
 private:
+	void InitializeAISubstateManager();
+
 	void TickDebugDraw();
+
+	void OnScreamUpdate();
+	void StartScreamTimer();
+	void StopScreamTimer();
+
+	UFUNCTION()
+	void OnSeePawn( APawn* SeenPawn );
+	UFUNCTION()
+	void OnHearNoise( APawn* HeardPawn, const FVector& Location, float Volume );
 
 	UFUNCTION()
 	void OnStun();
@@ -91,5 +120,11 @@ private:
 	void OnUnRush();
 
 	UFUNCTION()
-	void OnStateUpdate();
+	void OnStateUpdate( EZeroEnemyState NewState, EZeroEnemyState OldState );
+
+	UFUNCTION()
+	void OnSubstateSwitched();
+
+private:
+	FTimerHandle ScreamTimerHandle {};
 };

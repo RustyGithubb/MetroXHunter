@@ -10,7 +10,7 @@ class UMetroCheatFunction;
  *
  */
 UCLASS()
-class METROXHUNTER_API UMetroCheatManager : public UCheatManager
+class METROXHUNTER_API UMetroCheatManager : public UCheatManager, public FTickableGameObject
 {
 	GENERATED_BODY()
 
@@ -31,6 +31,9 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "CheatManager", meta = ( DeterminesOutputType = "Class" ) )
 	UMetroCheatFunction* FindCheatFunctionOfClass( const TSubclassOf<UMetroCheatFunction> Class );
 
+	void Tick( float DeltaTime ) override;
+	TStatId GetStatId() const override;
+
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	FName CheatFunctionAssetsPath = TEXT( "/Game/Desgin/CheatFunctions/" );
@@ -45,4 +48,9 @@ private:
 	void ForceLoadAssetsAtPath( FName Path );
 	void InstantiateCheatFunction( const TSubclassOf<UMetroCheatFunction>& Class );
 
+private:
+	/*
+	 * Keeps track of the last frame ticked to avoid multiple tick call per frame
+	 */
+	uint32 LastFrameTicked = INDEX_NONE;
 };

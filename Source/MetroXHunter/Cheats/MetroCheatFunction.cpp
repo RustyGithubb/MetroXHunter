@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "MetroCheatFunction.h"
 #include "MetroCheatManager.h"
 
@@ -41,6 +45,8 @@ void UMetroCheatFunction::Cheat()
 void UMetroCheatFunction::OnInit_Implementation() {}
 
 void UMetroCheatFunction::OnCheat_Implementation() {}
+
+void UMetroCheatFunction::OnTick_Implementation( float DeltaTime ) {}
 
 UWorld* UMetroCheatFunction::GetWorld() const
 {

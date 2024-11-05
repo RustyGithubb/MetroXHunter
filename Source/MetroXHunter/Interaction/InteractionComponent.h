@@ -44,23 +44,25 @@ private:
 	void RetrieveClosestInteractable();
 	void UpdateViewport();
 	void Interact();
+
+	UFUNCTION(BlueprintCallable)
 	void CancelInteract();
 
 private:
 	APlayerController* PlayerController = nullptr;
 
 	/*
-	* The closest interactable from the player's view
-	*/
+	 * The closest interactable from the player's view
+	 */
 	UInteractableComponent* CurrentInteractable = nullptr;
 
 	/*
-	* All the interactables near the player
-	*/
+	 * All the interactables near the player
+	 */
 	TArray<UInteractableComponent*> NearInteractables;
 
 	/*
-	* If there is any interactable near the player
-	*/
+	 * If there is any interactable near the player
+	 */
 	bool bIsNearInteractable = false;
 };

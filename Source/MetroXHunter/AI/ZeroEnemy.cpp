@@ -1,47 +1,68 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "AI/ZeroEnemy.h"
 #include "AI/AISubstateManagerComponent.h"
 #include "AI/AISubstate.h"
-
 #include "AI/SpitProjectile.h"
 
+#include "Light/LightManagerComponent.h"
 #include "Health/HealthComponent.h"
+#include "Electricity/ElectrocutableComponent.h"
 
 #include "UtilityLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "Perception/PawnSensingComponent.h"
+
+#include "GameFramework/GameModeBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Components/ArrowComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 AZeroEnemy::AZeroEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	ProtoMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "ProtoMeshComponent" ) );
-	ProtoMeshComponent->SetupAttachment( RootComponent );
-
 	BulbMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "BulbMeshComponent" ) );
 	BulbMeshComponent->SetupAttachment( RootComponent );
 
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health" ) );
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "HealthComponent" ) );
 
-	AISubstateManagerComponent = CreateDefaultSubobject<UAISubstateManagerComponent>(
-		TEXT( "AISubstateManager" ) 
-	);
+	ElectrocutableComponent = CreateDefaultSubobject<UElectrocutableComponent>( TEXT( "ElectrocutableComponent" ) );
+
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>( TEXT( "PawnSensingComponent" ) );
 }
 
 void AZeroEnemy::BeginPlay()
 {
-	Super::BeginPlay();
+	DefaultMeshRelativeTransform = GetMesh()->GetRelativeTransform();
+	DefaultMeshCollisions = GetMesh()->GetCollisionResponseToChannels();
 
 	RetrieveReferences();
-	
-	InitializeAISubstateManager();
+
 	UpdateWalkSpeed();
 
 	GenerateBulb();
 	CloseBulb();
+
+	if ( bStartFakingDeath )
+	{
+		FakeDeath();
+	}
+	else
+	{
+		SimulateMeshBonesPhysics( true );
+	}
+
+	Super::BeginPlay();
 }
 
 void AZeroEnemy::Tick( float DeltaTime )
@@ -53,18 +74,18 @@ void AZeroEnemy::Tick( float DeltaTime )
 		case EZeroEnemyState::RushAttackResolve:
 		case EZeroEnemyState::Stun:
 		{
-			float Frequency = bUseStunAnimation 
-				? Data->StunAnimationFrequency 
+			float Frequency = bUseStunAnimation
+				? Data->StunAnimationFrequency
 				: Data->SubstateSwitchedAnimationFrequency;
-			float Angle = bUseStunAnimation 
-				? Data->StunAnimationAngle 
+			float Angle = bUseStunAnimation
+				? Data->StunAnimationAngle
 				: Data->SubstateSwitchedAnimationAngle;
 
-			double AngleOffset = FMath::Sin( 
-				GetGameTimeSinceCreation() * Frequency 
+			double AngleOffset = FMath::Sin(
+				GetGameTimeSinceCreation() * Frequency
 			) * Angle;
 
-			SetActorRotation( 
+			SetActorRotation(
 				FRotator {
 					0.0,
 					StartStunRotation.Yaw + AngleOffset,
@@ -84,7 +105,7 @@ void AZeroEnemy::Tick( float DeltaTime )
 			// Apply new walk speed
 			UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 			MovementComponent->MaxWalkSpeed = Data->RushSpeedCurve->GetFloatValue( CurrentRushTime );
-		
+
 			// Move forward
 			AddMovementInput( GetActorForwardVector() );
 
@@ -92,6 +113,69 @@ void AZeroEnemy::Tick( float DeltaTime )
 			break;
 		}
 	}
+}
+
+void AZeroEnemy::FakeDeath()
+{
+	SetState( EZeroEnemyState::FakingDeath );
+
+	// Ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( true );
+	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+
+	// Disable tick and character movement
+	SetActorTickEnabled( false );
+	GetCharacterMovement()->SetActive( false );
+
+	SetCollisionsEnabled( false );
+}
+
+void AZeroEnemy::UnFakeDeath()
+{
+	ensureMsgf(
+		State == EZeroEnemyState::FakingDeath,
+		TEXT( "ZeroEnemy: %s is supposed to be in the FakingDeath state" ),
+		*GetName()
+	);
+
+	SetState( EZeroEnemyState::None );
+
+	// Un-ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( false );
+	// NOTE: We must re-attach the mesh to the root component because simulating physics
+	// de-attach components from their parent.
+	MeshComponent->AttachToComponent( RootComponent, FAttachmentTransformRules::KeepRelativeTransform );
+	MeshComponent->SetRelativeTransform( DefaultMeshRelativeTransform );
+	MeshComponent->SetCollisionResponseToChannels( DefaultMeshCollisions );
+
+	// Enable tick and character movement
+	SetActorTickEnabled( true );
+	GetCharacterMovement()->SetActive( true );
+
+	SimulateMeshBonesPhysics( true );
+	SetCollisionsEnabled( true );
+}
+
+void AZeroEnemy::SimulateMeshBonesPhysics( bool bSimulate )
+{
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	for ( const FName BoneName : SimulatedMeshBones )
+	{
+		MeshComponent->SetAllBodiesBelowSimulatePhysics( BoneName, bSimulate );
+		MeshComponent->SetEnableGravityOnAllBodiesBelow( bSimulate, BoneName );
+	}
+}
+
+void AZeroEnemy::SetCollisionsEnabled( bool bEnabled )
+{
+	ECollisionEnabled::Type CollisionType = bEnabled
+		? ECollisionEnabled::QueryAndPhysics
+		: ECollisionEnabled::NoCollision;
+
+	GetCapsuleComponent()->SetCollisionEnabled( CollisionType );
+	BulbMeshComponent->SetCollisionEnabled( CollisionType );
 }
 
 void AZeroEnemy::OpenBulb( float OpenTime )
@@ -123,7 +207,10 @@ void AZeroEnemy::CloseBulb()
 	// Disable aim assist on bulb
 	BulbMeshComponent->SetCollisionObjectType( Data->DefaultBodyPartCollisionChannel );
 
-	OpeningBulbTimerHandle.Invalidate();
+	// Clear potential on-going timer
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer( OpeningBulbTimerHandle );
+
 	bIsBulbOpened = false;
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "Close Bulb" ) );
@@ -161,33 +248,63 @@ void AZeroEnemy::UnStun()
 
 void AZeroEnemy::MakePanic()
 {
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
+
 	OpenBulb( Data->PanicBulbOpenTime );
 	Stun( Data->PanicStunTime );
 }
 
-void AZeroEnemy::DestroyBodyPart( USceneComponent* BodyPart )
+bool AZeroEnemy::DestroyBodyPart(
+	USceneComponent* BodyPart,
+	const FName& BoneName,
+	const FVector& KnockbackDirection
+)
 {
-	BodyPart->DestroyComponent();
+	if ( auto SkeletalBodyPart = Cast<USkeletalMeshComponent>( BodyPart ) )
+	{
+		// Ragdoll all bones below the hit bone name
+		SkeletalBodyPart->SetAllBodiesBelowSimulatePhysics( BoneName, true );
+		SkeletalBodyPart->SetAllBodiesBelowLinearVelocity( BoneName, KnockbackDirection * 500.0f );
+
+		const int32 RootIndex = SkeletalBodyPart->FindRootBodyIndex();
+		const int32 BoneIndex = SkeletalBodyPart->GetBoneIndex( BoneName );
+		const bool bIsBoneRoot = RootIndex == BoneIndex;
+		if ( Data->bPanicOnlyIfDismembered && !bIsBoneRoot ) return false;
+
+		if ( bIsBoneRoot )
+		{
+			SkeletalBodyPart->SetCollisionResponseToChannels( Data->BodyPartRagdollCollisions );
+			SkeletalBodyPart->DetachFromComponent( FDetachmentTransformRules::KeepWorldTransform );
+		}
+	}
+	else
+	{
+		BodyPart->DestroyComponent();
+	}
 
 	LeftBodyPartsCount -= 1;
-
-	if ( LeftBodyPartsCount <= Data->BodyPartsLeftToKill )
-	{
-		// TODO: Kill for real; here the implementation is only for BP
-		bIsAlive = false;
-		return;
-	}
+	if ( LeftBodyPartsCount <= Data->BodyPartsLeftToKill ) return true;
 
 	MakePanic();
 	UpdateWalkSpeed();
+
+	return false;
+}
+
+int32 AZeroEnemy::GetStartingBodyPartsCount() const
+{
+	return StartBodyPartsCount;
 }
 
 void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 {
-	 FVector Impulse = Direction.GetSafeNormal2D() * Force;
-	 Impulse.Z = Data->DefaultKnockbackZ;
+	FVector Impulse = Direction.GetSafeNormal2D() * Force;
+	Impulse.Z = Data->DefaultKnockbackZ;
 
-	 GetCharacterMovement()->AddImpulse( Impulse, true );
+	GetCharacterMovement()->AddImpulse( Impulse, true );
 }
 
 void AZeroEnemy::RushAttack()
@@ -207,7 +324,7 @@ void AZeroEnemy::RushAttack()
 	// Force velocity to maximum walk speed to patch an issue with BTTask_MoveTo reseting velocity 
 	// at the end of the task
 	//CharacterMovement->Velocity = CharacterMovement->Velocity.GetSafeNormal() * Data->RushSpeedCurve->GetFloatValue( 0.0f );
-	MovementComponent->Velocity = MovementComponent->Velocity.GetSafeNormal() 
+	MovementComponent->Velocity = MovementComponent->Velocity.GetSafeNormal()
 								* MovementComponent->MaxWalkSpeed;
 
 	OnRush.Broadcast();
@@ -230,7 +347,7 @@ void AZeroEnemy::StartResolveRushAttack()
 void AZeroEnemy::StopRushAttack()
 {
 	SetState( EZeroEnemyState::None );
-	
+
 	GetWorld()->GetTimerManager().ClearTimer( RushTimerHandle );
 
 	// Reset walk speed
@@ -244,7 +361,7 @@ void AZeroEnemy::StopRushAttack()
 
 void AZeroEnemy::SpitAttack( const FVector& TargetLocation )
 {
-	auto SpitProjectile = GetWorld()->SpawnActor<ASpitProjectile>( 
+	auto SpitProjectile = GetWorld()->SpawnActor<ASpitProjectile>(
 		Data->SpitProjectileClass,
 		GetSpitAttackOrigin(), GetActorRotation()
 	);
@@ -264,6 +381,33 @@ bool AZeroEnemy::IsRushing() const
 		|| State == EZeroEnemyState::RushAttackResolve;
 }
 
+void AZeroEnemy::Scream()
+{
+	// Play scream sound
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		Data->ScreamSound,
+		GetActorLocation(),
+		/* VolumeMultiplier */ 1.0f,
+		/* PitchMultiplier */ 1.0f,
+		/* StartTime */ 0.0f,
+		Data->SoundAttenuation,
+		Data->SoundConcurrency
+	);
+
+	// Flick lights
+	AGameModeBase* Gamemode = GetWorld()->GetAuthGameMode();
+	auto LightManagerComponent = Gamemode->GetComponentByClass<ULightManagerComponent>();
+	if ( IsValid( LightManagerComponent ) )
+	{
+		LightManagerComponent->FlickeringLights(
+			Data->ScreamFlickeringLightRadius,
+			GetActorLocation(),
+			Data->ScreamFlickeringLightCurve
+		);
+	}
+}
+
 void AZeroEnemy::ApplyModifiers( const FZeroEnemyModifiers& NewModifiers )
 {
 	Modifiers = NewModifiers;
@@ -278,8 +422,9 @@ void AZeroEnemy::ResetModifiers()
 
 void AZeroEnemy::SetState( EZeroEnemyState NewState )
 {
+	EZeroEnemyState OldState = State;
 	State = NewState;
-	OnStateUpdate.Broadcast();
+	OnStateUpdate.Broadcast( NewState, OldState );
 }
 
 EZeroEnemyState AZeroEnemy::GetState() const
@@ -287,19 +432,10 @@ EZeroEnemyState AZeroEnemy::GetState() const
 	return State;
 }
 
-float AZeroEnemy::GetMadnessLevel() const
-{
-	int32 SubstatesCount = AISubstateManagerComponent->GetSubstatesCount();
-	if ( SubstatesCount == 0 ) return 0.0f;
-
-	int32 SubstateIndex = AISubstateManagerComponent->GetSubstateIndex();
-	return (float)SubstateIndex / (float)( SubstatesCount - 1 );
-}
-
-bool AZeroEnemy::TakeDamage_Implementation( const FDamageContext& DamageContext )
+bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 {
 	UPrimitiveComponent* HitComponent = DamageContext.HitResult.GetComponent();
-	
+
 	// Check if damaged the bulb
 	if ( HitComponent == BulbMeshComponent )
 	{
@@ -312,9 +448,20 @@ bool AZeroEnemy::TakeDamage_Implementation( const FDamageContext& DamageContext 
 	);
 
 	// Check if damaged one of its body part
-	if ( IsValid( HitComponent ) && HitComponent->ComponentHasTag(Data->BodyPartTag) )
+	if ( IsValid( HitComponent ) && HitComponent->ComponentHasTag( Data->BodyPartTag ) )
 	{
-		DestroyBodyPart( HitComponent );
+		bool bIsDead = DestroyBodyPart(
+			HitComponent,
+			DamageContext.HitResult.BoneName,
+			KnockbackDirection
+		);
+		if ( bIsDead )
+		{
+			// Force kill this actor
+			DamageContext.DamageAmount = HealthComponent->CurrentHealth;
+			return true;
+		}
+
 		ApplyKnockback( KnockbackDirection, Data->BodyPartHitKnockbackForce );
 		return false;
 	}
@@ -335,8 +482,12 @@ void AZeroEnemy::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
 		UEnum::GetValueAsString( GetState() )
 	);
 	Category.Add(
-		TEXT( "MadnessLevel" ),
-		FString::SanitizeFloat( GetMadnessLevel() )
+		TEXT( "LeftBodyPartsCount" ),
+		FString::FromInt( LeftBodyPartsCount )
+	);
+	Category.Add(
+		TEXT( "StartBodyPartsCount" ),
+		FString::FromInt( StartBodyPartsCount )
 	);
 
 	Snapshot->Status.Add( Category );
@@ -359,14 +510,6 @@ void AZeroEnemy::StopMeleeAttack_Implementation()
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Melee Attack" ) );
 }
 
-void AZeroEnemy::InitializeAISubstateManager()
-{
-	AISubstateManagerComponent->CreateSubstates( Data->SubstateClasses );
-	AISubstateManagerComponent->SwitchToSubstate(
-		SpawnSubstateClass != nullptr ? Data->SubstateClasses.Find( SpawnSubstateClass ) : 0
-	);
-}
-
 void AZeroEnemy::GenerateBulb()
 {
 	auto BulbSpots = UUtilityLibrary::GetComponentsOfActorByTag<UArrowComponent>(
@@ -375,33 +518,52 @@ void AZeroEnemy::GenerateBulb()
 	);
 
 	auto PickedBulbSpot = UUtilityLibrary::PickRandomElement( BulbSpots );
-	BulbMeshComponent->SetRelativeLocationAndRotation(
-		PickedBulbSpot->GetRelativeLocation(),
-		PickedBulbSpot->GetRelativeRotation()
+	BulbMeshComponent->AttachToComponent(
+		PickedBulbSpot,
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale
 	);
 }
 
 void AZeroEnemy::RetrieveReferences()
 {
 	verifyf( IsValid( Data ), TEXT( "%s doesn't reference a DataAsset" ), *GetName() );
-	verifyf( IsValid( Data->RushSpeedCurve ), TEXT( "The DataAsset must set a value for 'RushSpeedCurve'" ) );
+	verifyf(
+		IsValid( Data->RushSpeedCurve ),
+		TEXT( "The DataAsset must set a value for 'RushSpeedCurve'" )
+	);
 
 	// Retrieve maximum rush time from the curve
 	[[maybe_unused]] float Temp = 0.0f;
 	Data->RushSpeedCurve->GetTimeRange( Temp, MaxRushTime );
 
-	auto BodyParts = UUtilityLibrary::GetComponentsOfActorByTag<UStaticMeshComponent>( 
+	auto BodyParts = UUtilityLibrary::GetComponentsOfActorByTag<UMeshComponent>(
 		this,
 		Data->BodyPartTag
 	);
 	StartBodyPartsCount = BodyParts.Num();
 	LeftBodyPartsCount = StartBodyPartsCount;
+	checkf(
+		StartBodyPartsCount > 0,
+		TEXT( "ZeroEnemy %s doesn't have any body parts count!" ),
+		*GetName()
+	);
 
 	// Enable aim assist for all body parts
 	for ( auto BodyPart : BodyParts )
 	{
-		BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+		if ( Data->bBodyPartHasAimAssist )
+		{
+			BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+		}
+
+		BodyPart->SetCollisionResponseToChannels( Data->BodyPartDefaultCollisions );
 	}
+
+	// Set max health
+	HealthComponent->MaxHealth = Data->MaxHealth;
+	
+	HealthComponent->OnDeath.AddDynamic( this, &AZeroEnemy::OnDeath );
+	ElectrocutableComponent->OnElectricStart.AddDynamic( this, &AZeroEnemy::OnElectricStart );
 }
 
 void AZeroEnemy::UpdateWalkSpeed()
@@ -412,4 +574,45 @@ void AZeroEnemy::UpdateWalkSpeed()
 	WalkSpeed -= Data->WalkSpeedLossPerBodyPartLost * ( StartBodyPartsCount - LeftBodyPartsCount );
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AZeroEnemy::OnElectricStart( float Duration )
+{
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
+}
+
+void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
+{
+	CloseBulb();
+
+	if ( IsValid( Controller ) )
+	{
+		Controller->Destroy();
+	}
+
+	// Disable tick and character movement
+	SetActorTickEnabled( false );
+	GetCharacterMovement()->SetActive( false );
+
+	// Simulate physics and setup collisions on body mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( true );
+	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+
+	// Apply knockback to mesh
+	const FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(
+		DamageContext.HitResult.TraceStart,
+		DamageContext.HitResult.TraceEnd
+	);
+	if ( !Direction.IsNearlyZero() )
+	{
+		const FVector Knockback = Direction * Data->DeathKnockbackForce;
+		//MeshComponent->AddImpulseAtLocation( Knockback, DamageContext.HitResult.ImpactPoint );
+		MeshComponent->SetAllPhysicsLinearVelocity( Knockback, true );
+	}
+
+	SetCollisionsEnabled( false );
 }

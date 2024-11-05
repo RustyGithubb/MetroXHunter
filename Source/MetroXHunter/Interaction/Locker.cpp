@@ -26,6 +26,8 @@ void ALocker::Interact()
 {
 	if ( bIsGameEnded ) return;
 
+	Super::Interact();
+
 	ShowSkillCheckWidget();
 	Widget->SetVisibility( false );
 
@@ -37,7 +39,7 @@ void ALocker::Interact()
 
 void ALocker::OnCancelInteraction()
 {
-	if ( bIsSkillCheckActive ) return;
+	Super::OnCancelInteraction();
 
 	UnBindInputs();
 
@@ -45,6 +47,14 @@ void ALocker::OnCancelInteraction()
 	Widget->SetVisibility( true );
 
 	ResetCameraTarget();
+	ResetSkillCheck();
+}
+
+void ALocker::CancelSkillCheck()
+{
+	if ( bIsSkillCheckActive ) return;
+
+	OnCancelInteraction();
 }
 
 void ALocker::EndSkillCheck( bool bShouldReward )
@@ -59,9 +69,8 @@ void ALocker::EndSkillCheck( bool bShouldReward )
 	if ( bShouldReward )
 	{
 		SpawnLootItem();
+		RemoveInteractionComponent();
 	}
-
-	RemoveInteractionComponent();
 }
 
 void ALocker::SpawnLootItem()
@@ -96,7 +105,7 @@ void ALocker::BindInputs()
 		// Cancel Interaction
 		EnhancedInputComponent->BindAction(
 			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started,
-			this, &ALocker::OnCancelInteraction
+			this, &ALocker::CancelSkillCheck
 		);
 	}
 }
