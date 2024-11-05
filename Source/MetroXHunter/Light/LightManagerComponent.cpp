@@ -53,10 +53,22 @@ void ULightManagerComponent::TickComponent( float DeltaTime,
 
 		if ( !LightData.IsValid() )
 		{
+			// Notify owner of light flickering end only if accessible
+			if ( IsValid( LightData.LightComponent ) )
+			{
+				AActor* Owner = LightData.LightComponent->GetOwner();
+				if ( IsValid( Owner ) )
+				{
+					IFlickableLight::Execute_OnFlickLightStop( Owner, LightData );
+				}
+			}
+
 			Itr.RemoveCurrent();
 			continue;
 		}
-		
+
+		AActor* Owner = LightData.LightComponent->GetOwner();
+
 		const float ElapsedTime = CurrentTime - LightData.StartWorldTime;
 		if ( ElapsedTime >= LightData.TimeDuration + LightData.RestorationDelay )
 		{
@@ -64,10 +76,13 @@ void ULightManagerComponent::TickComponent( float DeltaTime,
 			LightData.LightComponent->SetLightFunctionMaterial( LightData.OriginalLightFunction );
 			LightData.LightComponent->SetIntensity( LightData.OriginalLightIntensity );
 
-			UUtilityLibrary::LogMessage( 
+			UUtilityLibrary::LogMessage(
 				TEXT( "Restored original light function for: %s" ),
 				*LightData.LightComponent->GetName()
 			);
+
+			// Notify owner of light flickering en
+			IFlickableLight::Execute_OnFlickLightStop( Owner, LightData );
 
 			Itr.RemoveCurrent();
 			continue;
@@ -88,7 +103,12 @@ void ULightManagerComponent::TickComponent( float DeltaTime,
 				FLICKERING_TIME_NAME,
 				FlickeringTime
 			);
+
+			IFlickableLight::Execute_OnFlickLightUpdate( Owner, LightData, IntensityScale );
 		}
+
+		// Notify owner of light flickering tick
+		IFlickableLight::Execute_OnFlickLightTick( Owner, DeltaTime, LightData );
 	}
 }
 
@@ -101,7 +121,7 @@ void ULightManagerComponent::TickDebug_Implementation( float DeltaTime, FString&
 	{
 		const FLightData& LightData = Pair.Value;
 		FlickeringLightsString += "- " + GetNameSafe( LightData.LightComponent ) + ": "
-			+ "ElapsedTime=" + FString::SanitizeFloat(CurrentWorldTime - LightData.StartWorldTime) + "s; "
+			+ "ElapsedTime=" + FString::SanitizeFloat( CurrentWorldTime - LightData.StartWorldTime ) + "s; "
 			+ "TimeDuration=" + FString::SanitizeFloat( LightData.TimeDuration ) + "s; "
 			+ "RestorationDelay=" + FString::SanitizeFloat( LightData.RestorationDelay ) + "s; "
 			+ "OriginalIntensity=" + FString::SanitizeFloat( LightData.OriginalLightIntensity ) + "; "
@@ -219,17 +239,40 @@ void ULightManagerComponent::FlickeringLights(
 		// Apply a delay before restoring lights based on distance from origin
 		float RestorationFactor = Distance / MaxDistance;
 		LightData->RestorationDelay = RestorationFactor * MaxCurveTime * RestorationTimeFactor;
+
+		IFlickableLight::Execute_OnFlickLightStart( LightData->LightComponent->GetOwner(), *LightData );
 	}
 }
 
 void ULightManagerComponent::RegisterLight( ULightComponent* LightComponent )
 {
 	// Ignore static lights
-	if ( LightComponent->Mobility == EComponentMobility::Static ) return;
+	if ( LightComponent->Mobility == EComponentMobility::Static )
+	{
+		UUtilityLibrary::LogWarning(
+			TEXT( "LightManager: Failed to register %s: static lights are not supported!" ),
+			*LightComponent->GetName()
+		);
+		return;
+	}
 	// Ignore rect light component as they are not supported for LightFunctions
-	if ( LightComponent->IsA<URectLightComponent>() ) return;
+	if ( LightComponent->IsA<URectLightComponent>() )
+	{
+		UUtilityLibrary::LogWarning(
+			TEXT( "LightManager: Failed to register %s: RectLightComponent are not supported!" ),
+			*LightComponent->GetName()
+		);
+		return;
+	}
 	// Ignore directional light component as we don't want to control the actual sun
-	if ( LightComponent->IsA<UDirectionalLightComponent>() ) return;
+	if ( LightComponent->IsA<UDirectionalLightComponent>() )
+	{
+		UUtilityLibrary::LogWarning(
+			TEXT( "LightManager: Failed to register %s: DirectionalLightComponent are not supported!" ),
+			*LightComponent->GetName()
+		);
+		return;
+	}
 
 	DetectedLights.Add( LightComponent );
 }
@@ -243,17 +286,34 @@ void ULightManagerComponent::FindAllLightsInWorld()
 {
 	DetectedLights.Empty();
 
+	// Iterate over all actors in the world and filter by interface
 	for ( TActorIterator<AActor> ActorItr( GetWorld() ); ActorItr; ++ActorItr )
 	{
 		AActor* Actor = *ActorItr;
+		if ( !Actor->Implements<UFlickableLight>() ) continue;
 
-		TArray<ULightComponent*> LightComponents {};
-		Actor->ForEachComponent<ULightComponent>(
+		TArray<ULightComponent*> LightComponents = IFlickableLight::Execute_RetrieveFlickableLights( Actor );
+
+		for ( auto LightComponent : LightComponents )
+		{
+			RegisterLight( LightComponent );
+		}
+
+		/*Actor->ForEachComponent<ULightComponent>(
 			false,
 			[this]( auto LightComponent )
 			{
 				RegisterLight( LightComponent );
 			}
-		);
+		);*/
+	}
+
+	if ( DetectedLights.IsEmpty() )
+	{
+		UUtilityLibrary::LogWarning( TEXT( "LightManager: No LightComponents have been found in the world!" ) );
+	}
+	else
+	{
+		UUtilityLibrary::LogMessage( TEXT( "LightManager: Registered %d LightComponents" ), DetectedLights.Num() );
 	}
 }

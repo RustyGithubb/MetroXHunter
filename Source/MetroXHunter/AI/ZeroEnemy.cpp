@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "AI/ZeroEnemy.h"
 #include "AI/AISubstateManagerComponent.h"
 #include "AI/AISubstate.h"
@@ -5,12 +9,17 @@
 
 #include "Light/LightManagerComponent.h"
 #include "Health/HealthComponent.h"
+#include "Electricity/ElectrocutableComponent.h"
 
 #include "UtilityLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "Perception/PawnSensingComponent.h"
 
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -25,17 +34,33 @@ AZeroEnemy::AZeroEnemy()
 	BulbMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "BulbMeshComponent" ) );
 	BulbMeshComponent->SetupAttachment( RootComponent );
 
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health" ) );
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "HealthComponent" ) );
+
+	ElectrocutableComponent = CreateDefaultSubobject<UElectrocutableComponent>( TEXT( "ElectrocutableComponent" ) );
+
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>( TEXT( "PawnSensingComponent" ) );
 }
 
 void AZeroEnemy::BeginPlay()
 {
+	DefaultMeshRelativeTransform = GetMesh()->GetRelativeTransform();
+	DefaultMeshCollisions = GetMesh()->GetCollisionResponseToChannels();
+
 	RetrieveReferences();
 
 	UpdateWalkSpeed();
 
 	GenerateBulb();
 	CloseBulb();
+
+	if ( bStartFakingDeath )
+	{
+		FakeDeath();
+	}
+	else
+	{
+		SimulateMeshBonesPhysics( true );
+	}
 
 	Super::BeginPlay();
 }
@@ -88,6 +113,69 @@ void AZeroEnemy::Tick( float DeltaTime )
 			break;
 		}
 	}
+}
+
+void AZeroEnemy::FakeDeath()
+{
+	SetState( EZeroEnemyState::FakingDeath );
+
+	// Ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( true );
+	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+
+	// Disable tick and character movement
+	SetActorTickEnabled( false );
+	GetCharacterMovement()->SetActive( false );
+
+	SetCollisionsEnabled( false );
+}
+
+void AZeroEnemy::UnFakeDeath()
+{
+	ensureMsgf(
+		State == EZeroEnemyState::FakingDeath,
+		TEXT( "ZeroEnemy: %s is supposed to be in the FakingDeath state" ),
+		*GetName()
+	);
+
+	SetState( EZeroEnemyState::None );
+
+	// Un-ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( false );
+	// NOTE: We must re-attach the mesh to the root component because simulating physics
+	// de-attach components from their parent.
+	MeshComponent->AttachToComponent( RootComponent, FAttachmentTransformRules::KeepRelativeTransform );
+	MeshComponent->SetRelativeTransform( DefaultMeshRelativeTransform );
+	MeshComponent->SetCollisionResponseToChannels( DefaultMeshCollisions );
+
+	// Enable tick and character movement
+	SetActorTickEnabled( true );
+	GetCharacterMovement()->SetActive( true );
+
+	SimulateMeshBonesPhysics( true );
+	SetCollisionsEnabled( true );
+}
+
+void AZeroEnemy::SimulateMeshBonesPhysics( bool bSimulate )
+{
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	for ( const FName BoneName : SimulatedMeshBones )
+	{
+		MeshComponent->SetAllBodiesBelowSimulatePhysics( BoneName, bSimulate );
+		MeshComponent->SetEnableGravityOnAllBodiesBelow( bSimulate, BoneName );
+	}
+}
+
+void AZeroEnemy::SetCollisionsEnabled( bool bEnabled )
+{
+	ECollisionEnabled::Type CollisionType = bEnabled
+		? ECollisionEnabled::QueryAndPhysics
+		: ECollisionEnabled::NoCollision;
+
+	GetCapsuleComponent()->SetCollisionEnabled( CollisionType );
+	BulbMeshComponent->SetCollisionEnabled( CollisionType );
 }
 
 void AZeroEnemy::OpenBulb( float OpenTime )
@@ -160,6 +248,11 @@ void AZeroEnemy::UnStun()
 
 void AZeroEnemy::MakePanic()
 {
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
+
 	OpenBulb( Data->PanicBulbOpenTime );
 	Stun( Data->PanicStunTime );
 }
@@ -329,8 +422,9 @@ void AZeroEnemy::ResetModifiers()
 
 void AZeroEnemy::SetState( EZeroEnemyState NewState )
 {
+	EZeroEnemyState OldState = State;
 	State = NewState;
-	OnStateUpdate.Broadcast();
+	OnStateUpdate.Broadcast( NewState, OldState );
 }
 
 EZeroEnemyState AZeroEnemy::GetState() const
@@ -457,7 +551,11 @@ void AZeroEnemy::RetrieveReferences()
 	// Enable aim assist for all body parts
 	for ( auto BodyPart : BodyParts )
 	{
-		BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+		if ( Data->bBodyPartHasAimAssist )
+		{
+			BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+		}
+
 		BodyPart->SetCollisionResponseToChannels( Data->BodyPartDefaultCollisions );
 	}
 
@@ -465,6 +563,7 @@ void AZeroEnemy::RetrieveReferences()
 	HealthComponent->MaxHealth = Data->MaxHealth;
 	
 	HealthComponent->OnDeath.AddDynamic( this, &AZeroEnemy::OnDeath );
+	ElectrocutableComponent->OnElectricStart.AddDynamic( this, &AZeroEnemy::OnElectricStart );
 }
 
 void AZeroEnemy::UpdateWalkSpeed()
@@ -475,6 +574,14 @@ void AZeroEnemy::UpdateWalkSpeed()
 	WalkSpeed -= Data->WalkSpeedLossPerBodyPartLost * ( StartBodyPartsCount - LeftBodyPartsCount );
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AZeroEnemy::OnElectricStart( float Duration )
+{
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
 }
 
 void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
@@ -493,7 +600,6 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 	// Simulate physics and setup collisions on body mesh
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 	MeshComponent->SetSimulatePhysics( true );
-	MeshComponent->SetCollisionEnabled( ECollisionEnabled::QueryAndPhysics );
 	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
 
 	// Apply knockback to mesh
@@ -508,7 +614,5 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 		MeshComponent->SetAllPhysicsLinearVelocity( Knockback, true );
 	}
 
-	// Disable collisions
-	GetCapsuleComponent()->SetCollisionEnabled( ECollisionEnabled::NoCollision );
-	BulbMeshComponent->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+	SetCollisionsEnabled( false );
 }

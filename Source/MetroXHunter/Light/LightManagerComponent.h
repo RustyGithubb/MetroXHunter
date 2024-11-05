@@ -18,34 +18,81 @@ struct FLightData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	UMaterialInterface* OriginalLightFunction = nullptr;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	UMaterialInstanceDynamic* CurrentLightFunction = nullptr;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	float OriginalLightIntensity = 0.0f;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	float OriginalEmissivePower = 0.0f;
 	
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	ULightComponent* LightComponent = nullptr;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	float StartWorldTime = 0.0f;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	float TimeDuration = 0.0f;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	float RestorationDelay = 0.0f;
 
-	UPROPERTY()
+	UPROPERTY( BlueprintReadWrite, Category = "LightData" )
 	UCurveVector* FlickeringLightCurve = nullptr;
 
 	bool IsValid() const;
+};
+
+UINTERFACE( Blueprintable )
+class UFlickableLight : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/*
+ * Interface for an actor deciding which one of his LightComponents can be flickered.
+ * This should be implemented on the owner.
+ */
+class METROXHUNTER_API IFlickableLight
+{
+	GENERATED_BODY()
+
+public:
+	/*
+	 * Called when the LightManager needs to get all flickable lights in the world.
+	 * This is called once during LightManager's BeginPlay.
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "FlickableLight", meta = ( ReturnDisplayName = "LightComponents" ) )
+	TArray<ULightComponent*> RetrieveFlickableLights();
+
+	// NOTE: Forcing as function so Unreal doesn't yell at us
+	//		 because it doesn't support parameters references in events
+
+	/*
+	 * Called when a light has started to flicker.
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "FlickableLight", meta = ( ForceAsFunction ) )
+	void OnFlickLightStart( UPARAM( ref ) FLightData& LightData );
+	/*
+	 * Called when a light has stopped to flicker.
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "FlickableLight", meta = ( ForceAsFunction ) )
+	void OnFlickLightStop( const FLightData& LightData );
+	/*
+	 * Called when the parameters of a flickering light has been updated.
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "FlickableLight", meta = ( ForceAsFunction ) )
+	void OnFlickLightUpdate( UPARAM( ref ) FLightData& LightData, float IntensityScale );
+	/*
+	 * Called when a flickering light is ticking.
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "FlickableLight", meta = ( ForceAsFunction ) )
+	void OnFlickLightTick( float DeltaTime, UPARAM( ref ) FLightData& LightData );
 };
 
 /*

@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #pragma once
 
 #include "Engine/DataAsset.h"
@@ -116,6 +120,8 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "BodyParts" )
 	FCollisionResponseContainer BodyPartRagdollCollisions {};
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "BodyParts" )
+	bool bBodyPartHasAimAssist = false;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Collisions" )
 	TEnumAsByte<ECollisionChannel> AimAssistCollisionChannel;

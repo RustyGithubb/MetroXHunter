@@ -79,7 +79,7 @@ ALightningEmitter::ALightningEmitter()
 	};
 
 	bAlwaysRelevant = true;
-	SetReplicates(true);
+	bReplicates = true;
 }
 
 void ALightningEmitter::BeginPlay()
