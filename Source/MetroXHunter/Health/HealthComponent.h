@@ -4,6 +4,8 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+class UHealthComponent;
+
 /*
  * Represents the damage type to apply.
  * Some types would have different effects on specific implementations, for example the 'Shock'
@@ -43,6 +45,12 @@ struct FDamageContext
 {
 	GENERATED_BODY()
 
+	/*
+	 * Component currently taking damage.
+	 * Assigned automatically during a HealthComponent::TakeDamage call.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UHealthComponent* HealthComponent = nullptr;
 	/*
 	 * Amount of damage applied
 	 */
@@ -86,14 +94,26 @@ class METROXHUNTER_API IHealthHolder
 
 public:
 	/*
-	 * Function called when the HealthComponent is taking damage 
-	 * and controlling whenever the damage should be applied.
+	 * Called when the HealthComponent is about to take damage 
+	 * and allows to control whenever the damage should be applied,
+	 * as well as tweaking the damage context.
+	 * 
+	 * This function is called even if the HealthComponent is dead
+	 * or invulnerable.
 	 * 
 	 * @param DamageContext Damage context
 	 * @return Whenever the damage should be applied
 	 */
 	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "HealthHolder" )
 	bool TakeDamage( UPARAM( ref ) FDamageContext& DamageContext );
+
+	/*
+	 * Called when the HealthComponent is about to take damage
+	 * and allows to control whenever the IHealthHolder::TakeDamage
+	 * function should be called.
+	 */
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "HealthHolder" )
+	bool CanCallTakeDamage( const FDamageContext& DamageContext );
 };
 
 /*
@@ -128,6 +148,14 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = "Health" )
 	void Reset();
+
+	/*
+	 * Returns whenever the component is considered alive or dead.
+	 * It is considered dead after taking damage responsible for putting the health
+	 * below or equal to zero.
+	 */
+	UFUNCTION( BlueprintPure, Category = "Health" )
+	bool IsAlive() const;
 
 public:
 	/*
@@ -169,9 +197,11 @@ public:
 	bool bShouldEmitBloodParticles = false;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Health" )
-	bool bIsDead = false;
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Health" )
 	bool bIsInvulnerable = false;
+
+private:
+	UPROPERTY( VisibleAnywhere, Category = "Health" )
+	bool bIsDead = false;
 
 	/*
 	 * Does the owner implement the IHealthHolder interface?

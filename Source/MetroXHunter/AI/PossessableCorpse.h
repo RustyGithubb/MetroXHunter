@@ -21,22 +21,21 @@ public:
 	APossessableCorpse();
 
 	virtual void BeginPlay() override;
-	virtual void Tick( float DeltaTime ) override;
 
 	UFUNCTION( BlueprintCallable, Category = "PossessableCorpse" )
 	bool ReserveCorpse( AParasite* Parasite );
 	UFUNCTION( BlueprintCallable, Category = "PossessableCorpse" )
 	bool IsReserved() const;
 
+	UFUNCTION( BlueprintPure, Category = "PossessableCorpse" )
+	AParasite* GetReserver() const;
+
 public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
-	USceneComponent* SceneComponent;
-
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
-	UStaticMeshComponent* MeshComponent;
+	USkeletalMeshComponent* MeshComponent = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "PossessableCorpse" )
-	UZeroEnemyData* DataAsset;
+	UZeroEnemyData* DataAsset = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "PossessableCorpse" )
 	TSubclassOf<AZeroEnemy> EnemyClass;

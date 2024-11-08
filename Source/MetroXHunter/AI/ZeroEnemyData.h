@@ -13,6 +13,7 @@ class ASpitProjectile;
 
 class USoundBase;
 class UCurveVector;
+class UNiagaraSystem;
 
 /**
  * 
@@ -141,11 +142,30 @@ public:
 	FCollisionResponseContainer MeshRagdollCollisions {};
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death", meta = ( Units = "Centimeters" ) )
 	float DeathKnockbackForce = 500.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
+	TSubclassOf<AActor> BloodPuddleClass {};
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
+	FVector BloodPuddleScale { 2.0f, 14.0f, 14.0f };
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
+	FName BloodPuddleSpawnBoneName = TEXT( "spine_02" );
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death", meta = ( Units = "CentimetersPerSecond" ) )
+	float BloodPuddleSpawnMaxVelocity = 1.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Materials" )
 	UMaterialInterface* OpenedBulbMaterial = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Materials" )
 	UMaterialInterface* ClosedBulbMaterial = nullptr;
+
+	/*
+	 * Niagara system to spawn when hitting the bulb.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Niagara" )
+	UNiagaraSystem* BulbHitNiagara = nullptr;
+	/*
+	 * Forward distance to spawn the Niagara system when hitting the bulb.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Niagara", meta = ( Units = "Centimeters" ) )
+	float BulbHitNiagaraDistance = 50.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Sounds" )
 	USoundBase* RushStartSound = nullptr;

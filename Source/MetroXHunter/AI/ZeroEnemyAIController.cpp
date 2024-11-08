@@ -8,7 +8,7 @@
 #include "AI/AITargetComponent.h"
 #include "AI/AISubstateManagerComponent.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
 #include "Library/ConvarLibrary.h"
 
 #include "Navigation/CrowdFollowingComponent.h"
@@ -106,6 +106,8 @@ void AZeroEnemyAIController::Tick( float DeltaTime )
 
 void AZeroEnemyAIController::CombatTarget( AActor* InTarget )
 {
+	if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && Cast<APawn>( InTarget )->IsPlayerControlled() ) return;
+
 	SetTarget( InTarget );
 	SetState( EZeroEnemyAIState::Target );
 }
@@ -286,7 +288,6 @@ void AZeroEnemyAIController::StopScreamTimer()
 
 void AZeroEnemyAIController::OnSeePawn( APawn* SeenPawn )
 {
-	if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() ) return;
 	if ( CustomPawn->GetState() != EZeroEnemyState::None ) return;
 	if ( IsValid( GetTarget() ) ) return;
 
@@ -295,7 +296,6 @@ void AZeroEnemyAIController::OnSeePawn( APawn* SeenPawn )
 
 void AZeroEnemyAIController::OnHearNoise( APawn* HeardPawn, const FVector& Location, float Volume )
 {
-	if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() ) return;
 	if ( CustomPawn->GetState() != EZeroEnemyState::None ) return;
 	if ( IsValid( GetTarget() ) ) return;
 

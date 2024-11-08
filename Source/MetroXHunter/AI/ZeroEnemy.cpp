@@ -11,7 +11,8 @@
 #include "Health/HealthComponent.h"
 #include "Electricity/ElectrocutableComponent.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
+#include "Library/GameplayLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -26,6 +27,9 @@
 
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
+
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AZeroEnemy::AZeroEnemy()
 {
@@ -248,6 +252,7 @@ void AZeroEnemy::UnStun()
 
 void AZeroEnemy::MakePanic()
 {
+	// Force un-faking death
 	if ( State == EZeroEnemyState::FakingDeath )
 	{
 		UnFakeDeath();
@@ -263,6 +268,12 @@ bool AZeroEnemy::DestroyBodyPart(
 	const FVector& KnockbackDirection
 )
 {
+	// Force un-faking death
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
+
 	if ( auto SkeletalBodyPart = Cast<USkeletalMeshComponent>( BodyPart ) )
 	{
 		// Ragdoll all bones below the hit bone name
@@ -288,8 +299,11 @@ bool AZeroEnemy::DestroyBodyPart(
 	LeftBodyPartsCount -= 1;
 	if ( LeftBodyPartsCount <= Data->BodyPartsLeftToKill ) return true;
 
-	MakePanic();
-	UpdateWalkSpeed();
+	if ( HealthComponent->IsAlive() )
+	{
+		MakePanic();
+		UpdateWalkSpeed();
+	}
 
 	return false;
 }
@@ -301,6 +315,8 @@ int32 AZeroEnemy::GetStartingBodyPartsCount() const
 
 void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 {
+	if ( Force == 0.0f ) return;
+
 	FVector Impulse = Direction.GetSafeNormal2D() * Force;
 	Impulse.Z = Data->DefaultKnockbackZ;
 
@@ -432,20 +448,39 @@ EZeroEnemyState AZeroEnemy::GetState() const
 	return State;
 }
 
+bool AZeroEnemy::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+{
+	// NOTE: We want to allow the call no matter what, even if already dead.
+	//		 Because we want to allow players to dismember dead bodies and to bring
+	//		 consistency in gameplay with death faker enemies.
+	return true;
+}
+
 bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 {
 	UPrimitiveComponent* HitComponent = DamageContext.HitResult.GetComponent();
-
-	// Check if damaged the bulb
-	if ( HitComponent == BulbMeshComponent )
-	{
-		return IsBulbOpened();
-	}
 
 	const FVector KnockbackDirection = UKismetMathLibrary::GetDirectionUnitVector(
 		DamageContext.HitResult.TraceStart,
 		DamageContext.HitResult.TraceEnd
 	);
+
+	// Check if damaged the bulb
+	if ( HitComponent == BulbMeshComponent )
+	{
+		if ( IsBulbOpened() )
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				this,
+				Data->BulbHitNiagara,
+				BulbMeshComponent->GetComponentLocation() - KnockbackDirection * Data->BulbHitNiagaraDistance,
+				BulbMeshComponent->GetComponentRotation()
+			);
+			return true;
+		}
+
+		return false;
+	}
 
 	// Check if damaged one of its body part
 	if ( IsValid( HitComponent ) && HitComponent->ComponentHasTag( Data->BodyPartTag ) )
@@ -466,9 +501,11 @@ bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 		return false;
 	}
 
-	// Here, the body is hit
-
-	ApplyKnockback( KnockbackDirection, Data->WholeBodyHitKnockbackForce );
+	// Knockback for all damage except electricity
+	if ( DamageContext.DamageType != EDamageType::Shock )
+	{
+		ApplyKnockback( KnockbackDirection, Data->WholeBodyHitKnockbackForce );
+	}
 
 	return false;
 }
@@ -601,6 +638,10 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 	MeshComponent->SetSimulatePhysics( true );
 	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+	MeshComponent->SetReceivesDecals( false );
+	MeshComponent->OnComponentHit.AddDynamic( this, &AZeroEnemy::OnRagdollMeshHit );
+
+	BulbMeshComponent->SetReceivesDecals( false );
 
 	// Apply knockback to mesh
 	const FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(
@@ -615,4 +656,34 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 	}
 
 	SetCollisionsEnabled( false );
+}
+
+void AZeroEnemy::OnRagdollMeshHit(
+	UPrimitiveComponent* HitComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse,
+	const FHitResult& Hit
+)
+{
+	// NOTE: It is assumed that this function is triggered only after death
+	//		 when the mesh hit something.
+
+	const float VelocityLength = HitComponent->GetComponentVelocity().Length();
+	if ( VelocityLength > Data->BloodPuddleSpawnMaxVelocity ) return;
+
+	SpawnBloodPuddle();
+
+	GetMesh()->OnComponentHit.RemoveDynamic( this, &AZeroEnemy::OnRagdollMeshHit );
+}
+
+void AZeroEnemy::SpawnBloodPuddle()
+{
+	UGameplayLibrary::SpawnBloodPuddleAtBone(
+		this,
+		Data->BloodPuddleClass,
+		GetMesh(),
+		Data->BloodPuddleSpawnBoneName,
+		Data->BloodPuddleScale
+	);
 }

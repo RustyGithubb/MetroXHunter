@@ -1,6 +1,6 @@
 #include "Telemetry/TelemetryComponent.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"

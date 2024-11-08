@@ -6,7 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
 
 UElectrocutableComponent::UElectrocutableComponent()
 {

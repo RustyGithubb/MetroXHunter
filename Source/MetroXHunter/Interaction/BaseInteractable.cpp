@@ -177,7 +177,7 @@ void ABaseInteractable::OnInnerCircleOverlapEnd(
 {
 	if ( PlayerInteractionComponent )
 	{
-		PlayerController = nullptr;
+		//PlayerController = nullptr;
 		InteractableComponent->OnPlayerOut( PlayerInteractionComponent );
 		InteractableWidget->OnUntargeted();
 

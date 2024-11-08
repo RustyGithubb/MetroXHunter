@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
 
 constexpr auto EMISSIVE_POWER_NAME = TEXT( "Emissive Power" );
 constexpr auto FLICKERING_TIME_NAME = TEXT( "Flickering Time" );

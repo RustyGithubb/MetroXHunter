@@ -140,6 +140,7 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	EZeroEnemyState GetState() const;
 
+	bool CanCallTakeDamage_Implementation( const FDamageContext& DamageContext ) override;
 	bool TakeDamage_Implementation( FDamageContext& DamageContext ) override;
 
 #if ENABLE_VISUAL_LOG
@@ -210,6 +211,17 @@ private:
 
 	UFUNCTION()
 	void OnDeath( const FDamageContext& DamageContext );
+
+	UFUNCTION()
+	void OnRagdollMeshHit(
+		UPrimitiveComponent* HitComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit
+	);
+
+	void SpawnBloodPuddle();
 
 private:
 	bool bIsBulbOpened = false;

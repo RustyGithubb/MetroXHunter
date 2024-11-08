@@ -16,8 +16,11 @@ class METROXHUNTER_API UGunData : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility|Damage" )
 	int32 ShootDamage = 50;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility|Damage" )
+	float ShootCooldown = 1.2f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility" )
 	int32 StartingMagazineAmmo = 6;
