@@ -1,7 +1,3 @@
-/*
- * Implemented by Arthur Cathelain (arkaht)
- */
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,9 +6,8 @@
 
 class UMetroCheatFunction;
 
-/*
- * Cheat Manager responsible for finding all cheat functions blueprints, instancing
- * and managing them.
+/**
+ *
  */
 UCLASS()
 class METROXHUNTER_API UMetroCheatManager : public UCheatManager, public FTickableGameObject

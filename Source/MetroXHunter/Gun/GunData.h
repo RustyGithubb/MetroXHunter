@@ -10,20 +10,23 @@
  /*
   * Data Asset of the gun.
   */
-UCLASS()
+UCLASS( Blueprintable)
 class METROXHUNTER_API UGunData : public UDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility" )
-	int ShootDamage = 50;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility|Damage" )
+	int32 ShootDamage = 50;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility|Damage" )
+	float ShootCooldown = 1.2f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility" )
-	int StartingMagazineAmmo = 6;
+	int32 StartingMagazineAmmo = 6;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility" )
-	int MaxMagazineAmmo = 6;
+	int32 MaxMagazineAmmo = 6;
 
 	/*
 	 * The range of the lightning ability:
@@ -41,8 +44,8 @@ public:
 	/*
 	 * The maximum number of lightning-struck targets.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility" )
-	int LightningTargetLimit = 3;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility", meta = ( ClampMin = 1, ClampMax = 3 ) )
+	int32 LightningTargetLimit = 3;
 
 	/*
 	 * The cooldown time before Lightning Damage can be reapplied to the targets.
@@ -55,6 +58,12 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Damage" )
 	int32 LightningDamage = 15;
+
+	/*
+	 * The maximum stun duration of the lightning
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Damage" )
+	float LightningStunDuration = 5;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Energy" )
 	float MaxEnergyAmount = 100.0f;

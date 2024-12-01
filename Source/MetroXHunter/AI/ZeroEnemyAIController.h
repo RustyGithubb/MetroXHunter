@@ -8,6 +8,7 @@
 #include "AIController.h"
 #include "ZeroEnemyAIController.generated.h"
 
+enum class EZeroEnemyState : uint8;
 class AZeroEnemy;
 class UAIAttackerComponent;
 class UAISubstateManagerComponent;
@@ -104,6 +105,11 @@ private:
 	void StopScreamTimer();
 
 	UFUNCTION()
+	void OnSeePawn( APawn* SeenPawn );
+	UFUNCTION()
+	void OnHearNoise( APawn* HeardPawn, const FVector& Location, float Volume );
+
+	UFUNCTION()
 	void OnStun();
 	UFUNCTION()
 	void OnUnStun();
@@ -114,7 +120,7 @@ private:
 	void OnUnRush();
 
 	UFUNCTION()
-	void OnStateUpdate();
+	void OnStateUpdate( EZeroEnemyState NewState, EZeroEnemyState OldState );
 
 	UFUNCTION()
 	void OnSubstateSwitched();

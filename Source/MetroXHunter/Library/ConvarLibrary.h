@@ -34,4 +34,7 @@ public:
 	static void SetTickDebuggerDefaultNameConvarValue( const FString& Value );
 	UFUNCTION( BlueprintPure, Category = "ConvarLibrary" )
 	static FString GetTickDebuggerDefaultNameConvarValue();
+
+	UFUNCTION( BlueprintPure, Category = "ConvarLibrary" )
+	static bool IsGunDebugEnabled();
 };

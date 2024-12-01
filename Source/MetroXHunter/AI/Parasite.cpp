@@ -13,8 +13,10 @@
 #include "Perception/PawnSensingComponent.h"
 #include "Components/CapsuleComponent.h"
 
+#include "Library/UtilityLibrary.h"
+#include "Library/GameplayLibrary.h"
+
 #include "Kismet/KismetMathLibrary.h"
-#include "UtilityLibrary.h"
 
 AParasite::AParasite()
 {
@@ -151,6 +153,13 @@ void AParasite::OnDeath( const FDamageContext& DamageContext )
 	MeshComponent->SetSimulatePhysics( true );
 	MeshComponent->SetCollisionEnabled( ECollisionEnabled::QueryAndPhysics );
 	MeshComponent->SetCollisionResponseToChannels( DataAsset->MeshRagdollCollisions );
+	MeshComponent->SetReceivesDecals( false );
+
+	// Schedule blood spawn only if not dead by electricity
+	if ( DamageContext.DamageType != EDamageType::Shock )
+	{
+		MeshComponent->OnComponentHit.AddDynamic( this, &AParasite::OnRagdollMeshHit );
+	}
 
 	// Apply knockback to mesh
 	const FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(
@@ -159,11 +168,41 @@ void AParasite::OnDeath( const FDamageContext& DamageContext )
 	);
 	if ( !Direction.IsNearlyZero() )
 	{
-		const FVector Knockback = Direction * 1000.0f;
+		const FVector Knockback = Direction * 500.0f + FVector::UpVector * -300.0f;
 		//MeshComponent->AddImpulseAtLocation( Knockback, DamageContext.HitResult.ImpactPoint );
 		MeshComponent->SetAllPhysicsLinearVelocity( Knockback, true );
 	}
 
 	// Disable capsule component's collisions
 	GetCapsuleComponent()->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+}
+
+void AParasite::OnRagdollMeshHit(
+	UPrimitiveComponent* HitComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse,
+	const FHitResult& Hit
+)
+{
+	// NOTE: It is assumed that this function is triggered only after death
+	//		 when the mesh hit something.
+	
+	const float VelocityLength = HitComponent->GetComponentVelocity().Length();
+	if ( VelocityLength > DataAsset->BloodPuddleSpawnMaxVelocity ) return;
+
+	SpawnBloodPuddle();
+
+	GetMesh()->OnComponentHit.RemoveDynamic( this, &AParasite::OnRagdollMeshHit );
+}
+
+void AParasite::SpawnBloodPuddle()
+{
+	UGameplayLibrary::SpawnBloodPuddleAtBone(
+		this,
+		DataAsset->BloodPuddleClass,
+		GetMesh(),
+		DataAsset->BloodPuddleSpawnBoneName,
+		DataAsset->BloodPuddleScale
+	);
 }

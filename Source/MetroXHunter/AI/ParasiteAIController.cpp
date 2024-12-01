@@ -9,7 +9,7 @@
 #include "Vent/Vent.h"
 
 #include "Library/ConvarLibrary.h"
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
 
 #include "Perception/PawnSensingComponent.h"
 #include "Navigation/CrowdFollowingComponent.h"

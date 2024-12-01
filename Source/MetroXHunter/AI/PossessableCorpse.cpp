@@ -8,13 +8,10 @@
 
 APossessableCorpse::APossessableCorpse()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	SceneComponent = CreateDefaultSubobject<USceneComponent>( TEXT( "SceneComponent" ) );
-	RootComponent = SceneComponent;
-
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "MeshComponent" ) );
-	MeshComponent->SetupAttachment( RootComponent );
+	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>( TEXT( "MeshComponent" ) );
+	RootComponent = MeshComponent;
 }
 
 void APossessableCorpse::BeginPlay()
@@ -22,12 +19,6 @@ void APossessableCorpse::BeginPlay()
 	Super::BeginPlay();
 
 	verifyf( IsValid( EnemyClass ), TEXT( "%s doesn't have a valid EnemyClass reference!" ), *GetName() );
-}
-
-// TODO: Remove
-void APossessableCorpse::Tick( float DeltaTime )
-{
-	Super::Tick( DeltaTime );
 }
 
 bool APossessableCorpse::ReserveCorpse( AParasite* Parasite )
@@ -38,6 +29,11 @@ bool APossessableCorpse::ReserveCorpse( AParasite* Parasite )
 
 bool APossessableCorpse::IsReserved() const
 {
-	return IsValid( ReservingParasite );
+	return IsValid( ReservingParasite ) && ReservingParasite->HealthComponent->IsAlive();
+}
+
+AParasite* APossessableCorpse::GetReserver() const
+{
+	return ReservingParasite;
 }
 

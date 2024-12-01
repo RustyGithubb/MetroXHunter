@@ -17,10 +17,17 @@ bool UHealthComponent::TakeDamage( FDamageContext DamageContext )
 {
 	verify( DamageContext.DamageAmount > 0 );
 
-	if ( bIsDead || bIsInvulnerable ) return false;
+	// Assign extra informations
+	DamageContext.HealthComponent = this;
 
 	// Check for owner interface
-	if ( bHasHealthHolder && !IHealthHolder::Execute_TakeDamage( GetOwner(), DamageContext ) ) return false;
+	AActor* Owner = GetOwner();
+	if ( bHasHealthHolder && IHealthHolder::Execute_CanCallTakeDamage( Owner, DamageContext ) )
+	{
+		if ( !IHealthHolder::Execute_TakeDamage( Owner, DamageContext ) ) return false;
+	}
+
+	if ( bIsDead || bIsInvulnerable ) return false;
 
 	// Apply damage to health
 	CurrentHealth = FMath::Max( CurrentHealth - DamageContext.DamageAmount, 0 );
@@ -54,4 +61,9 @@ void UHealthComponent::Reset()
 	bIsDead = false;
 
 	OnHealthUpdate.Broadcast();
+}
+
+bool UHealthComponent::IsAlive() const
+{
+	return !bIsDead;
 }

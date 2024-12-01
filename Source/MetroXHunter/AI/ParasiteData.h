@@ -59,6 +59,14 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
 	FCollisionResponseContainer MeshRagdollCollisions {};
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
+	TSubclassOf<AActor> BloodPuddleClass {};
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
+	FVector BloodPuddleScale { 2.0f, 10.0f, 10.0f };
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
+	FName BloodPuddleSpawnBoneName = TEXT( "Body" );
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death", meta = ( Units = "CentimetersPerSecond" ) )
+	float BloodPuddleSpawnMaxVelocity = 1.0f;
 
 	/*
 	 * Don't disable or AIs won't be able to move anymore.

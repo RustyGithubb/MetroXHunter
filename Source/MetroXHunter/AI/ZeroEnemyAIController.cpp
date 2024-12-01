@@ -8,12 +8,13 @@
 #include "AI/AITargetComponent.h"
 #include "AI/AISubstateManagerComponent.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
 #include "Library/ConvarLibrary.h"
 
 #include "Navigation/CrowdFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Perception/PawnSensingComponent.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -41,6 +42,8 @@ void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 	CustomPawn->OnRush.AddDynamic( this, &AZeroEnemyAIController::OnRush );
 	CustomPawn->OnUnRush.AddDynamic( this, &AZeroEnemyAIController::OnUnRush );
 	CustomPawn->OnStateUpdate.AddDynamic( this, &AZeroEnemyAIController::OnStateUpdate );
+	CustomPawn->PawnSensingComponent->OnSeePawn.AddDynamic( this, &AZeroEnemyAIController::OnSeePawn );
+	CustomPawn->PawnSensingComponent->OnHearNoise.AddDynamic( this, &AZeroEnemyAIController::OnHearNoise );
 	const UZeroEnemyData* DataAsset = CustomPawn->Data;
 
 	verifyf( RunBehaviorTree( BehaviorTree ), TEXT( "Behavior Tree of %s failed to run" ), *GetName() );
@@ -75,6 +78,8 @@ void AZeroEnemyAIController::OnUnPossess()
 	CustomPawn->OnRush.RemoveDynamic( this, &AZeroEnemyAIController::OnRush );
 	CustomPawn->OnUnRush.RemoveDynamic( this, &AZeroEnemyAIController::OnUnRush );
 	CustomPawn->OnStateUpdate.RemoveDynamic( this, &AZeroEnemyAIController::OnStateUpdate );
+	CustomPawn->PawnSensingComponent->OnSeePawn.RemoveDynamic( this, &AZeroEnemyAIController::OnSeePawn );
+	CustomPawn->PawnSensingComponent->OnHearNoise.RemoveDynamic( this, &AZeroEnemyAIController::OnHearNoise );
 
 	StopScreamTimer();
 
@@ -101,6 +106,8 @@ void AZeroEnemyAIController::Tick( float DeltaTime )
 
 void AZeroEnemyAIController::CombatTarget( AActor* InTarget )
 {
+	if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && Cast<APawn>( InTarget )->IsPlayerControlled() ) return;
+
 	SetTarget( InTarget );
 	SetState( EZeroEnemyAIState::Target );
 }
@@ -279,6 +286,22 @@ void AZeroEnemyAIController::StopScreamTimer()
 	TimerManager.ClearTimer( ScreamTimerHandle );
 }
 
+void AZeroEnemyAIController::OnSeePawn( APawn* SeenPawn )
+{
+	if ( CustomPawn->GetState() != EZeroEnemyState::None ) return;
+	if ( IsValid( GetTarget() ) ) return;
+
+	CombatTarget( SeenPawn );
+}
+
+void AZeroEnemyAIController::OnHearNoise( APawn* HeardPawn, const FVector& Location, float Volume )
+{
+	if ( CustomPawn->GetState() != EZeroEnemyState::None ) return;
+	if ( IsValid( GetTarget() ) ) return;
+
+	CombatTarget( HeardPawn );
+}
+
 void AZeroEnemyAIController::OnStun()
 {
 	switch ( GetState() )
@@ -307,13 +330,22 @@ void AZeroEnemyAIController::OnUnRush()
 	//SetState( EZeroEnemyAIState::Chase );
 }
 
-void AZeroEnemyAIController::OnStateUpdate()
+void AZeroEnemyAIController::OnStateUpdate( EZeroEnemyState NewState, EZeroEnemyState OldState )
 {
-	EZeroEnemyState PawnState = CustomPawn->GetState();
-	Blackboard->SetValueAsEnum( PAWN_STATE_KEYNAME, (uint8)PawnState );
+	Blackboard->SetValueAsEnum( PAWN_STATE_KEYNAME, (uint8)NewState );
 
-	switch ( PawnState )
+	switch ( OldState )
 	{
+		case EZeroEnemyState::FakingDeath:
+			StartScreamTimer();
+			break;
+	}
+
+	switch ( NewState )
+	{
+		case EZeroEnemyState::FakingDeath:
+			StopScreamTimer();
+			break;
 		case EZeroEnemyState::RushAttack:
 		case EZeroEnemyState::RushAttackResolve:
 			// Disable substate manager component when rushing

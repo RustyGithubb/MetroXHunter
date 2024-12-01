@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "AI/ZeroEnemy.h"
 #include "AI/AISubstateManagerComponent.h"
 #include "AI/AISubstate.h"
@@ -5,18 +9,27 @@
 
 #include "Light/LightManagerComponent.h"
 #include "Health/HealthComponent.h"
+#include "Electricity/ElectrocutableComponent.h"
 
-#include "UtilityLibrary.h"
+#include "Library/UtilityLibrary.h"
+#include "Library/GameplayLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "Perception/PawnSensingComponent.h"
 
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
+
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AZeroEnemy::AZeroEnemy()
 {
@@ -25,17 +38,33 @@ AZeroEnemy::AZeroEnemy()
 	BulbMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "BulbMeshComponent" ) );
 	BulbMeshComponent->SetupAttachment( RootComponent );
 
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health" ) );
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "HealthComponent" ) );
+
+	ElectrocutableComponent = CreateDefaultSubobject<UElectrocutableComponent>( TEXT( "ElectrocutableComponent" ) );
+
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>( TEXT( "PawnSensingComponent" ) );
 }
 
 void AZeroEnemy::BeginPlay()
 {
+	DefaultMeshRelativeTransform = GetMesh()->GetRelativeTransform();
+	DefaultMeshCollisions = GetMesh()->GetCollisionResponseToChannels();
+
 	RetrieveReferences();
 
 	UpdateWalkSpeed();
 
 	GenerateBulb();
 	CloseBulb();
+
+	if ( bStartFakingDeath )
+	{
+		FakeDeath();
+	}
+	else
+	{
+		SimulateMeshBonesPhysics( true );
+	}
 
 	Super::BeginPlay();
 }
@@ -88,6 +117,69 @@ void AZeroEnemy::Tick( float DeltaTime )
 			break;
 		}
 	}
+}
+
+void AZeroEnemy::FakeDeath()
+{
+	SetState( EZeroEnemyState::FakingDeath );
+
+	// Ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( true );
+	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+
+	// Disable tick and character movement
+	SetActorTickEnabled( false );
+	GetCharacterMovement()->SetActive( false );
+
+	SetCollisionsEnabled( false );
+}
+
+void AZeroEnemy::UnFakeDeath()
+{
+	ensureMsgf(
+		State == EZeroEnemyState::FakingDeath,
+		TEXT( "ZeroEnemy: %s is supposed to be in the FakingDeath state" ),
+		*GetName()
+	);
+
+	SetState( EZeroEnemyState::None );
+
+	// Un-ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( false );
+	// NOTE: We must re-attach the mesh to the root component because simulating physics
+	// de-attach components from their parent.
+	MeshComponent->AttachToComponent( RootComponent, FAttachmentTransformRules::KeepRelativeTransform );
+	MeshComponent->SetRelativeTransform( DefaultMeshRelativeTransform );
+	MeshComponent->SetCollisionResponseToChannels( DefaultMeshCollisions );
+
+	// Enable tick and character movement
+	SetActorTickEnabled( true );
+	GetCharacterMovement()->SetActive( true );
+
+	SimulateMeshBonesPhysics( true );
+	SetCollisionsEnabled( true );
+}
+
+void AZeroEnemy::SimulateMeshBonesPhysics( bool bSimulate )
+{
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	for ( const FName BoneName : SimulatedMeshBones )
+	{
+		MeshComponent->SetAllBodiesBelowSimulatePhysics( BoneName, bSimulate );
+		MeshComponent->SetEnableGravityOnAllBodiesBelow( bSimulate, BoneName );
+	}
+}
+
+void AZeroEnemy::SetCollisionsEnabled( bool bEnabled )
+{
+	ECollisionEnabled::Type CollisionType = bEnabled
+		? ECollisionEnabled::QueryAndPhysics
+		: ECollisionEnabled::NoCollision;
+
+	GetCapsuleComponent()->SetCollisionEnabled( CollisionType );
+	BulbMeshComponent->SetCollisionEnabled( CollisionType );
 }
 
 void AZeroEnemy::OpenBulb( float OpenTime )
@@ -160,6 +252,12 @@ void AZeroEnemy::UnStun()
 
 void AZeroEnemy::MakePanic()
 {
+	// Force un-faking death
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
+
 	OpenBulb( Data->PanicBulbOpenTime );
 	Stun( Data->PanicStunTime );
 }
@@ -170,6 +268,12 @@ bool AZeroEnemy::DestroyBodyPart(
 	const FVector& KnockbackDirection
 )
 {
+	// Force un-faking death
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
+
 	if ( auto SkeletalBodyPart = Cast<USkeletalMeshComponent>( BodyPart ) )
 	{
 		// Ragdoll all bones below the hit bone name
@@ -195,8 +299,11 @@ bool AZeroEnemy::DestroyBodyPart(
 	LeftBodyPartsCount -= 1;
 	if ( LeftBodyPartsCount <= Data->BodyPartsLeftToKill ) return true;
 
-	MakePanic();
-	UpdateWalkSpeed();
+	if ( HealthComponent->IsAlive() )
+	{
+		MakePanic();
+		UpdateWalkSpeed();
+	}
 
 	return false;
 }
@@ -208,6 +315,8 @@ int32 AZeroEnemy::GetStartingBodyPartsCount() const
 
 void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 {
+	if ( Force == 0.0f ) return;
+
 	FVector Impulse = Direction.GetSafeNormal2D() * Force;
 	Impulse.Z = Data->DefaultKnockbackZ;
 
@@ -329,8 +438,9 @@ void AZeroEnemy::ResetModifiers()
 
 void AZeroEnemy::SetState( EZeroEnemyState NewState )
 {
+	EZeroEnemyState OldState = State;
 	State = NewState;
-	OnStateUpdate.Broadcast();
+	OnStateUpdate.Broadcast( NewState, OldState );
 }
 
 EZeroEnemyState AZeroEnemy::GetState() const
@@ -338,20 +448,39 @@ EZeroEnemyState AZeroEnemy::GetState() const
 	return State;
 }
 
+bool AZeroEnemy::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+{
+	// NOTE: We want to allow the call no matter what, even if already dead.
+	//		 Because we want to allow players to dismember dead bodies and to bring
+	//		 consistency in gameplay with death faker enemies.
+	return true;
+}
+
 bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 {
 	UPrimitiveComponent* HitComponent = DamageContext.HitResult.GetComponent();
-
-	// Check if damaged the bulb
-	if ( HitComponent == BulbMeshComponent )
-	{
-		return IsBulbOpened();
-	}
 
 	const FVector KnockbackDirection = UKismetMathLibrary::GetDirectionUnitVector(
 		DamageContext.HitResult.TraceStart,
 		DamageContext.HitResult.TraceEnd
 	);
+
+	// Check if damaged the bulb
+	if ( HitComponent == BulbMeshComponent )
+	{
+		if ( IsBulbOpened() )
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				this,
+				Data->BulbHitNiagara,
+				BulbMeshComponent->GetComponentLocation() - KnockbackDirection * Data->BulbHitNiagaraDistance,
+				BulbMeshComponent->GetComponentRotation()
+			);
+			return true;
+		}
+
+		return false;
+	}
 
 	// Check if damaged one of its body part
 	if ( IsValid( HitComponent ) && HitComponent->ComponentHasTag( Data->BodyPartTag ) )
@@ -372,9 +501,11 @@ bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 		return false;
 	}
 
-	// Here, the body is hit
-
-	ApplyKnockback( KnockbackDirection, Data->WholeBodyHitKnockbackForce );
+	// Knockback for all damage except electricity
+	if ( DamageContext.DamageType != EDamageType::Shock )
+	{
+		ApplyKnockback( KnockbackDirection, Data->WholeBodyHitKnockbackForce );
+	}
 
 	return false;
 }
@@ -457,7 +588,11 @@ void AZeroEnemy::RetrieveReferences()
 	// Enable aim assist for all body parts
 	for ( auto BodyPart : BodyParts )
 	{
-		BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+		if ( Data->bBodyPartHasAimAssist )
+		{
+			BodyPart->SetCollisionObjectType( Data->AimAssistCollisionChannel );
+		}
+
 		BodyPart->SetCollisionResponseToChannels( Data->BodyPartDefaultCollisions );
 	}
 
@@ -465,6 +600,7 @@ void AZeroEnemy::RetrieveReferences()
 	HealthComponent->MaxHealth = Data->MaxHealth;
 	
 	HealthComponent->OnDeath.AddDynamic( this, &AZeroEnemy::OnDeath );
+	ElectrocutableComponent->OnElectricStart.AddDynamic( this, &AZeroEnemy::OnElectricStart );
 }
 
 void AZeroEnemy::UpdateWalkSpeed()
@@ -475,6 +611,14 @@ void AZeroEnemy::UpdateWalkSpeed()
 	WalkSpeed -= Data->WalkSpeedLossPerBodyPartLost * ( StartBodyPartsCount - LeftBodyPartsCount );
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AZeroEnemy::OnElectricStart( float Duration )
+{
+	if ( State == EZeroEnemyState::FakingDeath )
+	{
+		UnFakeDeath();
+	}
 }
 
 void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
@@ -493,8 +637,11 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 	// Simulate physics and setup collisions on body mesh
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 	MeshComponent->SetSimulatePhysics( true );
-	MeshComponent->SetCollisionEnabled( ECollisionEnabled::QueryAndPhysics );
 	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+	MeshComponent->SetReceivesDecals( false );
+	MeshComponent->OnComponentHit.AddDynamic( this, &AZeroEnemy::OnRagdollMeshHit );
+
+	BulbMeshComponent->SetReceivesDecals( false );
 
 	// Apply knockback to mesh
 	const FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(
@@ -508,7 +655,35 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 		MeshComponent->SetAllPhysicsLinearVelocity( Knockback, true );
 	}
 
-	// Disable collisions
-	GetCapsuleComponent()->SetCollisionEnabled( ECollisionEnabled::NoCollision );
-	BulbMeshComponent->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+	SetCollisionsEnabled( false );
+}
+
+void AZeroEnemy::OnRagdollMeshHit(
+	UPrimitiveComponent* HitComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse,
+	const FHitResult& Hit
+)
+{
+	// NOTE: It is assumed that this function is triggered only after death
+	//		 when the mesh hit something.
+
+	const float VelocityLength = HitComponent->GetComponentVelocity().Length();
+	if ( VelocityLength > Data->BloodPuddleSpawnMaxVelocity ) return;
+
+	SpawnBloodPuddle();
+
+	GetMesh()->OnComponentHit.RemoveDynamic( this, &AZeroEnemy::OnRagdollMeshHit );
+}
+
+void AZeroEnemy::SpawnBloodPuddle()
+{
+	UGameplayLibrary::SpawnBloodPuddleAtBone(
+		this,
+		Data->BloodPuddleClass,
+		GetMesh(),
+		Data->BloodPuddleSpawnBoneName,
+		Data->BloodPuddleScale
+	);
 }

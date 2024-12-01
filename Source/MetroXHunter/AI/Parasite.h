@@ -79,6 +79,17 @@ private:
 	UFUNCTION()
 	void OnDeath( const FDamageContext& DamageContext );
 
+	UFUNCTION()
+	void OnRagdollMeshHit(
+		UPrimitiveComponent* HitComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit
+	);
+
+	void SpawnBloodPuddle();
+
 private:
 	bool bIsJumpAttacking = false;
 };
