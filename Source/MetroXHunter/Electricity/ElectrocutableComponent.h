@@ -11,6 +11,11 @@
 class UNiagaraSystem;
 class UNiagaraComponent;
 
+/*
+ * Component responsible for handling electricity.
+ * It provides easy-to-use features for giggling skeletal meshes and attaching FX
+ * to scene components.
+ */
 UCLASS( Blueprintable, ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UElectrocutableComponent : public UActorComponent
 {
@@ -75,6 +80,13 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Electrocutable" )
 	bool bGigglingAccumulateForce = false;
+
+	/*
+	 * Set whether the component should automatically fill the lists with the skeletal meshes
+	 * of its owner.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Electrocutable" )
+	bool bAutoFindSkeletalMeshes = false;
 
 private:
 	UPROPERTY()

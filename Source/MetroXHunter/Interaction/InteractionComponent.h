@@ -32,35 +32,39 @@ public:
 	void RemoveNearInteractable( UInteractableComponent* InInteractable );
 
 public:
-	/* Controllers */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
-	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnCurrentInteractableChanged, E_InteractionType, InteractionType );
+	UPROPERTY( BlueprintAssignable, Category = "Interactable" )
+	FOnCurrentInteractableChanged OnCurrentInteractableChanged {};
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
+public:
+	/* Controllers */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs" )
+	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs" )
 	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
+	USoundBase* InteractSound = nullptr;
 
 private:
 	void GetReferences();
 	void RetrieveClosestInteractable();
 	void UpdateViewport();
-	void Interact();
 
-	UFUNCTION(BlueprintCallable)
+	void Interact();
+	UFUNCTION( BlueprintCallable )
 	void CancelInteract();
 
 private:
 	APlayerController* PlayerController = nullptr;
-
 	/*
 	 * The closest interactable from the player's view
 	 */
 	UInteractableComponent* CurrentInteractable = nullptr;
-
 	/*
 	 * All the interactables near the player
 	 */
 	TArray<UInteractableComponent*> NearInteractables;
-
 	/*
 	 * If there is any interactable near the player
 	 */

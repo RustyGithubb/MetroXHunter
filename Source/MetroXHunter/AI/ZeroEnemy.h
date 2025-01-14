@@ -49,6 +49,10 @@ enum class EZeroEnemyState : uint8
 	 * As name implies, currently faking death.
 	 */
 	FakingDeath,
+	/*
+	 * Currently knocked out and ragdolled for a given time.
+	 */
+	KnockOut,
 };
 
 USTRUCT( BlueprintType )
@@ -59,6 +63,8 @@ struct METROXHUNTER_API FZeroEnemyModifiers
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "" )
 	float WalkSpeedMultiplier = 1.0f;
 };
+
+constexpr int32 MAX_NUM_ZERO_ENEMY_LEGS = 4;
 
 UCLASS( Abstract )
 class METROXHUNTER_API AZeroEnemy :
@@ -76,6 +82,16 @@ public:
 	void FakeDeath();
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void UnFakeDeath();
+
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void KnockOut();
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void UnKnockOut();
+
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void Ragdoll();
+	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
+	void UnRagdoll();
 
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	void SimulateMeshBonesPhysics( bool bSimulate );
@@ -98,7 +114,9 @@ public:
 	bool DestroyBodyPart(
 		USceneComponent* BodyPart,
 		const FName& BoneName,
-		const FVector& KnockbackDirection
+		const FVector& HitLocation,
+		const FVector& KnockbackDirection,
+		const float DistanceFromAttacker
 	);
 	int32 GetStartingBodyPartsCount() const;
 
@@ -150,32 +168,36 @@ public:
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnStun );
 	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
-	FOnStun OnStun;
+	FOnStun OnStun {};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUnStun );
 	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
-	FOnStun OnUnStun;
+	FOnStun OnUnStun {};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnRush );
 	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
-	FOnRush OnRush;
+	FOnRush OnRush {};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUnRush );
 	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
-	FOnUnRush OnUnRush;
+	FOnUnRush OnUnRush {};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnMeleeAttack, bool, bIsStarting );
 	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
-	FOnMeleeAttack OnMeleeAttack;
+	FOnMeleeAttack OnMeleeAttack {};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FOnStateUpdate, EZeroEnemyState, NewState, EZeroEnemyState, OldState );
 	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
-	FOnStateUpdate OnStateUpdate;
+	FOnStateUpdate OnStateUpdate {};
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnAttacked, AActor*, Attacker );
+	UPROPERTY( BlueprintAssignable, Category = "ZeroEnemy" )
+	FOnAttacked OnAttacked {};
 
 public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UStaticMeshComponent* BulbMeshComponent = nullptr;
-	
+
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UHealthComponent* HealthComponent = nullptr;
 
@@ -184,6 +206,9 @@ public:
 
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	UPawnSensingComponent* PawnSensingComponent = nullptr;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "ZeroEnemy" )
+	USaveLoadComponent* SaveComponent = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ZeroEnemy", meta = ( ExposeOnSpawn = true ) )
 	UZeroEnemyData* Data = nullptr;
@@ -194,11 +219,14 @@ public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
 	TArray<FName> SimulatedMeshBones {};
 
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ZeroEnemy" )
+	TArray<FName> SimulatedMeshBonesBelow {};
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ZeroEnemy" )
 	bool bStartFakingDeath = false;
 
 	UPROPERTY( BlueprintReadOnly, Category = "ZeroEnemy" )
-	int32 LeftBodyPartsCount = 0;
+	int32 LeftBodyPartsCount = MAX_NUM_ZERO_ENEMY_LEGS;
 
 private:
 	void GenerateBulb();
@@ -237,10 +265,18 @@ private:
 
 	int32 StartBodyPartsCount = 0;
 	float MaxRushTime = 0.0f;
+	float MaxKnockOutDistance = -1.0f;
+
+	/*
+	 * Specify which leg is dead or not.
+	 * Indexes: Front Left = 0, Front Right = 1, Back Left = 2, Back Right = 3
+	 */
+	bool DeadLegs[MAX_NUM_ZERO_ENEMY_LEGS] {};
 
 	FZeroEnemyModifiers Modifiers {};
 
 	FTimerHandle OpeningBulbTimerHandle {};
 	FTimerHandle StunTimerHandle {};
 	FTimerHandle RushTimerHandle {};
+	FTimerHandle KnockOutTimerHandle {};
 };

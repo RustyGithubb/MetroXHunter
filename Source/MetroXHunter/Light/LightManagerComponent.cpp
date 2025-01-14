@@ -298,14 +298,6 @@ void ULightManagerComponent::FindAllLightsInWorld()
 		{
 			RegisterLight( LightComponent );
 		}
-
-		/*Actor->ForEachComponent<ULightComponent>(
-			false,
-			[this]( auto LightComponent )
-			{
-				RegisterLight( LightComponent );
-			}
-		);*/
 	}
 
 	if ( DetectedLights.IsEmpty() )

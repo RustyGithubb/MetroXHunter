@@ -46,10 +46,11 @@ struct FLightningParams
 	FFloatRange SparksFadingVelocity = FFloatRange( 0.65f, 0.80f );
 
 	// Sparks delay duration for movement
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, meta = ( Units = "Seconds", UIMin = "0.0", UIMax = "2.0" ), Category = "Variables")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, meta = ( Units = "Seconds", EditCondition = "bIsInstant == false", UIMin = "0.0", UIMax = "2.0" ), Category = "Variables")
 	FFloatRange SparksRangeDelay = FFloatRange(0.005f, 0.02f);
 
 	// Noise multiplier
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Variables" )
 	float NoiseMultiplier = 1.0f;
 
 	// Lenght steps of spark
@@ -82,7 +83,7 @@ struct FLightningParams
 
 	// Sparks Trail Fading Intensity
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, Category = "Variables" )
-	FFloatRange SparksTrailFadingIntensity = FFloatRange(0.0f, 1.0f);
+	FFloatRange TrailFadingIntensity = FFloatRange(0.0f, 1.0f);
 
 	// Sparks Fade Out multiplier (it will fade with the origin flashing speed)
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, Category = "Variables" )

@@ -32,7 +32,7 @@ struct FMetroCheatFunctionActionParams
 	GENERATED_BODY()
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )
-	bool bIsToggled;
+	bool bIsToggled = false;
 };
 
 class UMetroCheatManager;

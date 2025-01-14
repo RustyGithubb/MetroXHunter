@@ -4,8 +4,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UtilityLibrary.generated.h"
 
-/**
- * 
+/*
+ * Library sharing various utility functions such as C++ message printing and logging.
  */
 UCLASS()
 class METROXHUNTER_API UUtilityLibrary : public UBlueprintFunctionLibrary
@@ -181,7 +181,7 @@ public:
 	 * @param Range	Range to constrain the random float
 	 * @return Random float in range
 	 */
-	UFUNCTION( BlueprintCallable, Category = "UtilityLibrary" )
+	UFUNCTION( BlueprintPure, Category = "UtilityLibrary" )
 	static float RandomInRange( const FFloatRange& Range );
 
 	/*

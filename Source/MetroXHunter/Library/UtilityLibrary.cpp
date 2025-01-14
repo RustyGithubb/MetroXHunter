@@ -2,10 +2,12 @@
 
 float UUtilityLibrary::RandomInRange( const FFloatRange& Range )
 {
-	return FMath::RandRange(
-		Range.GetLowerBoundValue(),
-		Range.GetUpperBoundValue()
-	);
+	const float LowerValue = Range.GetLowerBoundValue();
+	const float UpperValue = Range.GetUpperBoundValue();
+
+	if ( LowerValue == UpperValue ) return LowerValue;
+
+	return FMath::RandRange( LowerValue, UpperValue );
 }
 
 bool UUtilityLibrary::SaveFileAsString( const FString& Data, const FString& Path )

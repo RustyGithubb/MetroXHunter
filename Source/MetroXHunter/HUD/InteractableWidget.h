@@ -20,13 +20,12 @@ class METROXHUNTER_API UInteractableWidget : public UUserWidget
 public:
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
 	void OnPickupTargeted( int Amount );
-
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
 	void OnObjectTargeted();
-
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
 	void OnUntargeted();
-
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
-	void EditSprite( UTexture2D* Sprite);
+	void OnEnterVisibility();
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent )
+	void OnExitVisibility();
 };

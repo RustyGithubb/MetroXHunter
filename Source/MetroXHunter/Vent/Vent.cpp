@@ -6,9 +6,12 @@
 #include "Vent/VentData.h"
 
 #include "AI/Parasite.h"
+#include "AI/ParasiteAIController.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
+
+#include "GameFramework/GameModeBase.h"
 
 #include "Library/UtilityLibrary.h"
 
@@ -27,7 +30,35 @@ void AVent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	verifyf( IsValid( DataAsset ), TEXT( "Vent %s doesn't have a valid data asset!" ), *GetName() );
+	verifyf(
+		IsValid( DataAsset ),
+		TEXT( "Vent %s: No DataAsset has been set!" ),
+		*GetName()
+	);
+	
+	// Find vent manager and register to it
+	VentManager = GetWorld()->GetAuthGameMode()->GetComponentByClass<UVentManagerComponent>();
+	verifyf(
+		IsValid( VentManager ),
+		TEXT( "Vent %s: Failed to find VentManagerComponent from the gamemode!" ),
+		*GetName()
+	);
+
+	VentManager->RegisterVent( this );
+}
+
+AActor* AVent::SpawnEnemy_Implementation( const FEnemySpawnerSpawnInfo& SpawnInfo )
+{
+	if ( SpawnInfo.EnemyType != EEnemyType::Parasite )
+	{
+		UUtilityLibrary::PrintWarning(
+			TEXT( "Vent: %s doesn't support spawning enemy types other than Parasite!" ),
+			*GetName()
+		);
+		return nullptr;
+	}
+
+	return SpawnEnemy( SpawnInfo.bAutoAttackPlayer );
 }
 
 void AVent::EnterVent( AActor* Actor )
@@ -40,6 +71,8 @@ void AVent::EnterVent( AActor* Actor )
 
 	VentManager->AddEnemyInZone( Zone, 1 );
 	VentManager->ResetProximitySpawnTimer();
+
+	OnEnemyEnter.Broadcast( this );
 }
 
 void AVent::TrySpawnEnemies()
@@ -60,8 +93,14 @@ void AVent::TrySpawnEnemies()
 		FTimerHandle TimerHandle {};
 		GetWorld()->GetTimerManager().SetTimer(
 			TimerHandle,
-			this, &AVent::SpawnEnemy,
-			SpawnTime
+			FTimerDelegate::CreateLambda(
+				[this]()
+				{
+					SpawnEnemy( /* bAutoTargetPlayer */ false );
+				}
+			),
+			SpawnTime,
+			FTimerManagerTimerParameters {}
 		);
 	}
 
@@ -111,7 +150,7 @@ void AVent::PlayScreamSound()
 	);
 }
 
-void AVent::SpawnEnemy()
+AParasite* AVent::SpawnEnemy( bool bAutoTargetPlayer )
 {
 	FActorSpawnParameters SpawnParams {};
 	//	NOTE: I set the owner so the ParasiteAIController can use GetOwner to set a cooldown
@@ -137,4 +176,16 @@ void AVent::SpawnEnemy()
 
 	//	Start enemy's animation to exit the vent
 	Enemy->StartExitingVent( this );
+
+	// Auto-target player
+	if ( bAutoTargetPlayer )
+	{
+		if ( auto Controller = Enemy->GetController<AParasiteAIController>() )
+		{
+			Controller->SetEnemy( UGameplayStatics::GetPlayerCharacter( this, 0 ) );
+		}
+	}
+
+	OnEnemyExit.Broadcast( this, Enemy );
+	return Enemy;
 }

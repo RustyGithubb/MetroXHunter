@@ -21,12 +21,10 @@ class METROXHUNTER_API UInteractableComponent : public UActorComponent
 
 public:
 	UInteractableComponent();
-
 	virtual void BeginPlay() override;
 
 	UFUNCTION( BlueprintCallable )
 	void OnPlayerOverlap( UInteractionComponent* InteractionComponent );
-
 	UFUNCTION( BlueprintCallable )
 	void OnPlayerOut( UInteractionComponent* InteractionComponent );
 
@@ -34,15 +32,12 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnInteract );
 	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnInteract OnInteract;
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnCancelInteract );
 	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnCancelInteract OnCancelInteract;
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnTargeted );
 	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnTargeted OnTargeted;
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUntargeted );
 	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
 	FOnUntargeted OnUntargeted;

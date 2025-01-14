@@ -5,12 +5,15 @@
 #include "Interaction/BaseInteractable.h"
 #include "Interaction/InteractableComponent.h"
 #include "Interaction/InteractionComponent.h"
+#include "Checkpoint/SaveLoadComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/InteractableWidget.h"
 #include "PlayerController/PlayerInputHandler.h"
 
+#include "Library/UtilityLibrary.h"
 #include "InputMappingContext.h"
+#include <Engine/Console.h>
 
 constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );
 
@@ -26,18 +29,22 @@ ABaseInteractable::ABaseInteractable()
 	StaticMesh->SetupAttachment( RootComponent );
 
 	InnerCollision = CreateDefaultSubobject<USphereComponent>( TEXT( "Inner Collision" ) );
-	InnerCollision->SetupAttachment( RootComponent );
+	InnerCollision->SetupAttachment( StaticMesh );
+	InnerCollision->SetWorldScale3D( FVector( 1 ) );
 	InnerCollision->SetSphereRadius( InnerSphereRadius );
 
 	OutterCollision = CreateDefaultSubobject<USphereComponent>( TEXT( "Outter Collision" ) );
-	OutterCollision->SetupAttachment( RootComponent );
+	OutterCollision->SetupAttachment( StaticMesh );
+	OutterCollision->SetWorldScale3D( FVector( 1 ) );
 	OutterCollision->SetSphereRadius( OutterSphereRadius );
 
 	InteractableComponent = CreateDefaultSubobject<UInteractableComponent>( TEXT( "Interactable Component" ) );
+	SaveComponent = CreateDefaultSubobject<USaveLoadComponent>( TEXT( "Save Component" ) );
 
 	Widget = CreateDefaultSubobject<UWidgetComponent>( TEXT( "WidgetComponent" ) );
-	Widget->SetupAttachment( RootComponent );
-	Widget->SetVisibility( false );
+	Widget->SetupAttachment( StaticMesh );
+	Widget->SetWorldScale3D( FVector(1) );
+	Widget->SetVisibility( true );
 
 	InnerCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
 	OutterCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
@@ -50,7 +57,19 @@ void ABaseInteractable::BeginPlay()
 	BindToDelegates();
 
 	/* Check if the Widget class has been set properly */
-	InteractableWidget = CastChecked<UInteractableWidget>( Widget->GetUserWidgetObject() );
+	InteractableWidget = Cast<UInteractableWidget>( Widget->GetUserWidgetObject() );
+
+#if WITH_EDITOR
+	if ( !InteractableWidget )
+	{
+		UUtilityLibrary::PrintError( TEXT( "WARNING: InteractableWidget not set on %s !!" ), *GetName() );
+	}
+#endif
+
+	if ( !SaveComponent->bIsDataLoaded )
+	{
+		SaveComponent->Load();
+	}
 }
 
 void ABaseInteractable::BindToDelegates()
@@ -65,10 +84,16 @@ void ABaseInteractable::BindToDelegates()
 	InteractableComponent->OnUntargeted.AddDynamic( this, &ABaseInteractable::OnInteractableUntargeted );
 	InteractableComponent->OnInteract.AddDynamic( this, &ABaseInteractable::Interact );
 	InteractableComponent->OnCancelInteract.AddDynamic( this, &ABaseInteractable::OnCancelInteraction );
+
+	SaveComponent->OnLoadActor.AddDynamic( this, &ABaseInteractable::OnLoadedData );
 }
 
 void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 {
+	if ( !IsValid( InnerCollision ) 
+		|| !IsValid( OutterCollision ) 
+		|| !IsValid( InteractableComponent ) ) return;
+
 	if ( !bShouldFreeze )
 	{
 		InnerCollision->SetCollisionEnabled( ECollisionEnabled::QueryOnly );
@@ -91,10 +116,33 @@ void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 
 void ABaseInteractable::RemoveInteractionComponent()
 {
-	InnerCollision->DestroyComponent();
-	OutterCollision->DestroyComponent();
-	InteractableComponent->DestroyComponent();
+	if ( IsValid( InnerCollision ) )
+	{
+		InnerCollision->DestroyComponent();
+	}
+
+	if ( IsValid( OutterCollision ) )
+	{
+		OutterCollision->DestroyComponent();
+	}
+
+	if ( IsValid( InteractableComponent ) )
+	{
+		InteractableComponent->DestroyComponent();
+	}
+
 	Widget->SetVisibility( false );
+
+	// Update the Saved data structure of this interactable.
+	if ( auto InteractableData = SaveComponent->SavedData.GetMutablePtr<FInteractableSavedData>() )
+	{
+		InteractableData->bIsConsummed = true;
+	}
+}
+
+void ABaseInteractable::ConsumeInteraction_Implementation()
+{
+	RemoveInteractionComponent();
 }
 
 void ABaseInteractable::Interact()
@@ -111,6 +159,12 @@ void ABaseInteractable::OnCancelInteraction()
 
 void ABaseInteractable::OverridePlayerMappingContext()
 {
+	verifyf(
+		IsValid( PlayerController ),
+		TEXT( "%s: PlayerController isn't valid !" ), *GetName()
+	);
+
+	verify( !InteractableMappingContext.IsNull() );
 	IPlayerInputHandler::Execute_SetInputMappingContext(
 		PlayerController,
 		InteractableMappingContext.LoadSynchronous()
@@ -119,6 +173,11 @@ void ABaseInteractable::OverridePlayerMappingContext()
 
 void ABaseInteractable::SwitchCameraTarget()
 {
+	verifyf(
+		IsValid( PlayerController ),
+		TEXT( "%s: PlayerController isn't valid !" ), *GetName()
+	);
+
 	// Smooth camera transition from the player to the Interactable's camera
 	PlayerController->SetViewTargetWithBlend(
 		this,
@@ -133,6 +192,11 @@ void ABaseInteractable::SwitchCameraTarget()
 
 void ABaseInteractable::ResetCameraTarget()
 {
+	verifyf(
+		IsValid( PlayerController ),
+		TEXT( "%s: PlayerController isn't valid !" ), *GetName()
+	);
+
 	// Smooth camera transition from the Interactable's camera to the Player
 	PlayerController->SetViewTargetWithBlend(
 		PlayerController->GetPawn(),
@@ -143,7 +207,11 @@ void ABaseInteractable::ResetCameraTarget()
 
 	PlayerController->GetPawn()->SetActorHiddenInGame( false );
 
-	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
+	verify( !InteractableMappingContext.IsNull() );
+	IPlayerInputHandler::Execute_RevertInputMappingContext( 
+		PlayerController,
+		InteractableMappingContext.LoadSynchronous()
+	);
 }
 
 void ABaseInteractable::OnInnerCircleOverlapBegin(
@@ -167,7 +235,10 @@ void ABaseInteractable::OnOutterCircleOverlapBegin(
 	bool bFromSweep, const FHitResult& SweepResult
 )
 {
-	Widget->SetVisibility( true );
+	if ( IsValid( InteractableWidget ) )
+	{
+		InteractableWidget->OnEnterVisibility();
+	}
 }
 
 void ABaseInteractable::OnInnerCircleOverlapEnd(
@@ -177,9 +248,12 @@ void ABaseInteractable::OnInnerCircleOverlapEnd(
 {
 	if ( PlayerInteractionComponent )
 	{
-		//PlayerController = nullptr;
 		InteractableComponent->OnPlayerOut( PlayerInteractionComponent );
-		InteractableWidget->OnUntargeted();
+
+		if ( IsValid( InteractableWidget ) )
+		{
+			InteractableWidget->OnUntargeted();
+		}
 
 		PlayerInteractionComponent = nullptr;
 	}
@@ -190,16 +264,37 @@ void ABaseInteractable::OnOutterCircleOverlapEnd(
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 )
 {
-	Widget->SetVisibility( false );
+	if ( IsValid( InteractableWidget ) )
+	{
+		InteractableWidget->OnExitVisibility();
+	}
 }
 
 void ABaseInteractable::OnInteractableTargeted()
 {
-	InteractableWidget->OnObjectTargeted();
+	if ( IsValid( InteractableWidget ) )
+	{
+		InteractableWidget->OnObjectTargeted();
+	}
 }
 
 void ABaseInteractable::OnInteractableUntargeted()
 {
-	InteractableWidget->OnUntargeted();
+	if ( IsValid( InteractableWidget ) )
+	{
+		InteractableWidget->OnUntargeted();
+	}
+}
+
+void ABaseInteractable::OnLoadedData()
+{
+	// Update the Saved data structure of this interactable.
+	if ( const FInteractableSavedData* InteractableData = SaveComponent->SavedData.GetPtr<FInteractableSavedData>() )
+	{
+		if ( InteractableData->bIsConsummed )
+		{
+			ConsumeInteraction();
+		}
+	}
 }
 

@@ -6,11 +6,9 @@
 
 void AElevator::Interact()
 {
-	SwitchCameraTarget();
 	bIsElevatorMoving = true;
 }
 
 void AElevator::EndInteraction()
 {
-	ResetCameraTarget();
 }

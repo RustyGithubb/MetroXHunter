@@ -85,6 +85,15 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "VentManager" )
 	bool IsProximitySpawnTimerDepleted() const;
 
+	/*
+	* Finds all vents in the game and registers them.
+	*/
+	UFUNCTION( BlueprintCallable, Category = "VentManager" )
+	void RetrieveVents();
+
+	UFUNCTION( BlueprintCallable, Category = "VentManager" )
+	void RegisterVent( AVent* Vent );
+
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "VentManager" )
 	UVentData* DataAsset = nullptr;
@@ -92,11 +101,6 @@ public:
 	int32 ZoneEnemies[(int32)EVentZone::MAX] {};
 
 private:
-	/*
-	 * Finds all vents in the game and registers them.
-	 */
-	void RetrieveVents();
-
 	void CreateNextIdleSoundTimer();
 	void PlayIdleSound();
 
@@ -104,6 +108,9 @@ private:
 	AVent* TryChangeChoosenVent( TArray<AVent*> Vents, AVent* ChoosenVent );
 
 	void OnDepleteCyclicSpawnTimer();
+
+	UFUNCTION()
+	void OnVentEndPlay( AActor* Actor, EEndPlayReason::Type Reason );
 
 	APawn* GetPlayer();
 

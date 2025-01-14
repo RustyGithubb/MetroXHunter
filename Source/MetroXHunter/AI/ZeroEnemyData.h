@@ -121,7 +121,7 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "BodyParts" )
 	FCollisionResponseContainer BodyPartRagdollCollisions {};
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "BodyParts" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "BodyParts", meta = ( EditCondition = "false" ) )
 	bool bBodyPartHasAimAssist = false;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Collisions" )
@@ -132,11 +132,17 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
 	float DefaultKnockbackZ = 20.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
+	float MeleeKnockbackForce = 300.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
 	float BodyPartHitKnockbackForce = 1500.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
 	float WholeBodyHitKnockbackForce = 500.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Knockback", meta = ( Units = "Centimeters" ) )
 	float QuickTimeEventSucceedKnockbackForce = 1250.0f;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "KnockOut" )
+	UCurveFloat* KnockOutKnockbackCurve = nullptr;
+
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Death" )
 	FCollisionResponseContainer MeshRagdollCollisions {};

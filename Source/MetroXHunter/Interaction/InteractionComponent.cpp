@@ -8,6 +8,8 @@
 #include "HUD/MainHUD.h"
 #include "Engine.h"
 
+#include "Library/GameplayLibrary.h"
+
 #include "EnhancedInputComponent.h"
 
 UInteractionComponent::UInteractionComponent()
@@ -34,11 +36,14 @@ void UInteractionComponent::LateBeginPlay()
 
 void UInteractionComponent::GetReferences()
 {
-	PlayerController = GetOwner()->GetInstigator()->GetLocalViewingPlayerController();
+	PlayerController = UGameplayLibrary::GetPlayerControllerChecked( GetOwner() );
 }
 
-
-void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+void UInteractionComponent::TickComponent(
+	float DeltaTime,
+	ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction
+)
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
@@ -47,6 +52,7 @@ void UInteractionComponent::TickComponent( float DeltaTime, ELevelTick TickType,
 
 void UInteractionComponent::SetupPlayerInputComponent()
 {
+	verify( IsValid( PlayerController ) );
 	verify( InteractAction != nullptr );
 	verify( CancelInteractAction != nullptr );
 
@@ -57,24 +63,23 @@ void UInteractionComponent::SetupPlayerInputComponent()
 	{
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			InteractAction.LoadSynchronous(), ETriggerEvent::Started, this,
-			&UInteractionComponent::Interact
+			InteractAction.LoadSynchronous(),
+			ETriggerEvent::Started,
+			this, &UInteractionComponent::Interact
 		);
 
 		// Interaction
 		EnhancedInputComponent->BindAction(
-			CancelInteractAction.LoadSynchronous(), ETriggerEvent::Started, this,
-			&UInteractionComponent::CancelInteract
+			CancelInteractAction.LoadSynchronous(),
+			ETriggerEvent::Started,
+			this, &UInteractionComponent::CancelInteract
 		);
 	}
 }
 
 void UInteractionComponent::RetrieveClosestInteractable()
 {
-	// Viewport Size
 	const FVector2D ViewportSize = FVector2D( GEngine->GameViewport->Viewport->GetSizeXY() );
-
-	// Viewport Center		
 	const FVector2D ViewportCenter = FVector2D( ViewportSize.X / 2, ViewportSize.Y / 2 );
 
 	// Get player's world location and direction
@@ -91,6 +96,12 @@ void UInteractionComponent::RetrieveClosestInteractable()
 
 	for ( auto Interactable : NearInteractables )
 	{
+		if ( !IsValid( Interactable ) )
+		{
+			NearInteractables.Remove( Interactable );
+			return;
+		}
+
 		// Calculate Interactable to Player direction
 		FVector InteractableLocation = Interactable->Owner->GetActorLocation();
 		TargetDirection = PlayerLocation - InteractableLocation;
@@ -109,7 +120,7 @@ void UInteractionComponent::RetrieveClosestInteractable()
 	if ( CurrentInteractable == ClosestInteractable ) return;
 
 	// Untarget the last Targeted interactable if any
-	if ( CurrentInteractable )
+	if ( IsValid( CurrentInteractable ) )
 	{
 		CurrentInteractable->OnUntargeted.Broadcast();
 	}
@@ -117,7 +128,7 @@ void UInteractionComponent::RetrieveClosestInteractable()
 	// Target the new interactable
 	CurrentInteractable = ClosestInteractable;
 
-	if ( CurrentInteractable )
+	if ( IsValid( CurrentInteractable ) )
 	{
 		CurrentInteractable->OnTargeted.Broadcast();
 		UpdateViewport();
@@ -149,32 +160,32 @@ void UInteractionComponent::RemoveNearInteractable( UInteractableComponent* InIn
 
 void UInteractionComponent::UpdateViewport()
 {
-	AHUD* MainHUD = ( PlayerController->GetHUD() );
-
 	if ( !NearInteractables.IsEmpty() )
 	{
-		if ( CurrentInteractable )
+		if ( IsValid(CurrentInteractable) )
 		{
-			IMainHUD::Execute_UpdatePrompts( MainHUD, CurrentInteractable->InteractionType );
+			OnCurrentInteractableChanged.Broadcast( CurrentInteractable->InteractionType );
 		}
 	}
 	else
 	{
-		IMainHUD::Execute_UpdatePrompts( MainHUD, E_InteractionType::Default );
+		OnCurrentInteractableChanged.Broadcast( E_InteractionType::Default );
 	}
 }
 
 void UInteractionComponent::Interact()
 {
-	if ( CurrentInteractable )
+	if ( IsValid( CurrentInteractable ) )
 	{
+		UGameplayStatics::PlaySound2D( this, InteractSound );
+
 		CurrentInteractable->OnInteract.Broadcast();
 	}
 }
 
 void UInteractionComponent::CancelInteract()
 {
-	if ( CurrentInteractable && CurrentInteractable->bIsUnderInteraction )
+	if ( IsValid( CurrentInteractable ) && CurrentInteractable->bIsUnderInteraction )
 	{
 		CurrentInteractable->OnCancelInteract.Broadcast();
 	}

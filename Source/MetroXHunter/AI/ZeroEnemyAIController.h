@@ -68,7 +68,7 @@ public:
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "ZeroEnemy" )
 	EZeroEnemyAIState GetState() const;
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
-	void SetTarget( AActor* Target );
+	bool SetTarget( AActor* NewTarget );
 	UFUNCTION( BlueprintPure, Category = "ZeroEnemy" )
 	AActor* GetTarget() const;
 
@@ -105,6 +105,9 @@ private:
 	void StopScreamTimer();
 
 	UFUNCTION()
+	void OnTargetDeath( const FDamageContext& DamageContext );
+
+	UFUNCTION()
 	void OnSeePawn( APawn* SeenPawn );
 	UFUNCTION()
 	void OnHearNoise( APawn* HeardPawn, const FVector& Location, float Volume );
@@ -121,6 +124,9 @@ private:
 
 	UFUNCTION()
 	void OnStateUpdate( EZeroEnemyState NewState, EZeroEnemyState OldState );
+
+	UFUNCTION()
+	void OnAttacked( AActor* Attacker );
 
 	UFUNCTION()
 	void OnSubstateSwitched();

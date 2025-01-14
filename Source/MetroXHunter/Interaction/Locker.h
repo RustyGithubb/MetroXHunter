@@ -31,17 +31,14 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	float ItemAmount = 11;
-
 	UPROPERTY( EditAnywhere, Category = "Locker|Loot" )
 	USceneComponent* ItemSpawnPoint = nullptr;
-
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Locker|Loot" )
 	TSubclassOf<ABasePickUp> ItemToSpawn = nullptr;
 
 	/* Controllers */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	TSoftObjectPtr<UInputAction> InteractAction = nullptr;
-
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction|Inputs", meta = ( AllowPrivateAccess = "true" ) )
 	TSoftObjectPtr<UInputAction> CancelInteractAction = nullptr;
 
@@ -52,19 +49,14 @@ protected:
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void OnSkillCheckAttempt();
-
 	UFUNCTION( BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void ShowSkillCheckWidget();
-
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Locker|SkillCheck" )
 	void RemoveSkillCheckWidget();
-
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "Locker|SkillCheck" )
 	void ResetSkillCheck();
-
 	UFUNCTION( BlueprintCallable, Category = "Locker|SkillCheck" )
-	void EndSkillCheck(bool bShouldReward);
-
+	void EndSkillCheck( bool bShouldReward );
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "Locker|SkillCheck" )
 	void StartSkillCheck();
 
@@ -74,7 +66,6 @@ protected:
 protected:
 	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
 	bool bIsSkillCheckActive = false;
-
 	UPROPERTY( BlueprintReadWrite, Category = "Locker|SkillCheck" )
 	bool bIsGameEnded = false;
 

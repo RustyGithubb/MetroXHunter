@@ -115,28 +115,28 @@ public :
 
 public :
 	// Auto-activate on BeginPlay
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "Activation" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Activation" )
 	bool bAutoActivate = false;
 	// Whether the emitter is looped
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Interp, Category = "Activation" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, Category = "Activation" )
 	bool bLoop = false;
 	// Loop duration value in seconds
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Interp, Category = "Activation", meta = ( EditCondition = "bLoop == true" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, Category = "Activation", meta = ( EditCondition = "bLoop == true" ) )
 	float LoopDuration = 1.0f;
 
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "Attachment" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Attachment" )
 	FLightningAttachment SourceAttachment;
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "Attachment" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Attachment" )
 	FLightningAttachment TargetAttachment;
 
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "GeometrySettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "GeometrySettings" )
 	FLightningParams LightningParams;
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "GeometrySettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "GeometrySettings" )
 	FBranchingParams BranchingParams;
 
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "VisualSettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "VisualSettings" )
 	FEmissionParams RootEmissionParams;
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "VisualSettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "VisualSettings" )
 	FEmissionParams BranchEmissionParams;
 
 	/*
@@ -144,33 +144,33 @@ public :
 	 * to avoid bloom fading out when using TemporalAA.
 	 * This parameter sets scaling multiplier.
 	 */
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Interp, Category = "VisualSettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, Category = "VisualSettings" )
 	float DisplacementMult = 0.0015f;
 
 	// Permits to speed up or slow down lightning spread process
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Interp, Category = "SystemSettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Interp, Category = "SystemSettings" )
 	float TimeMultiplier = 1.0f;
 
 	/*
 	 * Use asynchronous calculation of lightning's pattern
 	 * (should reduce lags but create spawning delay)
 	 */
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = "SystemSettings" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "SystemSettings" )
 	bool bUseSeparateThread = true;
 
 	// COLLISION SETTINGS
 
 public :
 	// Whether lightnings will generate hit events
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = LightningCollision )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = LightningCollision )
 	bool bGenerateHitEvents = false;
 
 	// How lightning should react on a hit event.
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = LightningCollision, meta = ( EditCondition = "bGenerateHitEvents == true" ) )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = LightningCollision, meta = ( EditCondition = "bGenerateHitEvents == true" ) )
 	EHitReaction HitReaction = EHitReaction::HitReact_FadeOut;
 
 	// Whether lightnings will generate overlap events
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = LightningCollision )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = LightningCollision )
 	bool bGenerateOverlapEvents = false;
 
 	// The list of collision responses for specific channels
@@ -178,7 +178,7 @@ public :
 	TMap< TEnumAsByte<ECollisionChannel>, TEnumAsByte<ECollisionResponse> > CollisionResponses;
 
 	// The list of actors to ignore while collision checks
-	UPROPERTY( EditAnywhere, Replicated, BlueprintReadWrite, Category = LightningCollision )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = LightningCollision )
 	TArray<AActor*> IgnoredActors;
 
 	// DEBUG SETTINGS

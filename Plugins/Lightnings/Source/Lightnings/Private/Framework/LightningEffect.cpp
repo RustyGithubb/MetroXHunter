@@ -520,8 +520,8 @@ void ALightningEffect::Setup(ALightningEmitter* Emitter, FLightningSetupParams S
 	}
 
 	/** Calculating intensity params */
-	const float FadingLow = LightningParams.SparksTrailFadingIntensity.GetLowerBoundValue();
-	const float FadingHigh = LightningParams.SparksTrailFadingIntensity.GetUpperBoundValue();
+	const float FadingLow = LightningParams.TrailFadingIntensity.GetLowerBoundValue();
+	const float FadingHigh = LightningParams.TrailFadingIntensity.GetUpperBoundValue();
 	const float TrailIntensityFading = Rnd.FRandRange(FadingLow, FadingHigh);
 	const float FlashingForceMult = Rnd.FRandRange(LightningParams.FlashingForce.GetLowerBoundValue(), LightningParams.FlashingForce.GetUpperBoundValue());
 	const float FlashingRate = LightningEmitter->TimeMultiplier 

@@ -16,56 +16,69 @@
 
 ALightningEmitter::ALightningEmitter()
 {
+	// Load assets for billboards and lightning curves
 	static ConstructorHelpers::FObjectFinder<UTexture2D> MainBillboardSpriteAsset(
-		TEXT("'/Lightnings/Textures/T_Billboard.T_Billboard'"));
+		TEXT( "'/Lightnings/Textures/T_Billboard.T_Billboard'" ) );
 	static ConstructorHelpers::FObjectFinder<UTexture2D> SourcePointSpriteAsset(
-		TEXT("'/Lightnings/Textures/T_Billboard_Source.T_Billboard_Source'"));
+		TEXT( "'/Lightnings/Textures/T_Billboard_Source.T_Billboard_Source'" ) );
 	static ConstructorHelpers::FObjectFinder<UTexture2D> TargetPointSpriteAsset(
-		TEXT("'/Lightnings/Textures/T_Billboard_Target.T_Billboard_Target'"));
+		TEXT( "'/Lightnings/Textures/T_Billboard_Target.T_Billboard_Target'" ) );
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> LightningWidthCurveAsset(
-		TEXT("'/Lightnings/Curves/Curve_LightningDefaultWidth.Curve_LightningDefaultWidth'"));
+		TEXT( "'/Lightnings/Curves/Default/C_DefaultLightningOriginWidth.C_DefaultLightningOriginWidth'" ) );
+	verify( LightningWidthCurveAsset.Succeeded() && "Failed to find the LightningWidthCurveAsset" );
+
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> LightningFlashingCurveAsset(
-		TEXT("'/Lightnings/Curves/Curve_BoltFlashing.Curve_BoltFlashing'"));
+		TEXT( "'/Lightnings/Curves/Default/C_DefaultBoltFlashing.C_DefaultBoltFlashing'" ) );
+	verify( LightningFlashingCurveAsset.Succeeded() && "Failed to find the LightningFlashingCurveAsset" );
 
-	MainBillboard = CreateDefaultSubobject<UBillboardComponent>("MainBillboard");
-	SourcePoint = CreateDefaultSubobject<UBillboardComponent>("SourcePoint");
-	TargetPoint = CreateDefaultSubobject<UBillboardComponent>("TargetPoint");
+	// Initialize billboard components for visualization
+	MainBillboard = CreateDefaultSubobject<UBillboardComponent>( "MainBillboard" );
+	SourcePoint = CreateDefaultSubobject<UBillboardComponent>( "SourcePoint" );
+	TargetPoint = CreateDefaultSubobject<UBillboardComponent>( "TargetPoint" );
 
-	SetRootComponent(MainBillboard);
-	SourcePoint->SetupAttachment(MainBillboard);
-	TargetPoint->SetupAttachment(MainBillboard);
+	// Set the main billboard as the root component
+	SetRootComponent( MainBillboard );
+	SourcePoint->SetupAttachment( MainBillboard );
+	TargetPoint->SetupAttachment( MainBillboard );
 
-	MainBillboard->SetSprite(MainBillboardSpriteAsset.Object);
-	SourcePoint->SetSprite(SourcePointSpriteAsset.Object);
-	TargetPoint->SetSprite(TargetPointSpriteAsset.Object);
+	// Set sprites for the billboards
+	MainBillboard->SetSprite( MainBillboardSpriteAsset.Object );
+	SourcePoint->SetSprite( SourcePointSpriteAsset.Object );
+	TargetPoint->SetSprite( TargetPointSpriteAsset.Object );
 
+	// Configure billboard scaling and screen size
 	MainBillboard->bIsScreenSizeScaled = true;
 	SourcePoint->bIsScreenSizeScaled = true;
 	TargetPoint->bIsScreenSizeScaled = true;
 
-	MainBillboard->SetRelativeScale3D(FVector(0.5f));
-	SourcePoint->SetRelativeScale3D(FVector(0.5f));
-	TargetPoint->SetRelativeScale3D(FVector(0.5f));
+	MainBillboard->SetRelativeScale3D( FVector( 0.5f ) );
+	SourcePoint->SetRelativeScale3D( FVector( 0.5f ) );
+	TargetPoint->SetRelativeScale3D( FVector( 0.5f ) );
 
 	MainBillboard->ScreenSize = 0.0015f;
 	SourcePoint->ScreenSize = 0.0015f;
 	TargetPoint->ScreenSize = 0.0015f;
 
 #if WITH_EDITOR
-	SourcePoint->TransformUpdated.AddUObject(this, &ALightningEmitter::OnAttachmentTransform);
-	TargetPoint->TransformUpdated.AddUObject(this, &ALightningEmitter::OnAttachmentTransform);
+	// Bind transform update events in editor mode
+	SourcePoint->TransformUpdated.AddUObject( this, &ALightningEmitter::OnAttachmentTransform );
+	TargetPoint->TransformUpdated.AddUObject( this, &ALightningEmitter::OnAttachmentTransform );
 #endif // WITH_EDITOR
 
+	// Enable ticking and set default tick behavior
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
+	// Set default lightning effect class
 	LightningEffectClass = ALightningEffect::StaticClass();
 
+	// Set default lightning parameters
 	LightningParams.OriginParticlesWidth = LightningWidthCurveAsset.Object;
 	LightningParams.BranchParticlesWidth = LightningWidthCurveAsset.Object;
 	LightningParams.FlashingCurve = LightningFlashingCurveAsset.Object;
 
+	// Configure collision responses to ignore unnecessary channels
 	CollisionResponses =
 	{
 		{ECC_Destructible, ECR_Ignore},
@@ -78,205 +91,125 @@ ALightningEmitter::ALightningEmitter()
 		{ECC_WorldStatic, ECR_Ignore},
 	};
 
+	// Enable replication and always make the emitter relevant
 	bAlwaysRelevant = true;
-	bReplicates = true;
+	bReplicates = false;
 }
 
 void ALightningEmitter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Just in case if user has activated the emitter in-editor
+	// Ensure the emitter is inactive at the start
 	DeactivateEmitter();
 
-	// Setup RNG
+	// Initialize the random generator
 	ResetGenerator();
 
-	if (bAutoActivate)
+	// Automatically activate the emitter if configured to do so
+	if ( bAutoActivate )
 	{
 		ActivateEmitter();
 	}
 }
 
-void ALightningEmitter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void ALightningEmitter::EndPlay( const EEndPlayReason::Type EndPlayReason )
 {
-	for (FAsyncTask<FPatternGenerator>* Task : PendingPatterns)
+	// Cancel and clean up all pending pattern generation tasks
+	for ( FAsyncTask<FPatternGenerator>* Task : PendingPatterns )
 	{
 		Task->Cancel();
 	}
 
-	for (FAsyncTask<FPatternGenerator>* Task : PendingPatterns)
+	for ( FAsyncTask<FPatternGenerator>* Task : PendingPatterns )
 	{
-		Task->EnsureCompletion(false);
+		Task->EnsureCompletion( false );
 		delete Task;
 	}
 
 	PendingPatterns.Empty();
 
+	// Deactivate the emitter
 	DeactivateEmitter();
 
-	Super::EndPlay(EndPlayReason);
+	Super::EndPlay( EndPlayReason );
 }
 
-void ALightningEmitter::OnConstruction(const FTransform& Transform)
+void ALightningEmitter::OnConstruction( const FTransform& Transform )
 {
-	Super::OnConstruction(Transform);
+	Super::OnConstruction( Transform );
+
+	// Reset the random generator upon construction
 	ResetGenerator();
 }
 
-void ALightningEmitter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ALightningEmitter::GetLifetimeReplicatedProps( TArray<FLifetimeProperty>& OutLifetimeProps ) const
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ALightningEmitter, bAutoActivate);
-	DOREPLIFETIME(ALightningEmitter, bLoop);
-	DOREPLIFETIME(ALightningEmitter, LoopDuration);
-
-	DOREPLIFETIME(ALightningEmitter, SourceAttachment);
-	DOREPLIFETIME(ALightningEmitter, TargetAttachment);
-
-	DOREPLIFETIME(ALightningEmitter, LightningParams);
-	DOREPLIFETIME(ALightningEmitter, BranchingParams);
-
-	DOREPLIFETIME(ALightningEmitter, RootEmissionParams);
-	DOREPLIFETIME(ALightningEmitter, BranchEmissionParams);
-
-	DOREPLIFETIME(ALightningEmitter, DisplacementMult);
-	DOREPLIFETIME(ALightningEmitter, TimeMultiplier);
-	DOREPLIFETIME(ALightningEmitter, bUseSeparateThread);
-
-	DOREPLIFETIME(ALightningEmitter, bGenerateHitEvents);
-	DOREPLIFETIME(ALightningEmitter, HitReaction);
-	DOREPLIFETIME(ALightningEmitter, bGenerateOverlapEvents);
-	DOREPLIFETIME(ALightningEmitter, IgnoredActors);
+	Super::GetLifetimeReplicatedProps( OutLifetimeProps );
 }
 
-void ALightningEmitter::Tick(float DeltaTime)
+void ALightningEmitter::Tick( float DeltaTime )
 {
-	Super::Tick(DeltaTime);
+	Super::Tick( DeltaTime );
 
-	for (int32 i = PendingPatterns.Num() - 1; i >= 0; --i)
+	// Check and clean up completed pattern generation tasks
+	for ( int32 i = PendingPatterns.Num() - 1; i >= 0; --i )
 	{
 		FAsyncTask<FPatternGenerator>* Task = PendingPatterns[i];
-
-		if (Task && Task->IsDone())
+		if ( Task && Task->IsDone() )
 		{
 			delete Task;
-			PendingPatterns.RemoveAt(i, 1, true);
+			PendingPatterns.RemoveAt( i, 1, true );
 		}
 	}
-
-#if WITH_EDITOR
-	if (GetWorld()->WorldType == EWorldType::Editor)
-	{
-		const FVector Start = SourceAttachment.GetAttachmentPoint(this, false);
-		const FVector End = TargetAttachment.GetAttachmentPoint(this, false);
-
-		SourcePoint->SetWorldLocation(Start);
-		TargetPoint->SetWorldLocation(End);
-
-		if (PreviewPattern.bIsValid)
-		{
-			if ((SourceAttachment.Type == EAttachType::AT_Actor && !Start.Equals(ULightningPatternLib::GetStartPoint(PreviewPattern))) ||
-				(TargetAttachment.Type == EAttachType::AT_Actor && !End.Equals(ULightningPatternLib::GetEndPoint(PreviewPattern))))
-			{
-				// Reset preview pattern if source/target actor has changed its position
-				InvalidatePreviewPattern();
-			}
-		}
-
-		// Check the emitter to be in a valid world (not inside of a blueprint menu)
-		if (!PreviewPattern.bIsValid && !bGeneratingPreviewPattern)
-		{
-			FPatternGeneratedEvent OnPatternGenerated;
-			OnPatternGenerated.BindLambda([this](FLightningPattern Pattern)
-			{
-				PreviewPattern = Pattern;
-			});
-
-			RequestGeneratePattern(Start, End, OnPatternGenerated);
-
-			bGeneratingPreviewPattern = true;
-		}
-
-		if (PreviewPattern.bIsValid && bGeneratingPreviewPattern)
-		{
-			bGeneratingPreviewPattern = false;
-		}
-
-		if (bNeedsGC)
-		{
-			GCTimeBuffer += DeltaTime;
-
-			if (GCTimeBuffer >= GCInterval)
-			{
-				GEngine->PerformGarbageCollectionAndCleanupActors();
-				bNeedsGC = false;
-				GCTimeBuffer = 0.f;
-			}
-		}
-
-		bool bGameView = false;
-
-		if (FModuleManager::Get().IsModuleLoaded("LevelEditor"))
-		{
-			FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor");
-			const TSharedPtr<IAssetViewport> ActiveLevelViewport = LevelEditorModule.GetFirstActiveViewport();
-			if (ActiveLevelViewport.IsValid())
-			{
-				bGameView = ActiveLevelViewport->IsInGameView();
-			}
-		}
-
-		if (!bGameView)
-		{
-			DrawDebugLightning(PreviewPattern);
-			SourceAttachment.DebugDrawVolume(this);
-			TargetAttachment.DebugDrawVolume(this);
-		}
-	}
-#endif // WITH_EDITOR
 }
 
 #if WITH_EDITOR
-void ALightningEmitter::OnAttachmentTransform(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+void ALightningEmitter::OnAttachmentTransform( USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport )
 {
-	if (!UpdatedComponent->IsSelectedInEditor()) return;
+	// Update attachment parameters if the component's transform changes in the editor
+	if ( !UpdatedComponent->IsSelectedInEditor() ) return;
 
 	FLightningAttachment& Attachment = UpdatedComponent == SourcePoint ? SourceAttachment : TargetAttachment;
-	const FVector Point = Attachment.GetAttachmentPoint(this, false);
+	const FVector Point = Attachment.GetAttachmentPoint( this, false );
 	const FVector CompLocation = UpdatedComponent->GetComponentLocation();
-	if (CompLocation != Point)
+
+	if ( CompLocation != Point )
 	{
 		Attachment.Type = EAttachType::AT_Location;
 		Attachment.Location = CompLocation;
 
+		// Invalidate the preview pattern to force regeneration
 		InvalidatePreviewPattern();
 	}
 }
 
-void ALightningEmitter::DrawDebugLightning(FLightningPattern Pattern)
+void ALightningEmitter::DrawDebugLightning( FLightningPattern Pattern )
 {
 	const float Thickness = bDrawCurveWidth ? LightningParams.ParticlesScalesWidth : 0.f;
 
-	if (Pattern.bIsValid)
+	if ( Pattern.bIsValid )
 	{
-		// Draw lightning curve
-		for (int32 i = 0; i <= Pattern.Points.Num() - 2; ++i)
+		// Draw the main lightning curve using the pattern points
+		for ( int32 i = 0; i <= Pattern.Points.Num() - 2; ++i )
 		{
-			FColor Color = bCurveCustomColor ? CurveColor : LightningParams.ColorParticle.ToFColor(false);
+			// Determine the color for the debug line
+			FColor Color = bCurveCustomColor ? CurveColor : LightningParams.ColorParticle.ToFColor( false );
 
-			const FVector CurPoint = ULightningPatternLib::GetPoint(Pattern, i);
-			const FVector NextPoint = ULightningPatternLib::GetPoint(Pattern, i+1);
+			// Retrieve current and next points in the pattern
+			const FVector CurPoint = ULightningPatternLib::GetPoint( Pattern, i );
+			const FVector NextPoint = ULightningPatternLib::GetPoint( Pattern, i + 1 );
 
-			DrawDebugLine(GetWorld(), CurPoint, NextPoint, Color, false, -1.f, '\000', Thickness);
+			// Draw a debug line between the current and next points
+			DrawDebugLine( GetWorld(), CurPoint, NextPoint, Color, false, -1.f, '\000', Thickness );
 		}
 
-		if (bDrawBranches)
+		// Draw debug lines for branches if enabled
+		if ( bDrawBranches )
 		{
-			for (FBranchData Branch : Pattern.Branches)
+			for ( FBranchData Branch : Pattern.Branches )
 			{
-				DrawDebugLightning(Branch.Pattern);
+				DrawDebugLightning( Branch.Pattern );
 			}
 		}
 	}
@@ -284,59 +217,67 @@ void ALightningEmitter::DrawDebugLightning(FLightningPattern Pattern)
 
 bool ALightningEmitter::ShouldTickIfViewportsOnly() const
 {
+	// Enable ticking even when only viewports are active
 	return true;
 }
 
-void ALightningEmitter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void ALightningEmitter::PostEditChangeProperty( FPropertyChangedEvent& PropertyChangedEvent )
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	Super::PostEditChangeProperty( PropertyChangedEvent );
 
-	if (PropertyChangedEvent.GetPropertyName().IsEqual("Type") ||
-		PropertyChangedEvent.GetPropertyName().IsEqual("AttachVolumeType"))
+	// Handle property changes in the editor
+	if ( PropertyChangedEvent.GetPropertyName().IsEqual( "Type" ) ||
+		PropertyChangedEvent.GetPropertyName().IsEqual( "AttachVolumeType" ) )
 	{
-		// Update details panel on properties change
-		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		// Notify the details panel to update its UI
+		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>( "PropertyEditor" );
 		PropertyEditorModule.NotifyCustomizationModuleChanged();
 	}
+
+	// Invalidate the preview pattern to regenerate with new properties
 	InvalidatePreviewPattern();
 }
 #endif // WITH_EDITOR
 
 int32 ALightningEmitter::GetLightningSeed() const
 {
-	return EmitterRng.RandHelper(MAX_int32);
+	// Generate a random seed for lightning generation
+	return EmitterRng.RandHelper( MAX_int32 );
 }
 
-void ALightningEmitter::ActivateEmitter_Implementation(bool bReset /*= false*/)
+void ALightningEmitter::ActivateEmitter_Implementation( bool bReset /*= false*/ )
 {
-	if (GetLocalRole() != ENetRole::ROLE_Authority)
+	// Ensure activation happens only on the authority (server)
+	if ( GetLocalRole() != ENetRole::ROLE_Authority )
 	{
-		// Do nothing if particles are replicated
 		return;
 	}
 
-	if (bReset)
+	if ( bReset )
 	{
+		// Reset the random generator if requested
 		ResetGenerator_Implementation();
 	}
 
 #if WITH_EDITOR
-	if (GetWorld()->WorldType == EWorldType::Editor)
+	// Handle activation differently in editor mode
+	if ( GetWorld()->WorldType == EWorldType::Editor )
 	{
-		RequestSpawnLightning_Implementation(GetLightningSeed());
+		RequestSpawnLightning_Implementation( GetLightningSeed() );
 	}
 	else
 #endif // WITH_EDITOR
 	{
-		RequestSpawnLightning(GetLightningSeed());
+		RequestSpawnLightning( GetLightningSeed() );
 	}
 
-	if (bLoop)
+	// Setup looping if enabled
+	if ( bLoop )
 	{
-		GetWorld()->GetTimerManager().SetTimer(LoopTimer, [this] ()
+		GetWorld()->GetTimerManager().SetTimer( LoopTimer, [this]()
 		{
 #if WITH_EDITOR
-			if (GetWorld()->WorldType == EWorldType::Editor)
+			if ( GetWorld()->WorldType == EWorldType::Editor )
 			{
 				ActivateEmitter_Implementation();
 			}
@@ -346,15 +287,17 @@ void ALightningEmitter::ActivateEmitter_Implementation(bool bReset /*= false*/)
 				ActivateEmitter();
 			}
 		},
-		LoopDuration / TimeMultiplier, false);
+		LoopDuration / TimeMultiplier, false );
 	}
 }
 
 void ALightningEmitter::DeactivateEmitter_Implementation()
 {
-	GetWorld()->GetTimerManager().ClearTimer(LoopTimer);
+	// Stop the looping timer
+	GetWorld()->GetTimerManager().ClearTimer( LoopTimer );
 
-	for (int32 i = LightningsArray.Num() - 1; i >= 0; --i)
+	// Deactivate and remove all spawned lightning effects
+	for ( int32 i = LightningsArray.Num() - 1; i >= 0; --i )
 	{
 		LightningsArray[i]->Deactivate();
 	}
@@ -364,62 +307,68 @@ void ALightningEmitter::DeactivateEmitter_Implementation()
 
 void ALightningEmitter::ResetGenerator_Implementation()
 {
-	// Setup seed RNG
-	if (EmitterSeed == -1)
+	// Configure the random generator seed
+	if ( EmitterSeed == -1 )
 	{
-		// Use a random seed
+		// Generate a random seed if none is specified
 		EmitterRng.GenerateNewSeed();
 	}
 	else
 	{
-		// Use the specified seed
-		EmitterRng.Initialize(EmitterSeed);
+		// Initialize the random generator with the specified seed
+		EmitterRng.Initialize( EmitterSeed );
 	}
 }
 
 int32 ALightningEmitter::GetLightningsNum()
 {
+	// Return the current number of active lightning effects
 	return LightningsArray.Num();
 }
 
 bool ALightningEmitter::HasAnyLightnings()
 {
+	// Check if there are any active lightning effects
 	return LightningsArray.Num() > 0;
 }
 
 bool ALightningEmitter::IsEmitterActive()
 {
-	return GetWorld()->GetTimerManager().IsTimerActive(LoopTimer) || HasAnyLightnings();
+	// Determine if the emitter is currently active
+	return GetWorld()->GetTimerManager().IsTimerActive( LoopTimer ) || HasAnyLightnings();
 }
 
 #if WITH_EDITOR
 void ALightningEmitter::RequestCollectGarbage()
 {
+	// Request garbage collection in the editor
 	UWorld* World = GetWorld();
-	if (World && World->WorldType == EWorldType::Editor)
+	if ( World && World->WorldType == EWorldType::Editor )
 	{
 		bNeedsGC = true;
 	}
 }
 #endif // WITH_EDITOR
 
-void ALightningEmitter::RequestSpawnLightning_Implementation(int32 Seed)
+void ALightningEmitter::RequestSpawnLightning_Implementation( int32 Seed )
 {
-	const FVector Start = SourceAttachment.GetAttachmentPoint(this);
-	const FVector End = TargetAttachment.GetAttachmentPoint(this);
+	// Get the source and target points for lightning
+	const FVector Start = SourceAttachment.GetAttachmentPoint( this );
+	const FVector End = TargetAttachment.GetAttachmentPoint( this );
 
-	/** Request generate a new pattern and spawn lightning */
+	// Request to generate a new pattern and spawn the lightning
 	FPatternGeneratedEvent OnPatternGenerated;
-	OnPatternGenerated.BindLambda([this](FLightningPattern Pattern)
+	OnPatternGenerated.BindLambda( [this]( FLightningPattern Pattern )
 	{
-		DoSpawnLightning(NULL, Pattern);
-	});
+		DoSpawnLightning( NULL, Pattern );
+	} );
 
-	RequestGeneratePattern(Start, End, OnPatternGenerated, Seed);
+	RequestGeneratePattern( Start, End, OnPatternGenerated, Seed );
 }
 
-void ALightningEmitter::RequestGeneratePattern(FVector Start, FVector End, FPatternGeneratedEvent Callback, int32 Seed /*= -1*/)
+void ALightningEmitter::RequestGeneratePattern( FVector Start, FVector End, FPatternGeneratedEvent Callback, int32 Seed /*= -1*/ )
 {
+	// Create a new async task for pattern generation
 	auto Task = new FAsyncTask<FPatternGenerator>(
 		Callback,
 		BranchingParams,
@@ -430,11 +379,12 @@ void ALightningEmitter::RequestGeneratePattern(FVector Start, FVector End, FPatt
 		LightningParams.SparksStep,
 		LightningParams.SegmentDivision,
 		GetWorld()->WorldType == EWorldType::Editor,
-		Seed);
+		Seed );
 
-	PendingPatterns.Add(Task);
+	PendingPatterns.Add( Task );
 
-	if (bUseSeparateThread)
+	// Start the task either in the background or synchronously based on the configuration
+	if ( bUseSeparateThread )
 	{
 		Task->StartBackgroundTask();
 	}
@@ -446,29 +396,35 @@ void ALightningEmitter::RequestGeneratePattern(FVector Start, FVector End, FPatt
 
 void ALightningEmitter::InvalidatePreviewPattern()
 {
-	if (!bGeneratingPreviewPattern)
+	// Clear the preview pattern if not actively generating
+	if ( !bGeneratingPreviewPattern )
 	{
 		PreviewPattern = FLightningPattern();
 	}
 }
 
-void ALightningEmitter::DoSpawnLightning(ALightningEffect* Parent, FLightningPattern Pattern)
+void ALightningEmitter::DoSpawnLightning( ALightningEffect* Parent, FLightningPattern Pattern )
 {
+	// Set up parameters for spawning the lightning effect
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.ObjectFlags |= RF_Transient; // Use that to avoid save an actor into undo buffer/ world 
+	SpawnParams.ObjectFlags |= RF_Transient; // Avoid saving the actor in the undo buffer/world
 	SpawnParams.Owner = this;
-	auto LightningEffect = GetWorld()->SpawnActor<ALightningEffect>(LightningEffectClass, Pattern.Transform, SpawnParams);
 
-	if (LightningEffect)
+	// Spawn the lightning effect actor
+	auto LightningEffect = GetWorld()->SpawnActor<ALightningEffect>( LightningEffectClass, Pattern.Transform, SpawnParams );
+
+	if ( LightningEffect )
 	{
+		// Configure the lightning effect with setup parameters
 		FLightningSetupParams SetupParams;
 
 		SetupParams.Root = Parent == NULL ? NULL : Parent->Root;
 		SetupParams.Pattern = Pattern;
 		SetupParams.Type = Parent == NULL ? ELightningType::Lightning_Origin : ELightningType::Lightning_Branch;
-		SetupParams.Order = Parent == NULL ? 0 : (Parent->GetOrder() + 1);
+		SetupParams.Order = Parent == NULL ? 0 : ( Parent->GetOrder() + 1 );
 
 		LightningEffect->bAlwaysRelevant = true;
-		LightningEffect->Setup(this, SetupParams);
+		LightningEffect->Setup( this, SetupParams );
 	}
 }
+

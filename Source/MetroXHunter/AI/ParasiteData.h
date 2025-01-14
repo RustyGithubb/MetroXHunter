@@ -8,7 +8,7 @@
 #include "ParasiteData.generated.h"
 
 /*
- * 
+ * Data Asset for the Parasite enemy.
  */
 UCLASS( BlueprintType )
 class METROXHUNTER_API UParasiteData : public UDataAsset
@@ -18,9 +18,19 @@ class METROXHUNTER_API UParasiteData : public UDataAsset
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "General" )
 	int32 MaxHealth = 20;
-	
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "General" )
+	FFloatRange ScaleRange { 0.9f, 1.1f };
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "General" )
+	UMaterialInterface* BodyMaterial = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "General" )
+	UMaterialInterface* WartsMaterial = nullptr;
+
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = ( Units = "CentimetersPerSecond" ) )
 	float WalkSpeed = 600.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Movement" )
+	FFloatRange MovementSpeedScaleRange { 0.8f, 1.2f };
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = ( Units = "Times" ) )
+	float FleeSpeedScale = 2.0f;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = ( Units = "DegreesPerSecond" ) )
 	float YawRotationRate = 180.0f;
 
@@ -53,6 +63,13 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Vent", meta = ( Units = "Seconds" ) )
 	float ExitVentNextUseCooldown = 15.0f;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Flee from Target" )
+	FFloatRange FleeAimAdditionalDistanceRange { -300.0f, 300.0f };
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Flee from Target", meta = ( Units = "Centimeters", ClampMin = "0" ) )
+	float FleeAimMinDistance = 500.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Flee from Target", meta = ( Units = "Degrees", ClampMin = "10", ClampMax = "179" ) )
+	float FleeAimFOV = 60.0f;
 
 	/*
 	 * Collision responses of the mesh when ragdolling.

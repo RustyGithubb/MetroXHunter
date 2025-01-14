@@ -26,7 +26,6 @@ void UVentManagerComponent::BeginPlay()
 		*GetName()
 	);
 
-	RetrieveVents();
 	CreateNextIdleSoundTimer();
 
 	// Auto-start cyclic spawn with pre-filled zones enemies amount
@@ -53,6 +52,7 @@ void UVentManagerComponent::TickDebug_Implementation( float DeltaTime, FString& 
 
 	// Constructs formating arguments
 	FStringFormatNamedArguments Args {};
+	Args.Add( "VentsCount", Vents.Num() );
 	Args.Add( "ProximitySpawnTime", ProximitySpawnTime );
 	Args.Add( "CyclicSpawnTime", CyclicSpawnTime );
 	Args.Add( "IsCyclicSpawnTimerRunning", TimerManager.IsTimerActive( CyclicSpawnTimerHandle ) );
@@ -63,6 +63,7 @@ void UVentManagerComponent::TickDebug_Implementation( float DeltaTime, FString& 
 	// Formats debug string
 	constexpr auto Format = TEXT(
 		"[VentManagerComponent]\n"
+		"VentsCount: {VentsCount}\n"
 		"ProximitySpawnTime: {ProximitySpawnTime}\n"
 		"CyclicSpawnTime: {CyclicSpawnTime}s\n"
 		"IsCyclicSpawnTimerRunning: {IsCyclicSpawnTimerRunning}\n"
@@ -179,23 +180,31 @@ void UVentManagerComponent::RetrieveVents()
 	for ( TActorIterator<AVent> It( GetWorld(), AVent::StaticClass() ); It; ++It )
 	{
 		AVent* Vent = *It;
-		Vent->VentManager = this;
-		Vents.Add( Vent );
-
-		UUtilityLibrary::LogMessage(
-			TEXT( "%s: Registered %s" ),
-			*GetName(), *Vent->GetName()
-		);
-
-		UE_VLOG_LOCATION( 
-			this,
-			LogTemp, Log,
-			Vent->GetActorLocation(), 32.0f,
-			FColor::Emerald,
-			TEXT( "%s: Registered %s" ),
-			*GetName(), *Vent->GetName()
-		);
+		RegisterVent( Vent );
 	}
+}
+
+void UVentManagerComponent::RegisterVent( AVent* Vent )
+{
+	verify( IsValid( Vent ) );
+
+	Vent->VentManager = this;
+	Vent->OnEndPlay.AddUniqueDynamic( this, &UVentManagerComponent::OnVentEndPlay );
+	Vents.AddUnique( Vent );
+
+	UUtilityLibrary::LogMessage(
+		TEXT( "%s: Registered %s" ),
+		*GetName(), *Vent->GetName()
+	);
+
+	UE_VLOG_LOCATION( 
+		this,
+		LogTemp, Log,
+		Vent->GetActorLocation(), 32.0f,
+		FColor::Emerald,
+		TEXT( "%s: Registered %s" ),
+		*GetName(), *Vent->GetName()
+	);
 }
 
 void UVentManagerComponent::CreateNextIdleSoundTimer()
@@ -231,7 +240,7 @@ void UVentManagerComponent::PlayIdleSound()
 	}
 
 	// Plays sound on this vent
-	if ( NearestVent != nullptr )
+	if ( IsValid( NearestVent ) )
 	{
 		NearestVent->PlayIdleSound();
 	}
@@ -394,6 +403,20 @@ void UVentManagerComponent::OnDepleteCyclicSpawnTimer()
 	{
 		StartCyclicSpawnTimer();
 	}
+}
+
+void UVentManagerComponent::OnVentEndPlay( AActor* Actor, EEndPlayReason::Type Reason )
+{
+	AVent* Vent = Cast<AVent>( Actor );
+	if ( Vent == nullptr ) return;
+
+	Vents.Remove( Vent );
+
+	UUtilityLibrary::LogMessage(
+		TEXT( "%s: Un-registered vent %s" ),
+		*GetName(),
+		*Vent->GetName()
+	);
 }
 
 APawn* UVentManagerComponent::GetPlayer()

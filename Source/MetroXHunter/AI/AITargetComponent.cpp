@@ -5,6 +5,8 @@
 #include "AI/AITargetComponent.h"
 #include "AI/AIAttackerComponent.h"
 
+#include "Library/ConvarLibrary.h"
+
 UAITargetComponent::UAITargetComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -75,7 +77,7 @@ bool UAITargetComponent::ReserveTokens( UAIAttackerComponent* Reserver, int32 To
 			GetOwner(),
 			LogTemp, Verbose,
 			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: token reservation in cooldown." ),
-			Tokens, *GetNameSafe( Reserver )
+			Tokens, *Reserver->GetReserver()->GetName()
 		);
 		return false;
 	}
@@ -87,7 +89,7 @@ bool UAITargetComponent::ReserveTokens( UAIAttackerComponent* Reserver, int32 To
 			GetOwner(),
 			LogTemp, Verbose,
 			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: not enough tokens available." ),
-			Tokens, *GetNameSafe( Reserver )
+			Tokens, *Reserver->GetReserver()->GetName()
 		);
 		return false;
 	}
@@ -102,7 +104,7 @@ bool UAITargetComponent::ReserveTokens( UAIAttackerComponent* Reserver, int32 To
 		GetOwner(),
 		LogTemp, Verbose,
 		TEXT( "AITargetComponent: Reserved %d tokens for %s (now a total of %d tokens)" ),
-		Tokens, *GetNameSafe( Reserver ), ResultingTokens
+		Tokens, *Reserver->GetReserver()->GetName(), ResultingTokens
 	);
 
 	return true;
@@ -119,7 +121,7 @@ bool UAITargetComponent::FreeTokens( UAIAttackerComponent* Reserver, int32 Token
 			GetOwner(),
 			LogTemp, Verbose,
 			TEXT( "AITargetComponent: Failed to free %d tokens for %s: no reservations." ),
-			Tokens, *GetNameSafe( Reserver )
+			Tokens, *Reserver->GetReserver()->GetName()
 		);
 		return false;
 	}
@@ -146,7 +148,7 @@ bool UAITargetComponent::FreeTokens( UAIAttackerComponent* Reserver, int32 Token
 		GetOwner(),
 		LogTemp, Verbose,
 		TEXT( "AITargetComponent: Freed %d tokens for %s (now a total of %d tokens)" ),
-		Tokens, *GetNameSafe( Reserver ), ResultingTokens
+		Tokens, *Reserver->GetReserver()->GetName(), ResultingTokens
 	);
 
 	return true;
@@ -182,6 +184,19 @@ int32 UAITargetComponent::GetReservedTokens( UAIAttackerComponent* Reserver ) co
 int32 UAITargetComponent::GetRemainingTokens() const
 {
 	int32 RemainingTokens = MaxTokens;
+
+	#ifdef UE_WITH_CHEAT_MANAGER
+	// Override maximum tokens with a convar
+	const int32 TokenOverride = UConvarLibrary::GetAIPlayerTokenOverride();
+	if ( TokenOverride != -1 )
+	{
+		const AController* Controller = GetOwner()->GetInstigatorController();
+		if ( Controller != nullptr && Controller->IsPlayerController() )
+		{
+			RemainingTokens = TokenOverride;
+		}
+	}
+	#endif
 
 	for ( const auto& Element : ReservedTokens )
 	{
@@ -313,11 +328,13 @@ TMap<int32, FAIReserverArray> UAITargetComponent::GetActorsByGroupPlaces() const
 void UAITargetComponent::DeclareAttacker( UAIAttackerComponent* Attacker )
 {
 	DeclaredAttackers.Add( Attacker );
+	OnAttackersUpdate.Broadcast( this );
 }
 
 void UAITargetComponent::RetireAttacker( UAIAttackerComponent* Attacker )
 {
 	DeclaredAttackers.Remove( Attacker );
+	OnAttackersUpdate.Broadcast( this );
 }
 
 int32 UAITargetComponent::GetAttackersCount() const

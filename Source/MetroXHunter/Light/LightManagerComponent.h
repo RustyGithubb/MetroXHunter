@@ -130,7 +130,7 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Light|Flickering" )
 	float RestorationTimeFactor = 0.5f; 
 
-private:
+	UFUNCTION( BlueprintCallable, Category = "Light" )
 	void FindAllLightsInWorld();
 
 private:

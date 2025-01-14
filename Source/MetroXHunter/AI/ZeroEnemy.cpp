@@ -13,6 +13,7 @@
 
 #include "Library/UtilityLibrary.h"
 #include "Library/GameplayLibrary.h"
+#include "Library/ConvarLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -43,6 +44,8 @@ AZeroEnemy::AZeroEnemy()
 	ElectrocutableComponent = CreateDefaultSubobject<UElectrocutableComponent>( TEXT( "ElectrocutableComponent" ) );
 
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>( TEXT( "PawnSensingComponent" ) );
+
+	SaveComponent = CreateDefaultSubobject<USaveLoadComponent>( TEXT( "SaveComponent" ) );
 }
 
 void AZeroEnemy::BeginPlay()
@@ -89,6 +92,12 @@ void AZeroEnemy::Tick( float DeltaTime )
 				GetGameTimeSinceCreation() * Frequency
 			) * Angle;
 
+			// Fixing the enemy not looking the player during the QTE
+			if ( auto AIController = GetController<AAIController>() )
+			{
+				StartStunRotation.Yaw = AIController->GetControlRotation().Yaw;
+			}
+
 			SetActorRotation(
 				FRotator {
 					0.0,
@@ -123,16 +132,7 @@ void AZeroEnemy::FakeDeath()
 {
 	SetState( EZeroEnemyState::FakingDeath );
 
-	// Ragdoll mesh
-	USkeletalMeshComponent* MeshComponent = GetMesh();
-	MeshComponent->SetSimulatePhysics( true );
-	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
-
-	// Disable tick and character movement
-	SetActorTickEnabled( false );
-	GetCharacterMovement()->SetActive( false );
-
-	SetCollisionsEnabled( false );
+	Ragdoll();
 }
 
 void AZeroEnemy::UnFakeDeath()
@@ -145,6 +145,45 @@ void AZeroEnemy::UnFakeDeath()
 
 	SetState( EZeroEnemyState::None );
 
+	UnRagdoll();
+	SetActorTickEnabled( true );
+}
+
+void AZeroEnemy::KnockOut()
+{
+	if ( State != EZeroEnemyState::KnockOut )
+	{
+		SetState( EZeroEnemyState::KnockOut );
+		Ragdoll();
+	}
+
+	GetWorldTimerManager().SetTimer( KnockOutTimerHandle, this, &AZeroEnemy::UnKnockOut, 5.0f );
+}
+
+void AZeroEnemy::UnKnockOut()
+{
+	SetState( EZeroEnemyState::None );
+	UnRagdoll();
+
+	GetWorldTimerManager().ClearTimer( KnockOutTimerHandle );
+}
+
+void AZeroEnemy::Ragdoll()
+{
+	// Ragdoll mesh
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetSimulatePhysics( true );
+	MeshComponent->SetCollisionResponseToChannels( Data->MeshRagdollCollisions );
+
+	// Disable tick and character movement
+	SetActorTickEnabled( false );
+	GetCharacterMovement()->SetActive( false );
+
+	SetCollisionsEnabled( false );
+}
+
+void AZeroEnemy::UnRagdoll()
+{
 	// Un-ragdoll mesh
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 	MeshComponent->SetSimulatePhysics( false );
@@ -155,7 +194,6 @@ void AZeroEnemy::UnFakeDeath()
 	MeshComponent->SetCollisionResponseToChannels( DefaultMeshCollisions );
 
 	// Enable tick and character movement
-	SetActorTickEnabled( true );
 	GetCharacterMovement()->SetActive( true );
 
 	SimulateMeshBonesPhysics( true );
@@ -165,7 +203,14 @@ void AZeroEnemy::UnFakeDeath()
 void AZeroEnemy::SimulateMeshBonesPhysics( bool bSimulate )
 {
 	USkeletalMeshComponent* MeshComponent = GetMesh();
-	for ( const FName BoneName : SimulatedMeshBones )
+
+	for ( const FName& BoneName : SimulatedMeshBones )
+	{
+		MeshComponent->SetBodySimulatePhysics( BoneName, bSimulate );
+		MeshComponent->SetEnableBodyGravity( bSimulate, BoneName );
+	}
+
+	for ( const FName& BoneName : SimulatedMeshBonesBelow )
 	{
 		MeshComponent->SetAllBodiesBelowSimulatePhysics( BoneName, bSimulate );
 		MeshComponent->SetEnableGravityOnAllBodiesBelow( bSimulate, BoneName );
@@ -184,6 +229,7 @@ void AZeroEnemy::SetCollisionsEnabled( bool bEnabled )
 
 void AZeroEnemy::OpenBulb( float OpenTime )
 {
+	BulbMeshComponent->SetHiddenInGame( false );
 	BulbMeshComponent->SetMaterial( 0, Data->OpenedBulbMaterial );
 
 	// Enable aim assist on bulb
@@ -206,6 +252,7 @@ void AZeroEnemy::OpenBulb( float OpenTime )
 
 void AZeroEnemy::CloseBulb()
 {
+	BulbMeshComponent->SetHiddenInGame( true );
 	BulbMeshComponent->SetMaterial( 0, Data->ClosedBulbMaterial );
 
 	// Disable aim assist on bulb
@@ -265,31 +312,92 @@ void AZeroEnemy::MakePanic()
 bool AZeroEnemy::DestroyBodyPart(
 	USceneComponent* BodyPart,
 	const FName& BoneName,
-	const FVector& KnockbackDirection
+	const FVector& HitLocation,
+	const FVector& KnockbackDirection,
+	const float DistanceFromAttacker
 )
 {
+	const bool bIsAlive = HealthComponent->IsAlive();
+
 	// Force un-faking death
-	if ( State == EZeroEnemyState::FakingDeath )
+	if ( bIsAlive && State == EZeroEnemyState::FakingDeath )
 	{
 		UnFakeDeath();
 	}
 
-	if ( auto SkeletalBodyPart = Cast<USkeletalMeshComponent>( BodyPart ) )
+	if ( USkeletalMeshComponent* SkeletalMesh = GetMesh() )
 	{
-		// Ragdoll all bones below the hit bone name
-		SkeletalBodyPart->SetAllBodiesBelowSimulatePhysics( BoneName, true );
-		SkeletalBodyPart->SetAllBodiesBelowLinearVelocity( BoneName, KnockbackDirection * 500.0f );
+		const FString BoneNameString = BoneName.ToString();
 
-		const int32 RootIndex = SkeletalBodyPart->FindRootBodyIndex();
-		const int32 BoneIndex = SkeletalBodyPart->GetBoneIndex( BoneName );
-		const bool bIsBoneRoot = RootIndex == BoneIndex;
-		if ( Data->bPanicOnlyIfDismembered && !bIsBoneRoot ) return false;
-
-		if ( bIsBoneRoot )
+		const bool bLegBone = BoneNameString.Contains( "leg" );
+		if ( !bLegBone )
 		{
-			SkeletalBodyPart->SetCollisionResponseToChannels( Data->BodyPartRagdollCollisions );
-			SkeletalBodyPart->DetachFromComponent( FDetachmentTransformRules::KeepWorldTransform );
+			const bool bBoneKnockable = BoneNameString.Contains( "neck" )
+				|| ( BoneNameString.Contains( "spine" ) && DistanceFromAttacker < MaxKnockOutDistance );
+			if ( bIsAlive && bBoneKnockable )
+			{
+				KnockOut();
+
+				const float KnockbackForce = Data->KnockOutKnockbackCurve->GetFloatValue( DistanceFromAttacker ) * 1.0f;
+				ApplyKnockback( KnockbackDirection, KnockbackForce );
+			}
+
+			#ifdef UE_WITH_CHEAT_MANAGER
+			if ( UConvarLibrary::IsGunDebugEnabled() )
+			{
+				UUtilityLibrary::PrintWarning(
+					TEXT( "ZeroEnemy: Hit bone %s instead of leg" ),
+					*BoneNameString
+				);
+			}
+			#endif
+			return false;
 		}
+
+		// Destroy bone only once
+		if ( !SkeletalMesh->IsBoneHiddenByName( BoneName ) )
+		{
+			SkeletalMesh->HideBoneByName( BoneName, EPhysBodyOp::PBO_None );
+
+			// NOTE: Using SetCollisionEnabled doesn't seem to work so we use this one instead.
+			SkeletalMesh->GetBodyInstance( BoneName )->SetShapeCollisionEnabled(
+				0,
+				ECollisionEnabled::NoCollision
+			);
+
+			if ( bIsAlive )
+			{
+				KnockOut();
+			}
+		}
+
+		const bool bBackLeg = BoneNameString.Contains( "back" );
+		const bool bRightSide = BoneNameString.Contains( "_r" );
+
+		// Computing appropriate leg index depending on whenever it is in back/front and left/right sides.
+		// See DeadLegs comment.
+		const int32 LegIndex = static_cast<int32>( bBackLeg ) * 2 + static_cast<int32>( bRightSide );
+		checkf(
+			LegIndex >= 0 && LegIndex < MAX_NUM_ZERO_ENEMY_LEGS,
+			TEXT( "Leg index is out-of-range with value %d" ),
+			LegIndex
+		);
+
+		#ifdef UE_WITH_CHEAT_MANAGER
+		if ( UConvarLibrary::IsGunDebugEnabled() )
+		{
+			UUtilityLibrary::PrintMessage(
+				TEXT( "ZeroEnemy: Hit bone %s as leg index %d" ),
+				*BoneNameString, LegIndex
+			);
+		}
+		#endif
+
+		// Check whether the leg is alive
+		// Returning early to prevent body parts update
+		if ( DeadLegs[LegIndex] ) return false;
+		
+		DeadLegs[LegIndex] = true;
 	}
 	else
 	{
@@ -299,7 +407,7 @@ bool AZeroEnemy::DestroyBodyPart(
 	LeftBodyPartsCount -= 1;
 	if ( LeftBodyPartsCount <= Data->BodyPartsLeftToKill ) return true;
 
-	if ( HealthComponent->IsAlive() )
+	if ( bIsAlive )
 	{
 		MakePanic();
 		UpdateWalkSpeed();
@@ -316,6 +424,13 @@ int32 AZeroEnemy::GetStartingBodyPartsCount() const
 void AZeroEnemy::ApplyKnockback( const FVector& Direction, float Force )
 {
 	if ( Force == 0.0f ) return;
+
+	USkeletalMeshComponent* SkeletalMesh = GetMesh();
+	if ( SkeletalMesh->IsSimulatingPhysics() )
+	{
+		SkeletalMesh->SetAllPhysicsLinearVelocity( Direction * Force );
+		return;
+	}
 
 	FVector Impulse = Direction.GetSafeNormal2D() * Force;
 	Impulse.Z = Data->DefaultKnockbackZ;
@@ -465,6 +580,17 @@ bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 		DamageContext.HitResult.TraceEnd
 	);
 
+	// Dispatch event that we have been attacked
+	// It will be used by the AI controller to auto-target the attacker
+	OnAttacked.Broadcast( DamageContext.AttackerActor );
+
+	// Deals damage with player's stomp when on the ground
+	if ( GetMesh()->IsSimulatingPhysics() && DamageContext.DamageType == EDamageType::Melee )
+	{
+		ApplyKnockback( KnockbackDirection, Data->MeleeKnockbackForce );
+		return true;
+	}
+
 	// Check if damaged the bulb
 	if ( HitComponent == BulbMeshComponent )
 	{
@@ -483,12 +609,18 @@ bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 	}
 
 	// Check if damaged one of its body part
-	if ( IsValid( HitComponent ) && HitComponent->ComponentHasTag( Data->BodyPartTag ) )
+	if ( HitComponent == GetMesh() )
 	{
-		bool bIsDead = DestroyBodyPart(
+		const float DistanceFromAttacker = IsValid( DamageContext.AttackerActor )
+			? FVector::Distance( DamageContext.AttackerActor->GetActorLocation(), GetActorLocation() )
+			: 0.0f;
+
+		const bool bIsDead = DestroyBodyPart(
 			HitComponent,
 			DamageContext.HitResult.BoneName,
-			KnockbackDirection
+			DamageContext.HitResult.Location,
+			KnockbackDirection,
+			DistanceFromAttacker
 		);
 		if ( bIsDead )
 		{
@@ -572,21 +704,25 @@ void AZeroEnemy::RetrieveReferences()
 	// Retrieve maximum rush time from the curve
 	[[maybe_unused]] float Temp = 0.0f;
 	Data->RushSpeedCurve->GetTimeRange( Temp, MaxRushTime );
-
-	auto BodyParts = UUtilityLibrary::GetComponentsOfActorByTag<UMeshComponent>(
-		this,
-		Data->BodyPartTag
-	);
-	StartBodyPartsCount = BodyParts.Num();
-	LeftBodyPartsCount = StartBodyPartsCount;
-	checkf(
+	Data->KnockOutKnockbackCurve->GetTimeRange( Temp, MaxKnockOutDistance );
+	
+	// TODO: Implement AimAssist on legs
+	StartBodyPartsCount = LeftBodyPartsCount;
+	ensureAlwaysMsgf(
 		StartBodyPartsCount > 0,
 		TEXT( "ZeroEnemy %s doesn't have any body parts count!" ),
 		*GetName()
 	);
+	
+	/*auto BodyParts = UUtilityLibrary::GetComponentsOfActorByTag<UMeshComponent>(
+		this,
+		Data->BodyPartTag
+	);
+	StartBodyPartsCount = BodyParts.Num();
+	LeftBodyPartsCount = StartBodyPartsCount;*/
 
 	// Enable aim assist for all body parts
-	for ( auto BodyPart : BodyParts )
+	/*for ( auto BodyPart : BodyParts )
 	{
 		if ( Data->bBodyPartHasAimAssist )
 		{
@@ -594,7 +730,7 @@ void AZeroEnemy::RetrieveReferences()
 		}
 
 		BodyPart->SetCollisionResponseToChannels( Data->BodyPartDefaultCollisions );
-	}
+	}*/
 
 	// Set max health
 	HealthComponent->MaxHealth = Data->MaxHealth;
@@ -615,6 +751,8 @@ void AZeroEnemy::UpdateWalkSpeed()
 
 void AZeroEnemy::OnElectricStart( float Duration )
 {
+	if ( !HealthComponent->IsAlive() ) return;
+
 	if ( State == EZeroEnemyState::FakingDeath )
 	{
 		UnFakeDeath();
@@ -624,6 +762,11 @@ void AZeroEnemy::OnElectricStart( float Duration )
 void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 {
 	CloseBulb();
+
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimerManager.ClearTimer( StunTimerHandle );
+	TimerManager.ClearTimer( RushTimerHandle );
+	TimerManager.ClearTimer( KnockOutTimerHandle );
 
 	if ( IsValid( Controller ) )
 	{
@@ -648,7 +791,7 @@ void AZeroEnemy::OnDeath( const FDamageContext& DamageContext )
 		DamageContext.HitResult.TraceStart,
 		DamageContext.HitResult.TraceEnd
 	);
-	if ( !Direction.IsNearlyZero() )
+	if ( DamageContext.DamageType != EDamageType::Melee && !Direction.IsNearlyZero() )
 	{
 		const FVector Knockback = Direction * Data->DeathKnockbackForce;
 		//MeshComponent->AddImpulseAtLocation( Knockback, DamageContext.HitResult.ImpactPoint );

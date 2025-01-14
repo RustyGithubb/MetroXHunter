@@ -42,6 +42,7 @@ void AZeroEnemyAIController::OnPossess( APawn* InPawn )
 	CustomPawn->OnRush.AddDynamic( this, &AZeroEnemyAIController::OnRush );
 	CustomPawn->OnUnRush.AddDynamic( this, &AZeroEnemyAIController::OnUnRush );
 	CustomPawn->OnStateUpdate.AddDynamic( this, &AZeroEnemyAIController::OnStateUpdate );
+	CustomPawn->OnAttacked.AddDynamic( this, &AZeroEnemyAIController::OnAttacked );
 	CustomPawn->PawnSensingComponent->OnSeePawn.AddDynamic( this, &AZeroEnemyAIController::OnSeePawn );
 	CustomPawn->PawnSensingComponent->OnHearNoise.AddDynamic( this, &AZeroEnemyAIController::OnHearNoise );
 	const UZeroEnemyData* DataAsset = CustomPawn->Data;
@@ -78,9 +79,11 @@ void AZeroEnemyAIController::OnUnPossess()
 	CustomPawn->OnRush.RemoveDynamic( this, &AZeroEnemyAIController::OnRush );
 	CustomPawn->OnUnRush.RemoveDynamic( this, &AZeroEnemyAIController::OnUnRush );
 	CustomPawn->OnStateUpdate.RemoveDynamic( this, &AZeroEnemyAIController::OnStateUpdate );
+	CustomPawn->OnAttacked.RemoveDynamic( this, &AZeroEnemyAIController::OnAttacked );
 	CustomPawn->PawnSensingComponent->OnSeePawn.RemoveDynamic( this, &AZeroEnemyAIController::OnSeePawn );
 	CustomPawn->PawnSensingComponent->OnHearNoise.RemoveDynamic( this, &AZeroEnemyAIController::OnHearNoise );
 
+	SetTarget( nullptr );
 	StopScreamTimer();
 
 	CustomPawn = nullptr;
@@ -104,12 +107,10 @@ void AZeroEnemyAIController::Tick( float DeltaTime )
 	}
 }
 
+// TODO: Remove function
 void AZeroEnemyAIController::CombatTarget( AActor* InTarget )
 {
-	if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && Cast<APawn>( InTarget )->IsPlayerControlled() ) return;
-
 	SetTarget( InTarget );
-	SetState( EZeroEnemyAIState::Target );
 }
 
 void AZeroEnemyAIController::SetState( EZeroEnemyAIState State )
@@ -135,21 +136,67 @@ EZeroEnemyAIState AZeroEnemyAIController::GetState() const
 	return (EZeroEnemyAIState)Blackboard->GetValueAsEnum( AI_KEYNAME );
 }
 
-void AZeroEnemyAIController::SetTarget( AActor* InTarget )
+bool AZeroEnemyAIController::SetTarget( AActor* NewTarget )
 {
-	if ( auto TargetComponent = InTarget->GetComponentByClass<UAITargetComponent>() )
+	// Prevent re-target the same actor
+	AActor* LastTarget = GetTarget();
+	if ( LastTarget == NewTarget ) return false;
+
+	if ( IsValid( NewTarget ) )
 	{
-		AttackerComponent->SetCurrentTarget( TargetComponent );
-		TargetComponent->DeclareAttacker( AttackerComponent );
+		#ifdef UE_WITH_CHEAT_MANAGER
+		if ( const auto NewTargetAsPawn = Cast<APawn>( NewTarget ) )
+		{
+			// Ignore player if AIIgnorePlayer convar is enabled
+			const bool bIsPlayerControlled = NewTargetAsPawn->IsPlayerControlled();
+			if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && bIsPlayerControlled )
+			{
+				return false;
+			}
+		}
+		#endif
 	}
 
-	Blackboard->SetValueAsObject( TARGET_KEYNAME, InTarget );
+	// Un-set previous target
+	if ( IsValid( LastTarget ) )
+	{
+		AttackerComponent->FreeReservations();
 
-	UUtilityLibrary::PrintMessage(
-		TEXT( "AI: '%s' targeting '%s'" ),
-		*GetName(),
-		*GetNameSafe( InTarget )
-	);
+		// Unbind target's death event
+		if ( auto HealthComponent = LastTarget->GetComponentByClass<UHealthComponent>() )
+		{
+			HealthComponent->OnDeath.RemoveDynamic( this, &AZeroEnemyAIController::OnTargetDeath );
+		}
+	}
+
+	if ( IsValid( NewTarget ) )
+	{
+		// Bind to target's death
+		if ( auto HealthComponent = NewTarget->GetComponentByClass<UHealthComponent>() )
+		{
+			// Prevent targeting dead actors
+			if ( !HealthComponent->IsAlive() ) return false;
+
+			HealthComponent->OnDeath.AddDynamic( this, &AZeroEnemyAIController::OnTargetDeath );
+		}
+
+		// Declare itself as attacker
+		if ( auto TargetComponent = NewTarget->GetComponentByClass<UAITargetComponent>() )
+		{
+			AttackerComponent->SetCurrentTarget( TargetComponent );
+			TargetComponent->DeclareAttacker( AttackerComponent );
+		}
+
+		SetState( EZeroEnemyAIState::Target );
+	}
+	else
+	{
+		SetState( EZeroEnemyAIState::Idle );
+	}
+
+	Blackboard->SetValueAsObject( TARGET_KEYNAME, NewTarget );
+
+	return true;
 }
 
 AActor* AZeroEnemyAIController::GetTarget() const
@@ -179,14 +226,17 @@ void AZeroEnemyAIController::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) cons
 		TEXT( "State" ),
 		UEnum::GetValueAsString( GetState() )
 	);
-	Category.Add(
-		TEXT( "VelocityLength" ),
-		FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->Velocity.Length() )
-	);
-	Category.Add(
-		TEXT( "MaxWalkSpeed" ),
-		FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->MaxWalkSpeed )
-	);
+	if ( IsValid( CustomPawn ) )
+	{
+		Category.Add(
+			TEXT( "VelocityLength" ),
+			FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->Velocity.Length() )
+		);
+		Category.Add(
+			TEXT( "MaxWalkSpeed" ),
+			FString::SanitizeFloat( CustomPawn->GetCharacterMovement()->MaxWalkSpeed )
+		);
+	}
 	Category.Add(
 		TEXT( "MadnessLevel" ),
 		FString::SanitizeFloat( GetMadnessLevel() )
@@ -286,6 +336,11 @@ void AZeroEnemyAIController::StopScreamTimer()
 	TimerManager.ClearTimer( ScreamTimerHandle );
 }
 
+void AZeroEnemyAIController::OnTargetDeath( const FDamageContext& DamageContext )
+{
+	SetTarget( nullptr );
+}
+
 void AZeroEnemyAIController::OnSeePawn( APawn* SeenPawn )
 {
 	if ( CustomPawn->GetState() != EZeroEnemyState::None ) return;
@@ -356,6 +411,14 @@ void AZeroEnemyAIController::OnStateUpdate( EZeroEnemyState NewState, EZeroEnemy
 			SubstateManagerComponent->SetComponentTickEnabled( true );
 			break;
 	}
+}
+
+void AZeroEnemyAIController::OnAttacked( AActor* Attacker )
+{
+	// Auto-attack an attacker if we don't already have a target yet
+	if ( IsValid( GetTarget() ) ) return;
+
+	SetTarget( Attacker );
 }
 
 void AZeroEnemyAIController::OnSubstateSwitched()

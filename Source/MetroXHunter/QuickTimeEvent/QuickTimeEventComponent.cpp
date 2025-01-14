@@ -10,6 +10,9 @@
 #include "EnhancedInputComponent.h"
 #include "InputMappingContext.h"
 
+#include "Library/UtilityLibrary.h"
+#include "Library/GameplayLibrary.h"
+
 constexpr float PERCENT = 100.0f;
 
 UQuickTimeEventComponent::UQuickTimeEventComponent()
@@ -22,7 +25,6 @@ void UQuickTimeEventComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerController = GetOwner()->GetInstigator()->GetLocalViewingPlayerController();
 	SetupPlayerInputComponent();
 }
 
@@ -34,8 +36,11 @@ void UQuickTimeEventComponent::TickComponent(
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
-	// Check for dead zone time
+	// Check event has started (e.g. event delay)
 	float EventTime = GetEventTime();
+	if ( EventTime < 0.0f ) return;
+
+	// Check for dead zone time
 	if ( bIsInDeadZone )
 	{
 		// Stop dead zone if we went over its time
@@ -62,12 +67,21 @@ void UQuickTimeEventComponent::TickComponent(
 		TEXT( "QuickTimeEvent is running with a progress of %f!" ), InputProgress
 	);
 
-	// Check for fail condition
-	if ( InputProgress < DataAsset->FailUnderProgress / PERCENT )
+	// Fail when maximum curve time is reached
+	if ( DataAsset->bShouldFailAtMaxCurveTime && EventTime >= MaxCurveTime )
 	{
 		StopEvent( EQuickTimeEventResult::Failed );
 	}
-	// Check for success condition
+	// Fail when input progress is below the threshold for a minimum amount of time
+	else if ( InputProgress < DataAsset->FailUnderProgress / PERCENT )
+	{
+		FailTime += DeltaTime;
+		if ( FailTime >= DataAsset->FailUnderProgressTime )
+		{
+			StopEvent( EQuickTimeEventResult::Failed );
+		}
+	}
+	// Success when input progress is above 100%
 	else if ( InputProgress > 1.0f )
 	{
 		StopEvent( EQuickTimeEventResult::Succeed );
@@ -80,14 +94,24 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset, AA
 
 	DataAsset = NewDataAsset;
 	InputProgress = DataAsset->StartProgress / PERCENT;
+	FailTime = 0.0f;
 
 	Inflictor = NewInflictor;
 	bIsInDeadZone = true;
-	EventStartTime = GetWorld()->GetTimeSeconds();
+	EventStartTime = GetWorld()->GetTimeSeconds() + DataAsset->EventDelay;
+
+	float MinTime = 0.0f;
+	DataAsset->ProgressDecreaseCurve->GetTimeRange( MinTime, MaxCurveTime );
 
 	// Switch to quick time event's input mapping context
-	verify( !InputMappingContext.IsNull() );
-	IPlayerInputHandler::Execute_SetInputMappingContext( PlayerController, InputMappingContext.LoadSynchronous() );
+	if ( IsValid( PlayerController ) )
+	{
+		verify( !InputMappingContext.IsNull() );
+		IPlayerInputHandler::Execute_SetInputMappingContext(
+			PlayerController,
+			InputMappingContext.LoadSynchronous()
+		);
+	}
 
 	SetComponentTickEnabled( true );
 
@@ -100,7 +124,14 @@ void UQuickTimeEventComponent::StopEvent( EQuickTimeEventResult EventResult )
 {
 	SetComponentTickEnabled( false );
 
-	IPlayerInputHandler::Execute_ResetInputMappingContext( PlayerController );
+	if ( IsValid( PlayerController ) )
+	{
+		verify( !InputMappingContext.IsNull() );
+		IPlayerInputHandler::Execute_RevertInputMappingContext(
+			PlayerController,
+			InputMappingContext.LoadSynchronous()
+		);
+	}
 
 	Result = EventResult;
 	OnEventStopped.Broadcast( this, DataAsset, Result );
@@ -152,6 +183,8 @@ float UQuickTimeEventComponent::GetInputProgress() const
 
 void UQuickTimeEventComponent::SetupPlayerInputComponent()
 {
+	PlayerController = UGameplayLibrary::GetPlayerControllerChecked( GetOwner() );
+
 	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
 	
 	verify( !InputMappingContext.IsNull() );
@@ -173,6 +206,9 @@ void UQuickTimeEventComponent::SetupPlayerInputComponent()
 
 void UQuickTimeEventComponent::OnInput( const FInputActionInstance& InputInstance )
 {
+	// Check that the event actually started
+	if ( GetEventTime() < 0.0f ) return;
+
 	// Compare current input to the one from DataAsset
 	if ( InputInstance.GetSourceAction() != DataAsset->InputAction ) return;
 

@@ -107,6 +107,8 @@ private:
 	float InputProgress = 0.0f;
 	float EventStartTime = 0.0f;
 	float DecreaseOffsetTime = 0.0f;
+	float MaxCurveTime = 0.0f;
+	float FailTime = 0.0f;
 
 	EQuickTimeEventResult Result = EQuickTimeEventResult::Succeed;
 

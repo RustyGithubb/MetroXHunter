@@ -22,17 +22,12 @@ class METROXHUNTER_API ABasePickUp : public ABaseInteractable
 
 public:
 	ABasePickUp();
-	virtual void BeginPlay() override;
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	int Amount = 0;
-
 	UPROPERTY( EditAnywhere, BlueprintReadOnly )
 	EPickupType PickupType;
-
-	UPROPERTY( EditAnywhere, BlueprintReadOnly )
-	UTexture2D* Sprite;
 
 protected:
 	void Interact() override;
@@ -42,7 +37,6 @@ protected:
 		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult
 	) override;
-
 	void OnInteractableTargeted() override;
 
 private:

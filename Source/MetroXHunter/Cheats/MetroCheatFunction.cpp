@@ -61,18 +61,24 @@ UWorld* UMetroCheatFunction::GetWorld() const
 
 void UMetroCheatSelectionFunction::CycleToNext()
 {
-	//  Move index to the right and wrap it around the value names length
-	Index = ( Index + 1 ) % ValueNames.Num();
+	if ( !ValueNames.IsEmpty() )
+	{
+		//  Move index to the right and wrap it around the value names length
+		Index = ( Index + 1 ) % ValueNames.Num();
+	}
 
 	Cheat();
 }
 
 void UMetroCheatSelectionFunction::CycleToPrevious()
 {
-	//  Move index to the left and wrap it around the value names length
-	Index = Index - 1 < 0
-		? ValueNames.Num() - 1
-		: Index - 1;
+	if ( !ValueNames.IsEmpty() )
+	{
+		//  Move index to the left and wrap it around the value names length
+		Index = Index - 1 < 0
+			? ValueNames.Num() - 1
+			: Index - 1;
+	}
 
 	Cheat();
 }

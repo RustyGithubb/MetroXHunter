@@ -21,30 +21,28 @@ class METROXHUNTER_API ABaseDoor : public ABaseInteractable
 
 public:
 	void BeginPlay() override;
+
+	virtual void ConsumeInteraction_Implementation() override;
+
 	void Interact() override;
 
 	UFUNCTION( BlueprintCallable, Category = "Door" )
 	virtual void OnDoorHit( AActor* Player );
-
-	UFUNCTION( BlueprintImplementableEvent, Category = "Door" )
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Door" )
 	void SetDoorOpened( bool bShouldOpen );
-
 	UFUNCTION( BlueprintImplementableEvent, Category = "Door" )
 	void CloseDoorEditor();
 
 	UFUNCTION( CallInEditor, Category = "Door" )
 	void AddLock();
-
 	UFUNCTION( CallInEditor, Category = "Door" )
 	void RemoveAllLocks();
-
 	UFUNCTION()
 	void RemoveLock( ALock* Lock );
 
 protected:
-	UPROPERTY( EditAnywhere )
+	UPROPERTY( EditAnywhere, Category = "Door" )
 	bool bIsLocked = false;
-
 	UPROPERTY( BlueprintReadWrite, Category = "Door" )
 	bool bIsOpened = false;
 
@@ -54,7 +52,6 @@ protected:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Door|Lock" )
 	TArray<ALock*> LocksList;
-
 	UPROPERTY( EditAnywhere, Category = "Door|Lock" )
 	UStaticMesh* LockMesh;
 };

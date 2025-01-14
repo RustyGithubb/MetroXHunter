@@ -16,6 +16,18 @@ UElectrocutableComponent::UElectrocutableComponent()
 void UElectrocutableComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if ( bAutoFindSkeletalMeshes )
+	{
+		TArray<USkeletalMeshComponent*> SkeletalMeshComponents {};
+		GetOwner()->GetComponents( SkeletalMeshComponents );
+
+		for ( USkeletalMeshComponent* SkeletalMeshComponent : SkeletalMeshComponents )
+		{
+			GigglingSkeletalComponents.Add( SkeletalMeshComponent );
+			FXAttachmentComponents.Add( SkeletalMeshComponent );
+		}
+	}
 }
 
 void UElectrocutableComponent::EndPlay( EEndPlayReason::Type Reason )
@@ -89,10 +101,10 @@ void UElectrocutableComponent::UpdateFX()
 		UNiagaraComponent* FXComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			LightningFX,
 			AttachmentComponent,
-			FName {},
+			NAME_None,
 			FVector::ZeroVector, FRotator::ZeroRotator,
 			EAttachLocation::KeepRelativeOffset,
-			/* bAutoDestroy */ false,
+			/* bAutoDestroy */ true,
 			/* bAutoActivate */ true,
 			ENCPoolMethod::None,
 			/* bPreCullCheck */ true
@@ -108,7 +120,7 @@ void UElectrocutableComponent::DestroyFX()
 	for ( auto FXComponent : FXPlayingComponents )
 	{
 		if ( !IsValid( FXComponent ) ) continue;
-		FXComponent->DestroyComponent();
+		FXComponent->Deactivate();
 	}
 	FXPlayingComponents.Empty();
 

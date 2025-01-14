@@ -15,6 +15,7 @@ class UWidgetComponent;
 class UInteractableWidget;
 class UInteractableComponent;
 class UInteractionComponent;
+class USaveLoadComponent;
 class UInputMappingContext;
 
 /*
@@ -36,34 +37,39 @@ public:
 
 	UFUNCTION( BlueprintCallable )
 	void SetInteractionFreezed( bool bShouldFreeze );
-
 	UFUNCTION( BlueprintCallable )
 	void RemoveInteractionComponent();
+
+	/* 
+	 * This function is triggered on load if the interaction was already consumed in the last save.
+	 */
+	UFUNCTION( BlueprintNativeEvent )
+	void ConsumeInteraction();
+	virtual void ConsumeInteraction_Implementation();
 
 public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
 	UStaticMeshComponent* StaticMesh = nullptr;
-
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
 	USceneComponent* SceneRoot = nullptr;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Collisions" )
 	USphereComponent* InnerCollision = nullptr;
-
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Collisions" )
 	USphereComponent* OutterCollision = nullptr;
-
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Component" )
 	UInteractableComponent* InteractableComponent = nullptr;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Interactable|UI" )
 	UWidgetComponent* Widget = nullptr;
-
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|UI" )
 	UInteractableWidget* InteractableWidget = nullptr;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Player" )
 	APlayerController* PlayerController = nullptr;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|System" )
+	USaveLoadComponent* SaveComponent = nullptr;
 
 	/*
 	 * Input mapping context of the interactable
@@ -74,7 +80,6 @@ public:
 protected:
 	UFUNCTION()
 	virtual void Interact();
-
 	UFUNCTION( BlueprintCallable )
 	virtual void OnCancelInteraction();
 
@@ -82,7 +87,6 @@ protected:
 
 	UFUNCTION( BlueprintCallable )
 	void SwitchCameraTarget();
-
 	UFUNCTION( BlueprintCallable )
 	void ResetCameraTarget();
 
@@ -92,20 +96,17 @@ protected:
 		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult
 	);
-
 	UFUNCTION()
 	void OnOutterCircleOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult
 	);
-
 	UFUNCTION()
 	void OnInnerCircleOverlapEnd(
 		UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	);
-
 	UFUNCTION()
 	void OnOutterCircleOverlapEnd(
 		UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -114,17 +115,20 @@ protected:
 
 	UFUNCTION()
 	virtual void OnInteractableTargeted();
-
 	UFUNCTION()
 	void OnInteractableUntargeted();
 
+	UFUNCTION()
+	void OnLoadedData();
+
 protected:
 	UInteractionComponent* PlayerInteractionComponent = nullptr;
+
+	UPROPERTY(SaveGame)
 	bool bIsInteractableSleeping = false;
 
 	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
 	float BlendExp = 1.0f;
-
 	UPROPERTY( EditAnywhere, Category = "Locker|Skill Check" )
 	float BlendTime = 0.3f;
 

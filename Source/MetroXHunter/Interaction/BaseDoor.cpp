@@ -14,12 +14,27 @@ void ABaseDoor::BeginPlay()
 
 	if ( !bIsLocked ) return;
 
-	for ( auto Locks : LocksList )
+	for ( ALock* Lock : LocksList )
 	{
-		Locks->OnLockDown.AddDynamic( this, &ABaseDoor::RemoveLock );
+		verifyf(
+			IsValid( Lock ),
+			TEXT( "Lock isn't valid ! Please check locks on %s" ), *GetName()
+		);
+
+		Lock->OnLockDown.AddDynamic( this, &ABaseDoor::RemoveLock );
 	}
 
 	SetInteractionFreezed( true );
+}
+
+void ABaseDoor::ConsumeInteraction_Implementation()
+{
+	Super::ConsumeInteraction_Implementation();
+	
+	RemoveAllLocks();
+	bIsLocked = false;
+	SetDoorOpened( true );
+
 }
 
 void ABaseDoor::Interact()
@@ -47,24 +62,23 @@ void ABaseDoor::OnDoorHit( AActor* Player )
 void ABaseDoor::AddLock()
 {
 	/* Create a Lock */
-	FActorSpawnParameters SpawnInfo;
+	FActorSpawnParameters SpawnInfo {};
 
 	/* Get the location */
-	FVector Origin;
-	FVector BoxExtend;
+	FVector Origin {};
+	FVector BoxExtend {};
 	GetActorBounds( true, Origin, BoxExtend );
 	Origin.Z += LocksList.Num() * 30 - 40;
 
-	ALock* newLock = GetWorld()->SpawnActor<ALock>( Origin, GetActorRotation(), SpawnInfo );
-	if ( !newLock ) return;
+	ALock* NewLock = GetWorld()->SpawnActor<ALock>( Origin, GetActorRotation(), SpawnInfo );
+	if ( !NewLock ) return;
 
-	FRotator NewRotation
-	{ 0 };
+	FRotator NewRotation { 0 };
 	NewRotation.Roll = FMath::FRandRange( -10.f, 10.f );
 
-	newLock->SetActorRelativeRotation( NewRotation );
-	newLock->AttachToActor( this, FAttachmentTransformRules::KeepWorldTransform );
-	LocksList.Add( newLock );
+	NewLock->SetActorRelativeRotation( NewRotation );
+	NewLock->AttachToActor( this, FAttachmentTransformRules::KeepWorldTransform );
+	LocksList.Add( NewLock );
 
 	CloseDoorEditor();
 	bIsLocked = true;
@@ -72,15 +86,18 @@ void ABaseDoor::AddLock()
 	/* Set its mesh */
 	if ( LockMesh )
 	{
-		newLock->StaticMesh->SetStaticMesh( LockMesh );
+		NewLock->StaticMesh->SetStaticMesh( LockMesh );
 	}
 }
 
 void ABaseDoor::RemoveAllLocks()
 {
-	for ( int i = LocksList.Num() - 1; i > -1; i--  )
+	for ( int Index = LocksList.Num() - 1; Index > -1; Index-- )
 	{
-		LocksList[i]->Destroy();
+		ALock* Lock = LocksList[Index];
+		if ( !IsValid( Lock ) ) continue;
+
+		Lock->Destroy();
 	}
 
 	LocksList.Empty();

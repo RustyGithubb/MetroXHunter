@@ -6,7 +6,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Health/HealthComponent.h"
 #include "AI/ParasiteData.h"
+#include "AI/EQSContextProvider.h"
 #include "Parasite.generated.h"
 
 class AZeroEnemy;
@@ -17,7 +19,7 @@ class UHealthComponent;
 class UPawnSensingComponent;
 
 UCLASS( Abstract )
-class METROXHUNTER_API AParasite : public ACharacter
+class METROXHUNTER_API AParasite : public ACharacter, public IHealthHolder, public IEQSContextProvider
 {
 	GENERATED_BODY()
 
@@ -28,6 +30,16 @@ public:
 	virtual void Tick( float DeltaTime ) override;
 
 	virtual void Landed( const FHitResult& Hit ) override;
+
+	// Begin IHealthHolder interface
+	bool TakeDamage_Implementation( UPARAM( ref ) FDamageContext& DamageContext );
+	bool CanCallTakeDamage_Implementation( const FDamageContext& DamageContext );
+	// End IHealthHolder interface
+
+	// Begin IEQSContextProvider interface
+	FVector GetEQSStartLocation_Implementation() const override;
+	AActor* GetEQSTargetActor_Implementation() const override;
+	// End IEQSContextProvider interface
 
 	UFUNCTION( BlueprintCallable, Category = "Parasite" )
 	void UpdateDataAsset();
@@ -41,13 +53,21 @@ public:
 	void StartEnteringVent( AVent* Vent );
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Parasite" )
 	void StartExitingVent( AVent* Vent );
-	/*UFUNCTION( BlueprintCallable, Category = "Parasite" )
-	void EnterVent( AVent* Vent );*/
 
 	UFUNCTION( BlueprintCallable, Category = "Parasite" )
 	void JumpAttack();
 	UFUNCTION( BlueprintPure, Category = "Parasite" )
 	bool IsJumpAttacking() const;
+
+	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Parasite" )
+	void EmitBloodSplash( const FDamageContext& DamageContext );
+	UFUNCTION( BlueprintPure, Category = "Parasite" )
+	bool HasEmittedBlood() const;
+
+	UFUNCTION( BlueprintPure, Category = "Parasite" )
+	float GetDefaultMoveSpeed() const;
+	UFUNCTION( BlueprintPure, Category = "Parasite" )
+	float GetFleeMoveSpeed() const;
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( 
@@ -65,8 +85,17 @@ public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "Parasite" )
 	UPawnSensingComponent* PawnSensingComponent = nullptr;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Parasite" )
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Parasite" )
+	USaveLoadComponent* SaveComponent = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Parasite", meta = ( ExposeOnSpawn = true ) )
 	UParasiteData* DataAsset = nullptr;
+
+	UPROPERTY( EditInstanceOnly, BlueprintReadOnly, Category = "Parasite" )
+	bool bCanEverUseVents = true;
+
+	UPROPERTY( EditInstanceOnly, BlueprintReadOnly, Category = "Parasite" )
+	bool bStartInCinematic = false;
 
 private:
 	UFUNCTION()
@@ -91,5 +120,10 @@ private:
 	void SpawnBloodPuddle();
 
 private:
+	float DefaultMoveSpeed = 0.0f;
+	float FleeMoveSpeed = 0.0f;
+
 	bool bIsJumpAttacking = false;
+	bool bHasAlreadyDamaged = false;
+	bool bHasEmittedBlood = false;
 };

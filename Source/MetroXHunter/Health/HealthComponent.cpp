@@ -1,3 +1,7 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #include "HealthComponent.h"
 
 UHealthComponent::UHealthComponent()
@@ -11,6 +15,23 @@ void UHealthComponent::BeginPlay()
 
 	CurrentHealth = MaxHealth;
 	bHasHealthHolder = GetOwner()->Implements<UHealthHolder>();
+}
+
+void UHealthComponent::OnSaveData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame )
+{
+	FHealthSavedData HealthData {};
+	HealthData.CurrentHealth = CurrentHealth;
+
+	SaveGame->SavedHealthComponent.Add( ActorID, HealthData );
+}
+
+void UHealthComponent::OnLoadData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame )
+{
+	if ( !SaveGame->SavedHealthComponent.Contains( ActorID ) ) return;
+
+	CurrentHealth = SaveGame->SavedHealthComponent[ActorID].CurrentHealth;
+
+	OnHealthUpdate.Broadcast();
 }
 
 bool UHealthComponent::TakeDamage( FDamageContext DamageContext )

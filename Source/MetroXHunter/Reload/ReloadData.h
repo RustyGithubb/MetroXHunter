@@ -16,28 +16,21 @@ class METROXHUNTER_API UReloadData : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	// Default reload time if the player do nothing 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadBase", meta = ( Units = "Seconds" ) )
-	float NormalReloadDuration = 2.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadBase", meta = ( Units = "Seconds" ) )
-	float NormalReloadAnimTime = 2.0f;
+	float NormalReloadDuration = 3.0f; 
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadActive", meta = ( Units = "Seconds" ) )
-	float ActiveReloadStartTime = 0.55f;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadActive", meta = ( Units = "Seconds" ) )
-	float ActiveReloadEndTime = 1.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadActive", meta = ( Units = "Seconds" ) )
-	float ActiveReloadAnimTime = 0.75f;
+	// Faster reload time
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect", meta = ( Units = "Seconds" ) )
+	float PerfectReloadDuration = 0.4f; 
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect", meta = ( Units = "Seconds" ) )
-	float PerfectReloadStartTime = 0.4f;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect", meta = ( Units = "Seconds" ) )
-	float PerfectReloadBonusTime = 2.0f;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadPerfect", meta = ( Units = "Seconds" ) )
-	float PerfectReloadAnimTime = 0.5f;
-
+	// A bit slower than perfect reload time 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadFailed", meta = ( Units = "Seconds" ) )
-	float FailedReloadPenaltyTime = 2.0f;
+	float FailedReloadDuration = 0.5f; 
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ReloadData|ReloadCurve" )
 	UCurveFloat* ReloadCurve = nullptr;
 };
+
+// To update the UI divide the cursor value with the maximum angle
+// +20 to get the beginning + 110 to get the end

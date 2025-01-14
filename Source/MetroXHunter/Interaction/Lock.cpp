@@ -14,7 +14,29 @@ ALock::ALock()
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health Component" ) );
 	HealthComponent->MaxHealth = 50.f;
+
+	ElectrocutableComponent = CreateDefaultSubobject<UElectrocutableComponent>( TEXT( "Electrocutable Component" ) );
+	ElectrocutableComponent->FXAttachmentComponents.Add( StaticMesh );
+}
+
+void ALock::BeginPlay()
+{
+	Super::BeginPlay();
+
+	verify( IsValid( HealthComponent ) );
+
 	HealthComponent->OnDeath.AddDynamic( this, &ALock::OnDeath );
+}
+
+bool ALock::TakeDamage_Implementation( FDamageContext& DamageContext )
+{
+	return DamageContext.DamageType == EDamageType::Bullet
+		|| DamageContext.DamageType == EDamageType::Melee;
+}
+
+bool ALock::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+{
+	return true;
 }
 
 void ALock::OnDeath( const FDamageContext& DamageContext )

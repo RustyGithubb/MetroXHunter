@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using UnrealBuildTool.Rules;
 
 public class MetroXHunter : ModuleRules  
 {
@@ -18,7 +19,10 @@ public class MetroXHunter : ModuleRules
 				"EnhancedInput",
 				"GameplayTags",
 				"Niagara",
-			}
+                "StructUtils",
+                "CinematicCamera",
+                "MoviePlayer"
+            }
 		);
 
 		PrivateDependencyModuleNames.AddRange( new string[] { } );

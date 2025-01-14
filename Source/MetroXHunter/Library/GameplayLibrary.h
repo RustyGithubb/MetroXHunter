@@ -9,8 +9,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameplayLibrary.generated.h"
 
-/**
- * 
+/*
+ * Library sharing common gameplay-related code.
  */
 UCLASS()
 class METROXHUNTER_API UGameplayLibrary : public UBlueprintFunctionLibrary
@@ -45,4 +45,10 @@ public:
 		FName BoneName,
 		const FVector& Scale
 	);
+
+	/*
+	 * Returns the player controller out of an actor with an assertion.
+	 */
+	UFUNCTION( BlueprintPure, Category = "GameplayLibrary" )
+	static APlayerController* GetPlayerControllerChecked( const AActor* Actor );
 };

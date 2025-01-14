@@ -3,8 +3,10 @@
  */
 
 #include "AI/Parasite.h"
+#include "AI/ParasiteAIController.h"
 #include "AI/PossessableCorpse.h"
 #include "AI/ZeroEnemy.h"
+#include "AI/ZeroEnemyAIController.h"
 
 #include "Vent/Vent.h"
 #include "Health/HealthComponent.h"
@@ -26,6 +28,8 @@ AParasite::AParasite()
 	HealthComponent->MaxHealth = 1;
 
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>( TEXT( "PawnSensingComponent" ) );
+
+	SaveComponent = CreateDefaultSubobject<USaveLoadComponent>( TEXT( "SaveComponent" ) );
 }
 
 void AParasite::BeginPlay()
@@ -51,15 +55,76 @@ void AParasite::Landed( const FHitResult& Hit )
 	if ( bIsJumpAttacking )
 	{
 		bIsJumpAttacking = false;
+		bHasAlreadyDamaged = false;
 	}
+}
+
+bool AParasite::TakeDamage_Implementation( UPARAM( ref ) FDamageContext& DamageContext )
+{
+	const bool bIsDeathBlow = DamageContext.DamageAmount >= DamageContext.HealthComponent->CurrentHealth;
+	if ( bIsDeathBlow )
+	{
+		// Emit blood splash only if not dead by electricity
+		if ( !HasEmittedBlood() && DamageContext.DamageType != EDamageType::Shock )
+		{
+			EmitBloodSplash( DamageContext );
+		}
+
+		// Apply impulse to mesh
+		if ( !DamageContext.HealthComponent->IsAlive() )
+		{
+			const FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(
+				DamageContext.HitResult.TraceStart,
+				DamageContext.HitResult.TraceEnd
+			);
+			if ( !Direction.IsNearlyZero() )
+			{
+				GetMesh()->SetAllPhysicsLinearVelocity( Direction * 500.0f, true );
+			}
+		}
+	}
+
+	return true;
+}
+
+bool AParasite::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+{
+	return true;
+}
+
+FVector AParasite::GetEQSStartLocation_Implementation() const
+{
+	const AController* SelfController = GetController();
+	return IEQSContextProvider::Execute_GetEQSStartLocation( SelfController );
+}
+
+AActor* AParasite::GetEQSTargetActor_Implementation() const
+{
+	const AController* SelfController = GetController();
+	return IEQSContextProvider::Execute_GetEQSTargetActor( SelfController );
 }
 
 void AParasite::UpdateDataAsset()
 {
 	verifyf( IsValid( DataAsset ), TEXT( "%s doesn't reference a DataAsset" ), *GetName() );
 
+	// Randomize scale
+	const FVector Scale = FVector( UUtilityLibrary::RandomInRange( DataAsset->ScaleRange ) );
+	SetActorScale3D( Scale );
+
+	// Randomize movement speed
+	const float MovementSpeedScale = FMath::GetMappedRangeValueUnclamped(
+		FVector2f( DataAsset->ScaleRange.GetLowerBoundValue(), DataAsset->ScaleRange.GetUpperBoundValue() ),
+		FVector2f( DataAsset->MovementSpeedScaleRange.GetUpperBoundValue(), DataAsset->MovementSpeedScaleRange.GetLowerBoundValue() ),
+		static_cast<float>( Scale.X )
+	);
+
+	// Store move speed values
+	DefaultMoveSpeed = DataAsset->WalkSpeed * MovementSpeedScale;
+	FleeMoveSpeed = DefaultMoveSpeed * DataAsset->FleeSpeedScale;
+
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-	MovementComponent->MaxWalkSpeed = DataAsset->WalkSpeed;
+	MovementComponent->MaxWalkSpeed = DefaultMoveSpeed;
 	MovementComponent->RotationRate.Yaw = DataAsset->YawRotationRate;
 
 	HealthComponent->MaxHealth = DataAsset->MaxHealth;
@@ -69,17 +134,13 @@ void AParasite::PossessCorpse( APossessableCorpse* Corpse )
 {
 	verify( IsValid( Corpse ) );
 
-	// Destroy corpse and parasite
-	Corpse->Destroy();
-	Destroy();
-
 	// Set to always spawn to avoid annoying crashes because of collisions at spawn
 	FActorSpawnParameters SpawnParams {};
-	SpawnParams.SpawnCollisionHandlingOverride = 
+	SpawnParams.SpawnCollisionHandlingOverride =
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	// Spawn enemy
-	auto Enemy = GetWorld()->SpawnActor<AZeroEnemy>( 
+	auto Enemy = GetWorld()->SpawnActor<AZeroEnemy>(
 		Corpse->EnemyClass,
 		// TODO: Export location offset
 		Corpse->GetActorLocation() + FVector { 0.0f, 0.0f, 180.0f * 0.5f },
@@ -90,14 +151,22 @@ void AParasite::PossessCorpse( APossessableCorpse* Corpse )
 	Enemy->Data = Corpse->DataAsset;
 	Enemy->Stun( 2.0f, false );
 
-	OnPossessCorpse.Broadcast( this, Corpse, Enemy );
-}
+	auto SelfAIController = GetController<AParasiteAIController>();
+	auto EnemyAIController = Enemy->GetController<AZeroEnemyAIController>();
+	if ( SelfAIController != nullptr && EnemyAIController != nullptr )
+	{
+		// Transfer current target to the new enemy
+		AActor* Target = SelfAIController->GetEnemy();
+		EnemyAIController->SetTarget( Target );
+	}
 
-//void AParasite::EnterVent( AVent* Vent )
-//{
-//	verify( IsValid( Vent ) );
-//	Vent->EnterVent( this );
-//}
+	OnPossessCorpse.Broadcast( this, Corpse, Enemy );
+
+	// Destroy corpse and parasite
+	// NOTE: It is important to destroy these as late as possible within the function
+	Corpse->Destroy();
+	Destroy();
+}
 
 void AParasite::JumpAttack()
 {
@@ -118,16 +187,45 @@ bool AParasite::IsJumpAttacking() const
 	return bIsJumpAttacking;
 }
 
+void AParasite::EmitBloodSplash_Implementation( const FDamageContext& DamageContext )
+{
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->OnComponentHit.AddDynamic( this, &AParasite::OnRagdollMeshHit );
+
+	bHasEmittedBlood = true;
+}
+
+bool AParasite::HasEmittedBlood() const
+{
+	return bHasEmittedBlood;
+}
+
+float AParasite::GetDefaultMoveSpeed() const
+{
+	return DefaultMoveSpeed;
+}
+
+float AParasite::GetFleeMoveSpeed() const
+{
+	return FleeMoveSpeed;
+}
+
 void AParasite::OnHit(
 	AActor* SelfActor, AActor* OtherActor,
 	FVector NormalImpulse,
 	const FHitResult& Hit
 )
 {
-	if ( !bIsJumpAttacking ) return;
+	if ( !bIsJumpAttacking && !bHasAlreadyDamaged ) return;
 
 	// Prevent damaging himself
 	if ( !IsValid( OtherActor ) || OtherActor == SelfActor ) return;
+
+	if ( auto OtherPawn = Cast<APawn>( OtherActor ) )
+	{
+		// Don't damage pawns that are not the player
+		if ( !OtherPawn->IsPlayerControlled() ) return;
+	}
 
 	auto HitHealthComponent = OtherActor->GetComponentByClass<UHealthComponent>();
 	if ( !IsValid( HitHealthComponent ) ) return;
@@ -139,6 +237,8 @@ void AParasite::OnHit(
 	DamageContext.HitResult = Hit;
 
 	HitHealthComponent->TakeDamage( DamageContext );
+
+	bHasAlreadyDamaged = true;
 }
 
 void AParasite::OnDeath( const FDamageContext& DamageContext )
@@ -155,12 +255,6 @@ void AParasite::OnDeath( const FDamageContext& DamageContext )
 	MeshComponent->SetCollisionResponseToChannels( DataAsset->MeshRagdollCollisions );
 	MeshComponent->SetReceivesDecals( false );
 
-	// Schedule blood spawn only if not dead by electricity
-	if ( DamageContext.DamageType != EDamageType::Shock )
-	{
-		MeshComponent->OnComponentHit.AddDynamic( this, &AParasite::OnRagdollMeshHit );
-	}
-
 	// Apply knockback to mesh
 	const FVector Direction = UKismetMathLibrary::GetDirectionUnitVector(
 		DamageContext.HitResult.TraceStart,
@@ -168,8 +262,7 @@ void AParasite::OnDeath( const FDamageContext& DamageContext )
 	);
 	if ( !Direction.IsNearlyZero() )
 	{
-		const FVector Knockback = Direction * 500.0f + FVector::UpVector * -300.0f;
-		//MeshComponent->AddImpulseAtLocation( Knockback, DamageContext.HitResult.ImpactPoint );
+		const FVector Knockback = Direction * 500.0f + FVector::UpVector * -100.0f;
 		MeshComponent->SetAllPhysicsLinearVelocity( Knockback, true );
 	}
 
@@ -203,6 +296,6 @@ void AParasite::SpawnBloodPuddle()
 		DataAsset->BloodPuddleClass,
 		GetMesh(),
 		DataAsset->BloodPuddleSpawnBoneName,
-		DataAsset->BloodPuddleScale
+		GetActorScale3D() * DataAsset->BloodPuddleScale
 	);
 }

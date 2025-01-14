@@ -14,13 +14,6 @@ ABasePickUp::ABasePickUp()
 	InteractableComponent->InteractionType = E_InteractionType::Pickup;
 }
 
-void ABasePickUp::BeginPlay()
-{
-	Super::BeginPlay();
-
-	InteractableWidget->EditSprite( Sprite );
-}
-
 void ABasePickUp::Interact()
 {
 	int OverflowAmount = PlayerInventory->AddToInventory( PickupType, Amount );
@@ -52,5 +45,8 @@ void ABasePickUp::OnInnerCircleOverlapBegin(
 
 void ABasePickUp::OnInteractableTargeted()
 {
-	InteractableWidget->OnPickupTargeted( Amount );
+	if ( IsValid( InteractableWidget ) )
+	{
+		InteractableWidget->OnPickupTargeted( Amount );
+	}
 }

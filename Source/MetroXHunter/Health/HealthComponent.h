@@ -1,7 +1,12 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Checkpoint/Saveable.h"
 #include "HealthComponent.generated.h"
 
 class UHealthComponent;
@@ -11,7 +16,7 @@ class UHealthComponent;
  * Some types would have different effects on specific implementations, for example the 'Shock'
  * type could apply a visual effect on the player's HUD.
  */
-UENUM( BlueprintType )
+UENUM( BlueprintType, meta = ( ScriptName = "EMetroDamageType" ) )
 enum class EDamageType : uint8
 {
 	/*
@@ -94,13 +99,13 @@ class METROXHUNTER_API IHealthHolder
 
 public:
 	/*
-	 * Called when the HealthComponent is about to take damage 
+	 * Called when the HealthComponent is about to take damage
 	 * and allows to control whenever the damage should be applied,
 	 * as well as tweaking the damage context.
-	 * 
+	 *
 	 * This function is called even if the HealthComponent is dead
 	 * or invulnerable.
-	 * 
+	 *
 	 * @param DamageContext Damage context
 	 * @return Whenever the damage should be applied
 	 */
@@ -120,7 +125,7 @@ public:
  * Component handling health with basic damage and heal features.
  */
 UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
-class METROXHUNTER_API UHealthComponent : public UActorComponent
+class METROXHUNTER_API UHealthComponent : public UActorComponent, public ISaveable
 {
 	GENERATED_BODY()
 
@@ -128,6 +133,11 @@ public:
 	UHealthComponent();
 
 	virtual void BeginPlay() override;
+
+	// Begin ISaveable Interface
+	virtual void OnSaveData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame );
+	virtual void OnLoadData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame );
+	// End ISaveable Interface
 
 	/*
 	 * Applies damage with given context. Resulted health is clamped to 0.

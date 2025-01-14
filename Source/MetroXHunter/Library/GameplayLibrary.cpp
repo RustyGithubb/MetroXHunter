@@ -19,7 +19,6 @@ bool UGameplayLibrary::LineTraceSingleByChannelFromBone(
 {
 	const FTransform SpawnBoneTransform = MeshComponent->GetBoneTransform( BoneName );
 
-	 {};
 	return UKismetSystemLibrary::LineTraceSingle(
 		MeshComponent,
 		SpawnBoneTransform.GetLocation(),
@@ -100,4 +99,10 @@ AActor* UGameplayLibrary::SpawnBloodPuddleAtBone(
 		Hit.ImpactNormal.ToOrientationRotator(),
 		Scale
 	);
+}
+
+APlayerController* UGameplayLibrary::GetPlayerControllerChecked( const AActor* Actor )
+{
+	const APawn* PlayerPawn = CastChecked<APawn>( Actor );
+	return CastChecked<APlayerController>( PlayerPawn->GetController() );
 }

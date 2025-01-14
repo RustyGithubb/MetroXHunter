@@ -18,37 +18,29 @@ void UMetroCheatManager::InitCheatManager()
 
 void UMetroCheatManager::ReloadCheatFunctions()
 {
-	//  Clear current array
+	// Clear current array
 	CheatFunctions.Empty();
 
-	//  NOTE: Force load the assets before iterating over the UClasses, otherwise, 
-	//  they are not findable
+	// NOTE: Force load the assets before iterating over the UClasses, otherwise, 
+	// they are not findable
 	ForceLoadAssetsAtPath( CheatFunctionAssetsPath );
 
-	//  Iterate over all UClass to find our subclasses
+	// Iterate over all UClass to find our subclasses
 	for ( TObjectIterator<UClass> It; It; ++It )
 	{
 		UClass* Class = *It;
 
-		//  Filter out non-subclasses
+		// Filter out non-subclasses
 		if ( !Class->IsChildOf<UMetroCheatFunction>() ) continue;
 
-		//  Filter out the base class
+		// Filter out the base class
 		if ( Class->HasAnyClassFlags( CLASS_Abstract ) ) continue;
 
-		//  Filter out any skeleton blueprints
-		//if ( It->GetName().RemoveFromStart( "SKEL" ) ) continue;
-
-		//  Filter out any non-blueprints classes
+		// Filter out any non-blueprints classes
 		if ( !Class->GetName().RemoveFromStart( "BP_" ) ) continue;
 
-		//  Instantiate cheat function
+		// Instantiate cheat function
 		InstantiateCheatFunction( Class );
-
-		UUtilityLibrary::LogMessage(
-			TEXT( "New Cheat Function: %s" ),
-			*It->GetName()
-		);
 	}
 
 	UUtilityLibrary::LogMessage(
@@ -56,7 +48,7 @@ void UMetroCheatManager::ReloadCheatFunctions()
 		CheatFunctions.Num()
 	);
 
-	//  Sort functions first by category and second by name
+	// Sort functions first by category and second by name
 	CheatFunctions.Sort(
 		[&]( const UMetroCheatFunction& a, const UMetroCheatFunction& b ) {
 			const FString CategoryA = a.Category.ToString();
@@ -101,30 +93,33 @@ void UMetroCheatManager::Tick( float DeltaTime )
 
 TStatId UMetroCheatManager::GetStatId() const
 {
-	return TStatId();
+	RETURN_QUICK_DECLARE_CYCLE_STAT( UMetroCheatManager, STATGROUP_Tickables );
 }
 
 void UMetroCheatManager::ForceLoadAssetsAtPath( FName Path )
 {
-	//  Load asset registry module
-	auto& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>( 
+	// Load asset registry module
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>( 
 		TEXT( "AssetRegistry" )
 	);
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
-	//  Scan path
+	// Scan path
 	TArray<FString> Paths {};
 	Paths.Add( Path.ToString() );
 	AssetRegistry.ScanPathsSynchronous( Paths );
 
-	//  Get assets in path
+	// Get assets in path
 	TArray<FAssetData> Assets {};
 	AssetRegistry.GetAssetsByPath( Path, Assets, true );
 
-	//  Force loading all assets
-	for ( const auto& AssetData : Assets )
+	// Force loading all assets
+	for ( const FAssetData& AssetData : Assets )
 	{
-		auto Asset = AssetData.GetAsset();
+		// NOTE: GetAsset ensure the asset is loaded even with const
+		const UObject* Asset = AssetData.GetAsset();
+		if ( Asset == nullptr ) continue;
+
 		UUtilityLibrary::LogMessage(
 			TEXT( "Force Load Asset: %s" ),
 			*Asset->GetPathName()
@@ -140,14 +135,35 @@ void UMetroCheatManager::InstantiateCheatFunction(
 	CheatFunction->Init( this );
 	CheatFunctions.Add( CheatFunction );
 
-	//  Warn of un-registered category
+	// Warn of un-registered category
 	if ( !CategoriesOrder.Contains( CheatFunction->Category.ToString() ) )
 	{
-		UUtilityLibrary::PrintError(
-			TEXT( "Cheat Function '%s' using un-registered category '%s', please update your CheatManager!" ),
-			*CheatFunction->Name.ToString(), *CheatFunction->Category.ToString()
+		UUtilityLibrary::PrintWarning(
+			TEXT( "Cheat Function '%s' (%s) using un-registered category '%s', please update your CheatManager!" ),
+			*CheatFunction->Name.ToString(), *CheatFunction->GetName(),
+			*CheatFunction->Category.ToString()
 		);
 	}
 
+	// Warn about development mistakes
+	for ( const auto OtherCheatFunction : CheatFunctions )
+	{
+		if ( OtherCheatFunction == CheatFunction ) continue;
+		if ( !OtherCheatFunction->Category.EqualTo( CheatFunction->Category ) ) continue;
+
+		// Compare names
+		if ( OtherCheatFunction->Name.EqualTo( CheatFunction->Name ) )
+		{
+			UUtilityLibrary::PrintWarning(
+				TEXT( "Cheat Function '%s' (%s) using the same name than '%s' (%s), please update one of them!" ),
+				*CheatFunction->Name.ToString(), *CheatFunction->GetName(),
+				*OtherCheatFunction->Name.ToString(), *OtherCheatFunction->GetName()
+			);
+			break;
+		}
+	}
+
 	OnCheatFunctionRegistered( CheatFunction );
+
+	UUtilityLibrary::LogMessage( TEXT( "New Cheat Function: %s" ), *Class->GetName() );
 }

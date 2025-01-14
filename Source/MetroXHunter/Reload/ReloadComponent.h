@@ -1,147 +1,175 @@
-/*
- * Implemented by BARRAU Benoit
- */
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Checkpoint/Saveable.h"
 #include "ReloadComponent.generated.h"
 
-class UGunComponent;
 class UReloadData;
 class UInventoryComponent;
-class UMainHUD;
 class UInputAction;
 
+// Enumeration for the gun's state
 UENUM( BlueprintType )
 enum class EGunState : uint8
 {
-	Idle,
-	Firing,
-	Reloading,
+    Idle,
+    Firing,
+    Reloading,
 };
 
+// Enumeration for the reload state
 UENUM( BlueprintType )
 enum class EReloadState : uint8
 {
-	Start,
-	Normal,
-	Active,
-	Perfect,
-	Failed,
-	Cancel,
+    Start,
+    Normal,
+    Perfect,
+    Failed,
+    Cancel,
 };
 
- /*
-  * The reload component manage the differents types of reload that the player can achieve.
-  */
 UCLASS( BlueprintType, meta = ( BlueprintSpawnableComponent ) )
-class METROXHUNTER_API UReloadComponent : public UActorComponent
+class METROXHUNTER_API UReloadComponent : public UActorComponent, public ISaveable
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UReloadComponent();
+    UReloadComponent();
 
-	virtual void BeginPlay() override;
-	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
-	void SetupPlayerInputComponent();
+    virtual void BeginPlay() override;
 
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void SetAmmoCount( int NewCount );
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void DecrementAmmo();
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed );
+    // Begin ISaveable Interface
+    virtual void OnSaveData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame );
+    virtual void OnLoadData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame );
+    // End ISaveable Interface
 
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void CancelReload();
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void FinalizeReload( int NewAmmoCount, float FinalWaitingTime, int InventoryAmmoCountUsed );
+    // Set up player input component for reloading
+    void SetupPlayerInputComponent();
 
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	bool IsReloading() const;
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	bool IsAmmoFull() const;
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	bool IsGunEmpty() const;
+    // Functions related to reloading
 
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetCurrentAmmo( int& CurrentAmmo ) const;
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetMaxAmmo( int& MaxAmmo ) const;
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	void GetNormalizedReloadTimings( 
-		float& PerfectReloadStartTime, float& ActiveReloadStartTime, float& ActiveReloadEndTime
-	) const;
-	UFUNCTION( BlueprintCallable, Category = "Reload" )
-	float GetNormalizedReloadElapsedTime() const;
+    // Set the current ammo count in the magazine
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void SetAmmoCount( int NewCount ); 
 
-public:
-	/*
-	 * Event called when ammo decrease / reload
-	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnAmmoCountUpdated );
-	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
-	FOnAmmoCountUpdated OnAmmoCountUpdated;
+    // Decrease the ammo count by one
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void DecrementAmmo(); 
 
-	/*
-	 * Event called when gauge appear to update the moving cursor
-	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUpdateCursorPosition );
-	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
-	FOnUpdateCursorPosition OnUpdateCursorPosition;
+    // Compute the new ammo counts after reloading
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed ); 
 
-	/* 
-	 * Event called when the reload state change
-	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadStateChanged, EReloadState, ReloadType );
-	UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
-	FOnReloadStateChanged OnReloadStateChanged;
+    // Cancel the current reload process
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void CancelReload(); 
 
-public:
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Inputs" )
-	UInputAction* ReloadAction = nullptr;
+    // Finalize the reload process with given parameters
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void FinalizeReload( int NewAmmoCount, int InventoryAmmoCountUsed, float ReloadDuration ); 
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
-	int CurrentAmmoInMagazine = 6;
+    // Check if the gun is currently reloading
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    bool IsReloading() const; 
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
-	int MaxAmmoInMagazine = 6;
+    // Check if the magazine is full
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    bool IsAmmoFull() const; 
 
-	UPROPERTY( BlueprintReadWrite, Category = "Reload" )
-	float ReloadElapsedTime = 0.0f;
+    // Check if the magazine is empty
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    bool IsGunEmpty() const; 
+
+    // Get the current ammo count
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void GetCurrentAmmo( int& CurrentAmmo ) const; 
+
+    // Get the maximum ammo capacity
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void GetMaxAmmo( int& MaxAmmo ) const; 
+
+    // Function to process the reload based on the cursor value
+    UFUNCTION( BlueprintCallable, Category = "Reload" )
+    void ProcessReload( float CursorValue );
+
+    // Start the reload timer with specified duration and state
+    void StartReloadTimer( float Duration, EReloadState ReloadState );
+
+    // EVENTS
+
+    // Event fired when the ammo count is updated
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnAmmoCountUpdated );
+    UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+    FOnAmmoCountUpdated OnAmmoCountUpdated; 
+
+    // Event fired when reload input is received
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnReloadInputReceived );
+    UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+    FOnReloadInputReceived OnReloadInputReceived; 
+
+    // Event fired when the reload state changes
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnReloadStateChanged, EReloadState, ReloadType );
+    UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+    FOnReloadStateChanged OnReloadStateChanged; 
+
+    // Event fired when the reload is complete
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnReloadComplete );
+    UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+    FOnReloadComplete OnReloadComplete; 
 
 private:
-	void RetrieveReferences();
-	void StartReloadSequence();
-	void OnReloadInput();
-	void TriggerReload( EReloadState ReloadState, float ReloadAnimTime, float FinalWaitingTime );
+    // Retrieve necessary references
+    void RetrieveReferences();
 
-	void RetrievePlayerInventory();
-	void RetrieveHUD();
+    // Start the reload sequence
+    void StartReloadSequence();
+
+    // Handle reload input action
+    void OnReloadInput();
+
+    // Trigger the reload process with a given state and duration
+    void TriggerReload( EReloadState ReloadState, float ReloadDuration );
+
+    // Retrieve the player's inventory component
+    void RetrievePlayerInventory();
 
 private:
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
-	EGunState CurrentGunState = EGunState::Idle;
+    // Current state of the gun
+    UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Enum", meta = ( AllowPrivateAccess = "true" ) )
+    EGunState CurrentGunState = EGunState::Idle;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|DataAsset", meta = ( AllowPrivateAccess = "true" ) )
-	UReloadData* ReloadDataAsset = nullptr;
+    // Data asset containing reload information
+    UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|DataAsset", meta = ( AllowPrivateAccess = "true" ) )
+    UReloadData* ReloadDataAsset = nullptr;
 
-	UPROPERTY( BlueprintReadOnly, meta = ( AllowPrivateAccess = "true" ) )
-	UInventoryComponent* PlayerInventory = nullptr;
+    // Reference to the player's inventory component
+    UPROPERTY( BlueprintReadOnly, meta = ( AllowPrivateAccess = "true" ) )
+    UInventoryComponent* PlayerInventory = nullptr;
 
-	UPROPERTY( meta = ( AllowPrivateAccess = "true" ) )
-	bool bIsReloadActive = false;
+    // Flag indicating whether reloading is active
+    UPROPERTY( meta = ( AllowPrivateAccess = "true" ) )
+    bool bIsReloadActive = false;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Reload|Debug", meta = ( AllowPrivateAccess = "true" ) )
-	bool bUseInfiniteAmmo = false;
+    // Player controller reference
+    APlayerController* PlayerController = nullptr;
 
-	APlayerController* PlayerController = nullptr;
-	AActor* CharacterGun = nullptr;
-	AHUD* HUD = nullptr;
+    // HUD reference
+    AHUD* HUD = nullptr;
 
-	FTimerHandle TimerHandleReloadFinalize {};
-	FTimerHandle TimerHandleReloadPlayback {};
+public:
+    // Input action for reloading
+    UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Inputs" )
+    UInputAction* ReloadAction = nullptr;
+
+    // Current ammo count in the magazine
+    UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
+    int CurrentAmmoInMagazine = 6;
+
+    // Maximum ammo capacity of the magazine
+    UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Reload|Ammo" )
+    int MaxAmmoInMagazine = 6;
+
+    // Timer handle for reload finalization
+    FTimerHandle TimerHandleReloadFinalize;
 };

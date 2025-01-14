@@ -22,6 +22,7 @@ enum class EQuickTimeEventType : uint8
 	Spam,
 	/*
 	 * A series of inputs must be pressed on the right time in the right order to succeed.
+	 * IMPORTANT: Not implemented yet.
 	 */
 	Sequence,
 };
@@ -35,11 +36,20 @@ class METROXHUNTER_API UQuickTimeEventData : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+	/*
+	 * Tag to identify the event.
+	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent", meta = ( Categories = "QuickTimeEvent" ) )
 	FGameplayTag EventTag {};
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent" )
 	EQuickTimeEventType EventType = EQuickTimeEventType::Spam;
+	/*
+	 * Time delay before the event starts.
+	 * The delay is not taken in account for the OnEventStarted event to be called.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent", meta = ( Units = "Seconds" ) )
+	float EventDelay = 1.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Seconds", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
 	float DeadZoneTime = 1.5f;
@@ -52,13 +62,11 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
 	UCurveFloat* ProgressDecreaseCurve = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Percent", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
-	float FailUnderProgress = -10.0f;
-	/*
-	 * Deprecated: now we automatically link the input action to the data table
-	 * using the UInputAction asset name.
-	 */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( EditCondition = "EventType==EQuickTimeEventType::Spam && false" ) )
-	FDataTableRowHandle InputUIRowHandle {};
+	float FailUnderProgress = 0.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( Units = "Seconds", EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
+	float FailUnderProgressTime = 1.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "QuickTimeEvent|Spam", meta = ( EditCondition = "EventType==EQuickTimeEventType::Spam" ) )
+	bool bShouldFailAtMaxCurveTime = true;
 	/*
 	 * Input action to spam during the event, it must be present in the InputMappingContext 
 	 * of the component.

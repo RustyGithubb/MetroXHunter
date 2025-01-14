@@ -4,8 +4,18 @@
 
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryData.h"
+
 #include "Interaction/PickupType.h"
+
 #include "HUD/MainHUD.h"
+
+#include "GameFramework/PlayerController.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+
+#include "Library/GameplayLibrary.h"
+
 #include "Engine.h"
 
 UInventoryComponent::UInventoryComponent()
@@ -18,16 +28,46 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 
 	CurrentAmmoAmount = InventoryDataAsset->StartingAmmoAmount;
-	CurrentSyringeSegmentAmount = InventoryDataAsset->StartingSyringeSegment;
+	CurrentSyringeAmount = InventoryDataAsset->StartingSyringe;
 
-	// Late Begin Play
-	GetWorld()->OnWorldBeginPlay.AddUObject( this, &UInventoryComponent::LateBeginPlay );
+	SetupPlayerInputComponent();
 }
 
-void UInventoryComponent::LateBeginPlay()
+void UInventoryComponent::OnSaveData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame )
 {
-	APlayerController* PlayerController = GetOwner()->GetInstigator()->GetLocalViewingPlayerController();
-	MainHUD = ( PlayerController->GetHUD() );
+	FInventorySavedData InventoryData {};
+	InventoryData.CurrentAmmoAmount = CurrentAmmoAmount;
+	InventoryData.CurrentSyringeAmount = CurrentSyringeAmount;
+
+	SaveGame->SavedInventoryComponent.Add( ActorID, InventoryData );
+}
+
+void UInventoryComponent::OnLoadData_Implementation( const FGuid& ActorID, UMetroSaveGame* SaveGame )
+{
+	if ( !SaveGame->SavedInventoryComponent.Contains( ActorID ) ) return;
+	
+	CurrentAmmoAmount = SaveGame->SavedInventoryComponent[ActorID].CurrentAmmoAmount;
+	CurrentSyringeAmount = SaveGame->SavedInventoryComponent[ActorID].CurrentSyringeAmount;
+
+	OnAmmoUpdate.Broadcast( CurrentAmmoAmount );
+	OnSyringeUpdate.Broadcast( CurrentSyringeAmount );
+}
+
+void UInventoryComponent::SetupPlayerInputComponent()
+{
+	PlayerController = UGameplayLibrary::GetPlayerControllerChecked( GetOwner() );
+
+	// Get the InputComponent from the PlayerController
+	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
+
+	// Cast the InputComponent to EnhancedInputComponent
+	auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent );
+
+	// Bind the inventory action to the OnInventoryInput function
+	EnhancedInputComponent->BindAction(
+		InventoryAction, ETriggerEvent::Started,
+		this, &UInventoryComponent::OnInventoryInput
+	);
 }
 
 int UInventoryComponent::AddToInventory( EPickupType PickupType, int Amount )
@@ -36,37 +76,44 @@ int UInventoryComponent::AddToInventory( EPickupType PickupType, int Amount )
 
 	switch ( PickupType )
 	{
-		case EPickupType::Ammo:
-		{
-			OverflowAmount = CalculateOverflowAmount(
-				Amount,
-				CurrentAmmoAmount,
-				InventoryDataAsset->MaxAmmoAmountCapaicty
-			);
+	case EPickupType::Ammo:
+	{
+		OverflowAmount = CalculateOverflowAmount(
+			Amount,
+			CurrentAmmoAmount,
+			InventoryDataAsset->MaxAmmoAmountCapacity
+		);
 
-			OnAmmoUpdate.Broadcast( CurrentAmmoAmount );
-			break;
-		}
-		case EPickupType::Syringe:
-		{
-			OverflowAmount = CalculateOverflowAmount(
-				Amount,
-				CurrentSyringeSegmentAmount,
-				InventoryDataAsset->MaxSyringeSegmentCapacity
-			);
+		OnAmmoUpdate.Broadcast( CurrentAmmoAmount );	
+		break;
+	}
+	case EPickupType::Syringe:
+	{
+		OverflowAmount = CalculateOverflowAmount(
+			Amount,
+			CurrentSyringeAmount,
+			InventoryDataAsset->MaxSyringeCapacity
+		);
 
-			OnSyringeUpdate.Broadcast( CurrentSyringeSegmentAmount );
-			break;
-		}
+		OnSyringeUpdate.Broadcast( CurrentSyringeAmount );
+		break;
+	}
 	}
 
+	const int ActualAmountPickedUp = Amount - OverflowAmount;
+
+	// == 0 => Full can't pick up loot
+	if ( ActualAmountPickedUp > 0 || ActualAmountPickedUp == -1 && PickupType == EPickupType::Syringe )
+	{
+		OnLootGain.Broadcast( PickupType, ActualAmountPickedUp );
+	}
 	return OverflowAmount;
 }
 
-
 void UInventoryComponent::ClearSyringeSegments()
 {
-	CurrentSyringeSegmentAmount = 0;
+	CurrentSyringeAmount = 0;
+	OnSyringeUpdate.Broadcast( CurrentSyringeAmount );
 }
 
 void UInventoryComponent::ClearAmmoAmount()
@@ -77,24 +124,46 @@ void UInventoryComponent::ClearAmmoAmount()
 
 void UInventoryComponent::FullyFillSyringe()
 {
-	CurrentSyringeSegmentAmount = InventoryDataAsset->MaxSyringeSegmentCapacity;
-	OnSyringeUpdate.Broadcast( CurrentSyringeSegmentAmount );
+	CurrentSyringeAmount = InventoryDataAsset->MaxSyringeCapacity;
+	OnSyringeUpdate.Broadcast( CurrentSyringeAmount );
 }
 
 void UInventoryComponent::FullyFillAmmo()
 {
-	CurrentAmmoAmount = InventoryDataAsset->MaxAmmoAmountCapaicty;
+	CurrentAmmoAmount = InventoryDataAsset->MaxAmmoAmountCapacity;
 	OnAmmoUpdate.Broadcast( CurrentAmmoAmount );
+}
+
+bool UInventoryComponent::IsInventoryOpened() const
+{
+	return bIsInventoryOpened;
 }
 
 bool UInventoryComponent::IsSyringeFull()
 {
-	return CurrentSyringeSegmentAmount == InventoryDataAsset->MaxSyringeSegmentCapacity;
+	return CurrentSyringeAmount == InventoryDataAsset->MaxSyringeCapacity;
 }
 
 int UInventoryComponent::GetCurrentAmmoAmount() const
 {
 	return CurrentAmmoAmount;
+}
+
+int UInventoryComponent::GetCurrentSyringeAmount() const
+{
+	return CurrentSyringeAmount;
+}
+
+int UInventoryComponent::GetMaxSyringeCapacity() const
+{
+	return InventoryDataAsset->MaxSyringeCapacity;
+}
+
+void UInventoryComponent::OnInventoryInput()
+{
+	if ( IsInventoryOpened() ) return;
+
+	OnInventoryInputReceived.Broadcast();
 }
 
 int UInventoryComponent::CalculateOverflowAmount( int AmountToAdd, int& CurrentAmount, int MaxAmount )

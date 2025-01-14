@@ -31,6 +31,7 @@ void ALocker::Interact()
 	ShowSkillCheckWidget();
 	Widget->SetVisibility( false );
 
+	// Switch from the Player's Camera to the Locker Camera
 	SwitchCameraTarget();
 	SetActorTickEnabled( true );
 
@@ -46,6 +47,7 @@ void ALocker::OnCancelInteraction()
 	RemoveSkillCheckWidget();
 	Widget->SetVisibility( true );
 
+	// Return to the Player's Camera
 	ResetCameraTarget();
 	ResetSkillCheck();
 }

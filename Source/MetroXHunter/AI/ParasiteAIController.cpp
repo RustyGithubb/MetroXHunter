@@ -8,6 +8,8 @@
 #include "AI/AIAttackerComponent.h"
 #include "Vent/Vent.h"
 
+#include "Health/HealthComponent.h"
+
 #include "Library/ConvarLibrary.h"
 #include "Library/UtilityLibrary.h"
 
@@ -24,6 +26,9 @@ constexpr auto GROUP_PLACE_INDEX = TEXT( "GroupPlaceIndex" );
 constexpr auto MIN_ATTACKERS_TO_ATTACK = TEXT( "MinAttackersToAttack" );
 constexpr auto JUMP_ATTACK_TOKEN = TEXT( "JumpAttackToken" );
 constexpr auto JUMP_ATTACK_TOKEN_COOLDOWN = TEXT( "JumpAttackTokenCooldown" );
+constexpr auto FLEE_AIM_FOV_COS_KEYNAME = TEXT( "FleeAimFOVCosinus" );
+constexpr auto CAN_EVER_USE_VENTS_KEYNAME = TEXT( "bCanEverUseVents" );
+constexpr auto IN_CINEMATIC_KEYNAME = TEXT( "bInCinematic" );
 
 // Set default FollowingComponent to CrowdFollowingComponent so they move around each other
 AParasiteAIController::AParasiteAIController( const FObjectInitializer& ObjectInitializer )
@@ -77,19 +82,84 @@ void AParasiteAIController::OnPossess( APawn* InPawn )
 	Blackboard->SetValueAsInt( MIN_ATTACKERS_TO_ATTACK, DataAsset->MinAttackersToAttack );
 	Blackboard->SetValueAsInt( JUMP_ATTACK_TOKEN, DataAsset->JumpAttackToken );
 	Blackboard->SetValueAsFloat( JUMP_ATTACK_TOKEN_COOLDOWN, DataAsset->JumpAttackTokenCooldown );
+	Blackboard->SetValueAsFloat(
+		FLEE_AIM_FOV_COS_KEYNAME,
+		FMath::Cos( FMath::DegreesToRadians( DataAsset->FleeAimFOV * 0.5f ) )
+	);
+	Blackboard->SetValueAsBool( CAN_EVER_USE_VENTS_KEYNAME, CustomPawn->bCanEverUseVents );
+	SetInCinematic( CustomPawn->bStartInCinematic );
+
+	// Assign possessing location
+	PossessingLocation = CustomPawn->GetActorLocation();
 
 	Super::OnPossess( InPawn );
 }
 
-void AParasiteAIController::SetEnemy( AActor* Enemy )
+FVector AParasiteAIController::GetEQSStartLocation_Implementation() const
 {
-	if ( auto TargetComponent = Enemy->GetComponentByClass<UAITargetComponent>() )
+	return PossessingLocation;
+}
+
+AActor* AParasiteAIController::GetEQSTargetActor_Implementation() const
+{
+	return GetEnemy();
+}
+
+bool AParasiteAIController::SetEnemy( AActor* NewEnemy )
+{
+	// Only update when the new target is different from the previous one
+	AActor* LastTarget = GetEnemy();
+	if ( LastTarget == NewEnemy ) return false;
+
+	if ( IsValid( NewEnemy ) )
 	{
-		AttackerComponent->SetCurrentTarget( TargetComponent );
-		TargetComponent->DeclareAttacker( AttackerComponent );
+		// Ignore player if AIIgnorePlayer convar is enabled
+		const bool bIsPlayerControlled = Cast<APawn>( NewEnemy )->IsPlayerControlled();
+		if ( UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && bIsPlayerControlled )
+		{
+			return false;
+		}
 	}
 
-	Blackboard->SetValueAsObject( ENEMY_KEYNAME, Enemy );
+	// Un-set previous target
+	if ( IsValid( LastTarget ) )
+	{
+		AttackerComponent->FreeReservations();
+
+		// Unbind target's death event
+		if ( auto HealthComponent = LastTarget->GetComponentByClass<UHealthComponent>() )
+		{
+			HealthComponent->OnDeath.RemoveDynamic( this, &AParasiteAIController::OnTargetDeath );
+		}
+	}
+
+	if ( IsValid( NewEnemy ) )
+	{
+		// Bind to target's death
+		if ( auto HealthComponent = NewEnemy->GetComponentByClass<UHealthComponent>() )
+		{
+			// Prevent targeting dead actors
+			if ( !HealthComponent->IsAlive() ) return false;
+
+			HealthComponent->OnDeath.AddDynamic( this, &AParasiteAIController::OnTargetDeath );
+		}
+
+		if ( auto TargetComponent = NewEnemy->GetComponentByClass<UAITargetComponent>() )
+		{
+			AttackerComponent->SetCurrentTarget( TargetComponent );
+			TargetComponent->DeclareAttacker( AttackerComponent );
+		}
+
+		SetInDanger( true );
+	}
+	else
+	{
+		SetInDanger( false );
+	}
+
+	Blackboard->SetValueAsObject( ENEMY_KEYNAME, NewEnemy );
+
+	return true;
 }
 
 AActor* AParasiteAIController::GetEnemy() const
@@ -112,6 +182,11 @@ void AParasiteAIController::SetNextVentTime( float GameTime )
 	Blackboard->SetValueAsFloat( NEXT_VENT_TIME_KEYNAME, GameTime );
 }
 
+void AParasiteAIController::SetInCinematic( bool bValue )
+{
+	Blackboard->SetValueAsBool( IN_CINEMATIC_KEYNAME, bValue );
+}
+
 #if ENABLE_VISUAL_LOG
 void AParasiteAIController::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
 {
@@ -131,6 +206,11 @@ void AParasiteAIController::GrabDebugSnapshot( FVisualLogEntry* Snapshot ) const
 }
 #endif
 
+void AParasiteAIController::OnTargetDeath( const FDamageContext& DamageContext )
+{
+	SetEnemy( nullptr );
+}
+
 void AParasiteAIController::OnSeePawn( APawn* SeenPawn )
 {
 	// Panic with its fellow mates
@@ -144,14 +224,12 @@ void AParasiteAIController::OnSeePawn( APawn* SeenPawn )
 		if ( !ParasiteAI->IsInDanger() ) return;
 
 		SetEnemy( ParasiteAI->GetEnemy() );
-		SetInDanger( true );
 	}
 
 	// Panic when player is seen
 	if ( !UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && SeenPawn->IsPlayerControlled() )
 	{
 		SetEnemy( SeenPawn );
-		SetInDanger( true );
 	}
 }
 
@@ -161,7 +239,6 @@ void AParasiteAIController::OnHearNoise( APawn* HeardPawn, const FVector& Locati
 	if ( !UConvarLibrary::IsAIIgnorePlayerConvarEnabled() && HeardPawn->IsPlayerControlled() )
 	{
 		SetEnemy( HeardPawn );
-		SetInDanger( true );
 	}
 }
 

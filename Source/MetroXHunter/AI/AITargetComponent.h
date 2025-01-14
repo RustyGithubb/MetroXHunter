@@ -100,6 +100,11 @@ public:
 	void FreeReservations( UAIAttackerComponent* Reserver );
 
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnAttackersUpdate, UAITargetComponent*, AITargetComponent );
+	UPROPERTY( BlueprintAssignable, Category = "AITarget" )
+	FOnAttackersUpdate OnAttackersUpdate {};
+
+public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "AITarget" )
 	TArray<FAITargetGroupSettings> GroupsSettings {};
 
