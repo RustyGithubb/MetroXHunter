@@ -28,6 +28,8 @@ public:
 	int32 StartingMagazineAmmo = 6;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "ShootAbility" )
 	int32 MaxMagazineAmmo = 6;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility" )
+	float ShootingDistance = 3000.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|Sound" )
 	USoundBase* ShootFailedSound;
@@ -48,15 +50,15 @@ public:
 	UNiagaraSystem* BloodImpactNiagaraSystem;
 
 	/*
- * The cooldown time before Lightning Damage can be reapplied to the targets.
- */
+	 * The cooldown time before Lightning Damage can be reapplied to the targets. 
+	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Damage", meta = ( Units = "Seconds" ) )
 	float DamageCooldown = 0.2f;
 	/*
 	 * Note: Damage is not dealt per second but is based on the DamageCooldown value.
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Damage" )
-	int32 LightningDamage = 15;
+	int32 LightningDamage = 1;
 
 	/*
 	 * The range of the lightning ability:
@@ -72,13 +74,15 @@ public:
 	/*
 	 * The maximum number of lightning-struck targets.
 	 */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility", meta = ( ClampMin = 1, ClampMax = 3 ) )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility", meta = ( ClampMin = 1) )
 	int32 LightningTargetLimit = 3;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Sound" )
 	USoundBase* LightningAbilityOn;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Sound" )
 	USoundBase* LightningAbilityOff;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Sound" )
+	USoundBase* LightningLoop;
 
 	/*
 	 * The maximum stun duration of the lightning

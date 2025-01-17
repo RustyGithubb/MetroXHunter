@@ -16,6 +16,10 @@ class METROXHUNTER_API ASavingNewspaper : public ABaseInteractable
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION( BlueprintCallable )
+	void Save();
+
 protected:
 	void Interact() override;
 };

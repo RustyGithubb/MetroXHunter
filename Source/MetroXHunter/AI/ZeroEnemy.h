@@ -158,8 +158,10 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "ZeroEnemy" )
 	EZeroEnemyState GetState() const;
 
-	bool CanCallTakeDamage_Implementation( const FDamageContext& DamageContext ) override;
+	// Begin IHealthHolder interface
 	bool TakeDamage_Implementation( FDamageContext& DamageContext ) override;
+	bool IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType ) override;
+	// End IHealthHolder interface
 
 #if ENABLE_VISUAL_LOG
 	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;

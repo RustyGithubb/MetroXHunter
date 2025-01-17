@@ -113,7 +113,24 @@ public:
 	void TickDebug_Implementation( float DeltaTime, FString& OutDebugText ) override;
 	
 	UFUNCTION( BlueprintCallable, Category = "Light" )
-	void FlickeringLights( float Radius, const FVector& Origin, UCurveVector* FlickeringLightCurve );
+	void FlickerLightsInRadius(
+		float Radius,
+		const FVector& Origin,
+		UCurveVector* FlickeringLightCurve
+	);
+	UFUNCTION( BlueprintCallable, Category = "Light" )
+	void FlickerLightsInArray(
+		const TArray<ULightComponent*>& Lights,
+		const FVector& Origin,
+		UCurveVector* FlickeringLightCurve
+	);
+	UFUNCTION( BlueprintCallable, Category = "Light" )
+	void FlickerLights(
+		const TArray<ULightComponent*>& Lights,
+		float MaxDistance,
+		const FVector& Origin,
+		UCurveVector* FlickeringLightCurve
+	);
 
 	UFUNCTION( BlueprintCallable, Category = "Light" )
 	void RegisterLight( ULightComponent* LightComponent );

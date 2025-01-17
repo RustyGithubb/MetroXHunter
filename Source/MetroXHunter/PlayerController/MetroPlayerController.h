@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "PlayerInputHandler.h"
+#include "Debug/TickDebugger.h"
 #include "MetroPlayerController.generated.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
@@ -18,7 +19,8 @@ class UCharacterControllerComponent;
  * Player Controller of the unique MetroXHunter game
  */
 UCLASS()
-class METROXHUNTER_API AMetroPlayerController : public APlayerController, public IPlayerInputHandler
+class METROXHUNTER_API AMetroPlayerController :
+	public APlayerController, public IPlayerInputHandler, public ITickDebugger
 {
 	GENERATED_BODY()
 
@@ -32,10 +34,13 @@ public:
 	void RevertInputMappingContext_Implementation( UInputMappingContext* MappingContext ) override;
 	// End IPlayerInputHandler interface
 
+	// Start ITickDebugger interface
+	void TickDebug_Implementation( float DeltaTime, FString& OutDebugText ) override;
+	// End ITickDebugger interface
+	
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerController|Inputs" )
-	TSoftObjectPtr<UInputMappingContext> DefaultMappingContext = nullptr;
-	UInputMappingContext* LastMappingContext = nullptr;
+	TArray<TSoftObjectPtr<UInputMappingContext>> DefaultMappingContexts {};
 
 	UEnhancedInputLocalPlayerSubsystem* InputSystem;
 
@@ -43,4 +48,7 @@ protected:
 	AMetroPlayerCharacter* PlayerCharacter = nullptr;
 	UGunControllerComponent* GunController = nullptr;
 	UCharacterControllerComponent* CharacterController = nullptr;
+
+	UInputMappingContext* LastOverriddenMappingContext = nullptr;
+	bool bAreDefaultMappingContextsActive = false;
 };

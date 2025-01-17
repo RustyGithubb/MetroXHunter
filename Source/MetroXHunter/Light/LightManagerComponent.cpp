@@ -144,29 +144,19 @@ void ULightManagerComponent::TickDebug_Implementation( float DeltaTime, FString&
 	OutDebugText = FString::Format( Format, Args );
 }
 
-void ULightManagerComponent::FlickeringLights(
+void ULightManagerComponent::FlickerLightsInRadius(
 	float Radius,
 	const FVector& Origin,
 	UCurveVector* FlickeringLightCurve
 )
 {
-	if ( LightFunctions.IsEmpty() || !IsValid( FlickeringLightCurve ) ) return;
-
-	const float StartWorldTime = GetWorld()->GetTimeSeconds();
-
-	float MinCurveTime = 0.0f, MaxCurveTime = 0.0f;
-	FlickeringLightCurve->GetTimeRange( MinCurveTime, MaxCurveTime );
-
-	if ( bShouldDebug )
-	{
-		DrawDebugSphere( GetWorld(), Origin, Radius, 32, FColor::Green, false, 5.0f, 0, 2.0f );
-	}
+	TArray<ULightComponent*> LightsToFlicker {};
 
 	// Compute maximum distance out of all potential lights
 	float MaxDistance = 0.0f;
 	for ( auto Itr = DetectedLights.CreateIterator(); Itr; ++Itr )
 	{
-		const ULightComponent* LightComponent = *Itr;
+		ULightComponent* LightComponent = *Itr;
 
 		// Remove invalid light components
 		if ( !IsValid( LightComponent ) )
@@ -175,17 +165,57 @@ void ULightManagerComponent::FlickeringLights(
 			continue;
 		}
 
-		float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
+		const float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
 		if ( Distance > Radius ) continue;
 
+		LightsToFlicker.Add( LightComponent );
 		MaxDistance = FMath::Max( MaxDistance, Distance );
 	}
 
-	// Flick all lights passing conditions
-	for ( ULightComponent* LightComponent : DetectedLights )
+	if ( bShouldDebug )
 	{
-		float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
-		if ( Distance > Radius ) continue;
+		DrawDebugSphere( GetWorld(), Origin, Radius, 32, FColor::Green, false, 5.0f, 0, 2.0f );
+	}
+
+	FlickerLights( LightsToFlicker, MaxDistance, Origin, FlickeringLightCurve );
+}
+
+void ULightManagerComponent::FlickerLightsInArray(
+	const TArray<ULightComponent*>& Lights,
+	const FVector& Origin,
+	UCurveVector* FlickeringLightCurve
+)
+{
+	// Compute maximum distance out of all lights
+	float MaxDistance = 0.0f;
+	for ( const ULightComponent* LightComponent : Lights )
+	{
+		const float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
+		MaxDistance = FMath::Max( MaxDistance, Distance );
+	}
+
+	FlickerLights( Lights, MaxDistance, Origin, FlickeringLightCurve );
+}
+
+void ULightManagerComponent::FlickerLights(
+	const TArray<ULightComponent*>& Lights,
+	const float MaxDistance,
+	const FVector& Origin,
+	UCurveVector* FlickeringLightCurve
+)
+{
+	verify( !LightFunctions.IsEmpty() );
+	verify( IsValid( FlickeringLightCurve ) );
+
+	const float StartWorldTime = GetWorld()->GetTimeSeconds();
+
+	float MinCurveTime = 0.0f, MaxCurveTime = 0.0f;
+	FlickeringLightCurve->GetTimeRange( MinCurveTime, MaxCurveTime );
+
+	// Flick all lights passing conditions
+	for ( ULightComponent* LightComponent : Lights )
+	{
+		const float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
 
 		// First try to find an existing LightData to the LightComponent
 		FLightData* LightData = FlickeringLightsData.Find( LightComponent );

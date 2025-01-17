@@ -10,8 +10,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "Library/UtilityLibrary.h"
-
 UGunControllerComponent::UGunControllerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -25,17 +23,18 @@ void UGunControllerComponent::TickComponent( float DeltaTime, ELevelTick TickTyp
 void UGunControllerComponent::SetupInputComponent( AMetroPlayerCharacter* InPlayer, TObjectPtr<class UInputComponent> InputComponent )
 {
 	Player = InPlayer;
-	Springfield = Player->Springfield;
+	Springfield = Cast<AGun>(Player->BaseGun);
 
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent );
 
 	if ( EnhancedInputComponent )
 	{
-		// Moving
+		// Shooting
 		EnhancedInputComponent->BindAction( ShootAction, ETriggerEvent::Started, this, &UGunControllerComponent::OnShootActionPressed );
 		EnhancedInputComponent->BindAction( ShootAction, ETriggerEvent::Triggered, this, &UGunControllerComponent::OnShootActionTriggered );
+		EnhancedInputComponent->BindAction( ShootAction, ETriggerEvent::Completed, this, &UGunControllerComponent::OnShootActionCompleted );
 
-		// Toggle Run
+		// Switch weapon
 		EnhancedInputComponent->BindAction( SwitchGunModeAction, ETriggerEvent::Started, Springfield, &AGun::SwitchWeapon );
 	}
 }
@@ -61,9 +60,23 @@ void UGunControllerComponent::OnShootActionPressed()
 	}
 }
 
-void UGunControllerComponent::OnShootActionTriggered()
+void UGunControllerComponent::OnShootActionTriggered( const FInputActionValue& Value )
 {
 	if ( Springfield->GunMode != EGunMode::Lightning ) return;
 
-	// Check if aiming
+	if ( Player->bIsAiming )
+	{
+		Springfield->OnLightningAbility( Value.Get<float>());
+	}
+	else
+	{
+		Springfield->OnLightningEnd();
+	}
+}
+
+void UGunControllerComponent::OnShootActionCompleted()
+{
+	if ( Springfield->GunMode != EGunMode::Lightning ) return;
+
+	Springfield->OnLightningEnd();
 }

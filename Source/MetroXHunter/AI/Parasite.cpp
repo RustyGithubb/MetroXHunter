@@ -87,9 +87,9 @@ bool AParasite::TakeDamage_Implementation( UPARAM( ref ) FDamageContext& DamageC
 	return true;
 }
 
-bool AParasite::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+bool AParasite::IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType )
 {
-	return true;
+	return HealthComponent->IsAlive();
 }
 
 FVector AParasite::GetEQSStartLocation_Implementation() const

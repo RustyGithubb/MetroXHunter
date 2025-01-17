@@ -623,7 +623,7 @@ bool FDualSenseInputDevice::QueryControllers()
 	if ( ControllersCount == 0 )
 	{
 		UE_LOG(
-			LogDualSensePlugin, Warning,
+			LogDualSensePlugin, Log,
 			TEXT( "Failed to query the controllers: no controller available" )
 		);
 		return false;

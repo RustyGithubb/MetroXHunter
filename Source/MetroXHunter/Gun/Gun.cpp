@@ -9,12 +9,14 @@
 #include "Gun/GunData.h"
 
 #include "Camera/CameraShakeSourceComponent.h"
+#include "CineCameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Sound/SoundBase.h"
 #include "Library/GameplayLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AGun::AGun()
 {
@@ -38,15 +40,24 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Late Begin Play
+	GetWorld()->OnWorldBeginPlay.AddUObject( this, &AGun::LateBeginPlay );
+}
+
+void AGun::LateBeginPlay()
+{
 	GetReferences();
+	GetNiagaraEffects();
 }
 
 void AGun::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
+
+	CheckCurrentTargetType();
 }
 
-bool AGun::CanFire()
+bool AGun::HandleCanFire()
 {
 	switch ( GunMode )
 	{
@@ -90,6 +101,33 @@ bool AGun::CanFire()
 	return false;
 }
 
+void AGun::RetrieveFirstBeamHit()
+{
+	EnemiesTargeted.Empty();
+
+	FVector ImpactPoint {};
+	FHitResult HitResult {};
+	CheckSphereCollision( true, GunData->LightningDistance, ImpactPoint, HitResult, 20.0f );
+
+	if ( HitResult.bBlockingHit )
+	{
+		EnemiesTargeted.Add( HitResult.GetActor() );
+		RetrieveReflectedEnemies( ImpactPoint );
+	}
+	else
+	{
+		FVector WorldLocation = PlayerCharacter->CineCameraComponent->GetComponentLocation();
+		FVector ForwardVector = PlayerCharacter->CineCameraComponent->GetForwardVector();
+
+		ImpactPoint = WorldLocation + ( ForwardVector * GunData->LightningDistance );
+	}
+
+	TriggerLightningBeam( ImpactPoint );
+	bIsLightningActive = true;
+
+	// TODO: ADD FORCE FEEDBACK (HAPTIC)
+}
+
 void AGun::SwitchWeapon()
 {
 	// TODO: ADD FORCE FEEDBACK (HAPTIC)
@@ -121,11 +159,15 @@ void AGun::SwitchWeapon()
 			break;
 		}
 	}
+
+	OnToggleWeaponMode.Broadcast( GunMode );
 }
 
 void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 {
-	if ( !CanFire() ) return;
+	if ( !HandleCanFire() ) return;
+
+	OnBulletShoot.Broadcast();
 
 	// Update shoot cooldown
 	ShootCurentCooldown = UKismetSystemLibrary::GetGameTimeInSeconds( GetWorld() );
@@ -143,10 +185,9 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 	// Play Shooting Sound
 	UGameplayStatics::PlaySound2D( GetWorld(), GunData->ShootSound );
 
-	// Retrieve Hit Actor & Impact point
 	FVector ImpactPoint {};
 	FHitResult HitResult {};
-	CheckLineCollision( true, ImpactDirection, ImpactPoint, HitResult );
+	CheckLineCollision( true, ImpactDirection, GunData->ShootingDistance ,ImpactPoint, HitResult );
 
 	if ( !HitResult.bBlockingHit ) return;
 	FVector NormalHit = HitResult.Normal;
@@ -219,7 +260,7 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 	}
 
 	// Spawn system muzzle flash
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+	UNiagaraComponent* MuzzleFlash = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 		GetWorld(),
 		GunData->MuzzleFlashNiagaraSystem,
 		ShootPoint->GetComponentTransform().GetLocation(),
@@ -231,14 +272,58 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 
 void AGun::OnLightningStart()
 {
+	if ( CurrentEnergyAmount <= 0 ) return;
+
+	// TODO: SET RIGHT TRIGGER EFFECT (HAPTIC)
+
+	// Activate Preload Lightning Niagara Effect
+	PreloadLightningNiagara->SetVisibility( true );
+	PreloadLightningNiagara->Activate();
+
+	PlayLightningChargeTimeline();
 }
 
-void AGun::OnLightningAbility()
+void AGun::OnLightningAbility( float ActionValue )
 {
+	if ( !bIsLightningCharged ) return;
+
+	ChargingWeight = ActionValue;
+
+	if ( CurrentEnergyAmount <= 0 )
+	{
+		UpdateCrossHairStopLightning();
+		OnLightningEnd();
+		return;
+	}
+
+	UpdateCrossHairOnLightning();
+	RetrieveFirstBeamHit();
+	TriggerEnvironmentFlickering();
 }
 
 void AGun::OnLightningEnd()
 {
+	StopSound(); // Shouldn't we play an ending sound instead ?
+
+	if ( !bIsLightningActive )
+	{
+		ReverseLightningChargeTimeline();
+		return;
+	}
+
+	DeactivateAllEmitters();
+	UpdateCrossHairStopLightning();
+
+	bIsLightningCharged = false;
+	bIsLightningActive = false;
+	LightningChargeValue = 0.0f;
+
+	LightningOrbNiagara->SetVisibility( false );
+	LightningOrbNiagara->Deactivate();
+
+	// STOP VIBRATION
+	StopCameraAnimation();
+	StopLightningChargeTimeline();
 }
 
 void AGun::GetReferences()
@@ -247,5 +332,42 @@ void AGun::GetReferences()
 	ReloadComponent = PlayerCharacter->GetComponentByClass<UReloadComponent>();
 
 	ActorsToIgnore.Add( PlayerCharacter );
+}
+
+void AGun::CheckCurrentTargetType()
+{
+	if ( !PlayerCharacter->bIsAiming ) return;
+
+	UHealthComponent* HealthComponent = nullptr;
+	FVector ImpactDirection = PlayerCharacter->CineCameraComponent->GetForwardVector();
+
+	FVector ImpactPoint {};
+	FHitResult HitResult {};
+
+	switch ( GunMode )
+	{
+		case EGunMode::Bullet:
+		{
+			CheckLineCollision( false, ImpactDirection, GunData->ShootingDistance, ImpactPoint, HitResult );
+			if ( !IsValid( HitResult.GetActor() ) ) break;
+
+			HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
+			break;
+		}
+		case EGunMode::Lightning:
+		{
+			CheckSphereCollision( false, GunData->LightningDistance ,ImpactPoint, HitResult, 20.0f );
+			if ( !IsValid( HitResult.GetActor() ) ) break;
+
+			HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
+			break;
+		}
+	}
+
+	if ( LastAimTarget != HealthComponent )
+	{
+		OnAimTargetChanged.Broadcast( HealthComponent );
+		LastAimTarget = HealthComponent;
+	}
 }
 

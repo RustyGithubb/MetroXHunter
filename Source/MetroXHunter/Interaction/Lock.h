@@ -27,7 +27,7 @@ public:
 
 	// Begin IHealthHolder interface
 	bool TakeDamage_Implementation( UPARAM( ref ) FDamageContext& DamageContext ) override;
-	bool CanCallTakeDamage_Implementation( const FDamageContext& DamageContext ) override;
+	bool IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType ) override;
 	// End IHealthHolder interface
 
 public:

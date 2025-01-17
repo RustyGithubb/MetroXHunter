@@ -62,9 +62,6 @@ public:
 	UPROPERTY( BlueprintReadWrite, Category = "Electrocutable" )
 	TArray<USceneComponent*> FXAttachmentComponents {};
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Electrocutable" )
-	UNiagaraSystem* LightningFX = nullptr;
-
 	UPROPERTY( BlueprintReadWrite, Category = "Electrocutable" )
 	TArray<USkeletalMeshComponent*> GigglingSkeletalComponents {};
 
@@ -91,6 +88,11 @@ public:
 private:
 	UPROPERTY()
 	TArray<UNiagaraComponent*> FXPlayingComponents {};
+
+	UPROPERTY()
+	UNiagaraSystem* SkeletalLightningFX = nullptr;
+	UPROPERTY()
+	UNiagaraSystem* StaticLightningFX = nullptr;
 
 	bool bIsFXPlaying = false;
 

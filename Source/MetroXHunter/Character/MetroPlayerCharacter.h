@@ -5,17 +5,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseMetroPlayerCharacter.h"
 #include "MetroPlayerCharacter.generated.h"
 
 class UCineCameraComponent;
 class USpringArmComponent;
 class UReloadComponent;
 class UInventoryComponent;
+class UHealthComponent;
+class UDualSenseControllerComponent;
 class AGun;
 
 UCLASS()
-class METROXHUNTER_API AMetroPlayerCharacter : public ACharacter
+class METROXHUNTER_API AMetroPlayerCharacter : public ABaseMetroPlayerCharacter
 {
 	GENERATED_BODY()
 
@@ -47,17 +49,29 @@ public:
 	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Weapon" )
 	void EquipWeapon(bool bShouldEquip);
 
+	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
+	void UpdateCrossHairOnMovement( float MovementSpeed );
+	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
+	void UpdateCrossHairOnLightning( float MovementSpeed );
+	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
+	void UpdateCrossHairStopLightning( float MovementSpeed );
+
+	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
+	void UseSyringe();
+
+	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
+	void StompKick();
+
+	UFUNCTION( BlueprintCallable, Category = "PlayerCharacter|Aim" )
+	void StartAiming();
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Aim" )
 	void StartAimAssist();
+	UFUNCTION( BlueprintCallable, Category = "PlayerCharacter|Aim" )
+	void StopAiming();
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Aim" )
 	void StopAimAssist();
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Aim" )
 	FVector GetAdjustedImpactPoint();
-
-public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnHealFailed );
-	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "PlayerCharacter|Heal" )
-	FOnHealFailed OnHealFailed;
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Camera" )
@@ -82,11 +96,15 @@ public:
 	float ShootingImprecisionValue = 1.0f;
 
 	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|Reference" )
-	AGun* Springfield = nullptr;
+	AActor* Bobine = nullptr;
 
 protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Reload" )
 	UReloadComponent* ReloadComponent = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Inventory" )
 	UInventoryComponent* InventoryComponent = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Health" )
+	UHealthComponent* HealthComponent = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|DualSens" )
+	UDualSenseControllerComponent* DualSenseComponent;
 };

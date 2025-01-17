@@ -5,89 +5,129 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Gun/BaseGun.h"
 #include "Gun.generated.h"
 
 class UCameraShakeSourceComponent;
 class USkeletalMeshComponent;
+class UNiagaraComponent;
+class USoundBase;
 class UGunData;
 class UReloadComponent;
+class UHealthComponent;
 class AMetroPlayerCharacter;
 
-UENUM( BlueprintType )
-enum class EGunMode : uint8
-{
-	Bullet,
-	Lightning,
-};
-
 UCLASS()
-class METROXHUNTER_API AGun : public AActor
+class METROXHUNTER_API AGun : public ABaseGun
 {
 	GENERATED_BODY()
 
 public:
 	AGun();
 	virtual void BeginPlay() override;
+	void LateBeginPlay();
 	virtual void Tick( float DeltaTime ) override;
 
-	UFUNCTION( BlueprintCallable, BlueprintPure )
-	bool CanFire();
-
 public:
-	UFUNCTION( BlueprintCallable )
+	UFUNCTION( BlueprintCallable, Category = "Gun" )
 	void SwitchWeapon();
-	UFUNCTION( BlueprintCallable )
+
+	UFUNCTION( BlueprintCallable, Category = "Gun|ShootAbility" )
 	void TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection );
-	UFUNCTION( BlueprintCallable )
+
+	UFUNCTION( BlueprintCallable, Category = "Gun|LightningAbility" )
 	void OnLightningStart();
-	UFUNCTION( BlueprintCallable )
-	void OnLightningAbility();
-	UFUNCTION( BlueprintCallable )
+	UFUNCTION( BlueprintCallable, Category = "Gun|LightningAbility" )
+	void OnLightningAbility( float ActionValue );
+	UFUNCTION( BlueprintCallable, Category = "Gun|LightningAbility" )
 	void OnLightningEnd();
+	UFUNCTION( BlueprintImplementableEvent, category = "Gun|LightningAbility" )
+	void DeactivateAllEmitters();
 
 public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Gun" )
 	USceneComponent* SceneRoot = nullptr;
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Gun" )
-	USceneComponent* ShootPoint = nullptr;
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Gun" )
 	UCameraShakeSourceComponent* CameraShakeSourceComponent = nullptr;
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Gun" )
 	USkeletalMeshComponent* WeaponSkeletonMesh = nullptr;
 
-	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunMode" )
-	EGunMode GunMode = EGunMode::Bullet;
-	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData" )
-	UGunData* GunData = nullptr;
-	UPROPERTY( BlueprintReadWrite, Category = "Gun|References" )
-	UReloadComponent* ReloadComponent = nullptr;
-
 protected:
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable )
-	void CheckLineCollision( bool bUseMovementImprecision, UPARAM( ref ) FVector& ImpactDirection, FVector& ImpactionPoint, FHitResult& HitResult );
-	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable )
-	void CheckSphereCollision( 
+	void CheckLineCollision(
 		bool bUseMovementImprecision,
+		UPARAM( ref ) FVector& ImpactDirection,
+		float Range,
+		FVector& ImpactionPoint,
+		FHitResult& HitResult
+	);
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable )
+	void CheckSphereCollision(
+		bool bUseMovementImprecision,
+		float Range,
 		FVector& ImpactionPoint,
 		FHitResult& HitResult,
 		float SphereRadius = 20.0f
 	);
 
+	UFUNCTION( BlueprintImplementableEvent )
+	void GetNiagaraEffects();
+
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
+	void RetrieveReflectedEnemies( UPARAM( ref ) FVector& ImpactionPoint );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
+	void TriggerLightningBeam( UPARAM( ref ) FVector& ImpactionPoint );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
+	void TriggerEnvironmentFlickering( );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
+	void PlayLightningChargeTimeline();
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
+	void StopLightningChargeTimeline();
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
+	void ReverseLightningChargeTimeline();
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility|UI" )
+	void UpdateCrossHairStopLightning();
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility|UI" )
+	void UpdateCrossHairOnLightning();
+
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Miscellaneous" )
+	void PlaySound( USoundBase* SoundToPlay, bool bShouldOverrideSound );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Miscellaneous" )
+	void StopSound();
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Miscellaneous" )
+	void StopCameraAnimation();
+
 protected:
 	UPROPERTY( BlueprintReadOnly, Category = "Gun|GunData|ShootAbility" )
 	float ShootCurentCooldown = 0.0f;
 
-	UPROPERTY( BlueprintReadOnly, Category = "Gun|GunData|LightningAbility" )
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
 	bool bIsLightningCharged = false;
-	UPROPERTY( BlueprintReadOnly, Category = "Gun|GunData|LightningAbility" )
-	float CurrentEnergyAmount = 0;
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
+	bool bIsLightningActive = false;
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
+	float LightningTimer = 0.0f;
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|LightningAbility" )
+	TMap<AActor*, AActor*> EnemiesTargeted {};
+
 	UPROPERTY( BlueprintReadOnly, Category = "Gun|SphereCast" )
-	TArray<AActor*> ActorsToIgnore;
+	TArray<AActor*> ActorsToIgnore {};
 
 	UPROPERTY( BlueprintReadOnly, Category = "Gun|References" )
 	AMetroPlayerCharacter* PlayerCharacter = nullptr;
+	UPROPERTY( BlueprintReadOnly, Category = "Gun|References" )
+	UReloadComponent* ReloadComponent = nullptr;
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|References" )
+	UNiagaraComponent* PreloadLightningNiagara = nullptr;
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|References" )
+	UNiagaraComponent* LightningOrbNiagara = nullptr;
 
 private:
 	void GetReferences();
+	void CheckCurrentTargetType();
+	bool HandleCanFire();
+	void RetrieveFirstBeamHit();
+
+private:
+	UHealthComponent* LastAimTarget = nullptr;
 };

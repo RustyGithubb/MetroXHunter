@@ -50,35 +50,104 @@ void AMetroPlayerController::SetInputMappingContext_Implementation( UInputMappin
 		DispatchBeginPlay();
 	}
 
-	verifyf(
-		IsValid( InputSystem ),
-		TEXT( "MetroPlayerController: InputSystem isn't valid yet, are you using it too early?" )
-	);
+	verify( IsValid( InputSystem ) );
 	verifyf(
 		IsValid( NewMappingContext ),
 		TEXT( "MetroPlayerController: Trying to set the input mapping context to an invalid asset" )
 	);
 
 	// Remove the latest switched mapping context
-	if ( LastMappingContext != nullptr )
+	if ( LastOverriddenMappingContext != nullptr )
 	{
-		InputSystem->RemoveMappingContext( LastMappingContext );
+		InputSystem->RemoveMappingContext( LastOverriddenMappingContext );
+	}
+
+	// Remove default mapping contexts
+	if ( bAreDefaultMappingContextsActive )
+	{
+		for ( const TSoftObjectPtr<UInputMappingContext>& SoftMappingContext : DefaultMappingContexts )
+		{
+			const UInputMappingContext* MappingContext = SoftMappingContext.LoadSynchronous();
+
+			verifyf(
+				IsValid( MappingContext ),
+				TEXT( "MetroPlayerController: Trying to remove a default input mapping context from an invalid asset" )
+			);
+
+			InputSystem->RemoveMappingContext( MappingContext );
+		}
+		bAreDefaultMappingContextsActive = false;
 	}
 
 	// Switch to the new mapping context
 	InputSystem->AddMappingContext( NewMappingContext, 0 );
-	LastMappingContext = NewMappingContext;
+	LastOverriddenMappingContext = NewMappingContext;
 }
 
 void AMetroPlayerController::ResetInputMappingContext_Implementation()
 {
-	SetInputMappingContext_Implementation( DefaultMappingContext.LoadSynchronous() );
+	if ( bAreDefaultMappingContextsActive ) return;
+
+	// Ensure player controller is initialized before using it.
+	if ( !HasActorBegunPlay() )
+	{
+		DispatchBeginPlay();
+	}
+
+	verify( IsValid( InputSystem ) );
+
+	// Remove the latest switched mapping context
+	if ( LastOverriddenMappingContext != nullptr )
+	{
+		InputSystem->RemoveMappingContext( LastOverriddenMappingContext );
+	}
+	LastOverriddenMappingContext = nullptr;
+
+	// Add default mapping contexts
+	for ( const TSoftObjectPtr<UInputMappingContext>& SoftMappingContext : DefaultMappingContexts )
+	{
+		const UInputMappingContext* MappingContext = SoftMappingContext.LoadSynchronous();
+
+		verifyf(
+			IsValid( MappingContext ),
+			TEXT( "MetroPlayerController: Trying to add a default input mapping context from an invalid asset" )
+		);
+
+		InputSystem->AddMappingContext( MappingContext, 0 );
+	}
+	bAreDefaultMappingContextsActive = true;
 }
 
 void AMetroPlayerController::RevertInputMappingContext_Implementation( UInputMappingContext* MappingContext )
 {
-	if ( LastMappingContext == MappingContext )
+	if ( LastOverriddenMappingContext == MappingContext )
 	{
 		ResetInputMappingContext_Implementation();
 	}
+}
+
+void AMetroPlayerController::TickDebug_Implementation( float DeltaTime, FString& OutDebugText )
+{
+	FString DefaultMappingContextsString = "";
+	for ( const TSoftObjectPtr<UInputMappingContext>& SoftMappingContext : DefaultMappingContexts )
+	{
+		DefaultMappingContextsString += "- " + GetNameSafe( SoftMappingContext.Get() ) + "\n";
+	}
+
+	// Constructs formating arguments
+	FStringFormatNamedArguments Args {};
+	Args.Add( "bAreDefaultMappingContextsActive", bAreDefaultMappingContextsActive ? "true" : "false" );
+	Args.Add( "LastOverriddenMappingContext", GetNameSafe( LastOverriddenMappingContext ) );
+	Args.Add( "DefaultMappingContexts", DefaultMappingContextsString );
+	Args.Add( "DefaultMappingContextsCount", DefaultMappingContexts.Num() );
+
+	// Formats debug string
+	constexpr auto Format = TEXT(
+		"[MetroPlayerController]\n"
+		"bAreDefaultMappingContextsActive: {bAreDefaultMappingContextsActive}\n"
+		"LastOverriddenMappingContext: {LastOverriddenMappingContext}\n"
+		"DefaultMappingContexts[{DefaultMappingContextsCount}]\n"
+		"{DefaultMappingContexts}\n"
+	);
+	OutDebugText = FString::Format( Format, Args );
 }

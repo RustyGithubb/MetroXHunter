@@ -4,6 +4,17 @@
 
 #include "HealthComponent.h"
 
+bool IHealthHolder::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+{
+	return true;
+}
+
+bool IHealthHolder::IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType )
+{
+	return true;
+}
+
+
 UHealthComponent::UHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -87,4 +98,9 @@ void UHealthComponent::Reset()
 bool UHealthComponent::IsAlive() const
 {
 	return !bIsDead;
+}
+
+bool UHealthComponent::HasHealthHolderInterface() const
+{
+	return bHasHealthHolder;
 }

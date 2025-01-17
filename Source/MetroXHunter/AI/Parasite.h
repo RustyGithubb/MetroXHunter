@@ -33,7 +33,7 @@ public:
 
 	// Begin IHealthHolder interface
 	bool TakeDamage_Implementation( UPARAM( ref ) FDamageContext& DamageContext );
-	bool CanCallTakeDamage_Implementation( const FDamageContext& DamageContext );
+	bool IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType ) override;
 	// End IHealthHolder interface
 
 	// Begin IEQSContextProvider interface

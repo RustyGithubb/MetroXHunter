@@ -5,6 +5,8 @@
 #include "Character/MetroPlayerCharacter.h"
 #include "Reload/ReloadComponent.h"
 #include "Inventory/InventoryComponent.h"
+#include "Health/HealthComponent.h"
+#include "DualSenseControllerComponent.h"
 
 #include "CineCameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -25,6 +27,8 @@ AMetroPlayerCharacter::AMetroPlayerCharacter()
 
 	ReloadComponent = CreateDefaultSubobject<UReloadComponent>( TEXT( "Reload" ) );
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>( TEXT( "Inventory" ) );
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health" ) );
+	DualSenseComponent = CreateDefaultSubobject<UDualSenseControllerComponent>( TEXT( "DualSenseControllerComponent" ) );
 }
 
 void AMetroPlayerCharacter::BeginPlay()
@@ -47,3 +51,21 @@ void AMetroPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AMetroPlayerCharacter::StartAiming()
+{
+	bIsAiming = true;
+	StartAimAssist();
+	UpdateCameraFocal();
+
+	OnAim.Broadcast( bIsAiming );
+}
+
+void AMetroPlayerCharacter::StopAiming()
+{
+	bIsAiming = false;
+	StopAimAssist();
+	ResetCameraFocal();
+	ResetCameraFocusPoint();
+
+	OnAim.Broadcast( bIsAiming );
+}

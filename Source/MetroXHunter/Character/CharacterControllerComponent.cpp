@@ -33,6 +33,7 @@ void UCharacterControllerComponent::SetupInputComponent( AMetroPlayerCharacter* 
 	if ( UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>( InputComponent ) )
 	{
 		// Moving
+		EnhancedInputComponent->BindAction( MovementAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::OnMoveInputStart );
 		EnhancedInputComponent->BindAction( MovementAction, ETriggerEvent::Triggered, this, &UCharacterControllerComponent::Move );
 		EnhancedInputComponent->BindAction( MovementAction, ETriggerEvent::Completed, this, &UCharacterControllerComponent::OnMoveInputReleased );
 		EnhancedInputComponent->BindAction( MovementAction, ETriggerEvent::Canceled, this, &UCharacterControllerComponent::OnMoveInputReleased );
@@ -46,6 +47,12 @@ void UCharacterControllerComponent::SetupInputComponent( AMetroPlayerCharacter* 
 		// Aim
 		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::ToggleAim );
 		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Completed, this, &UCharacterControllerComponent::ToggleAim );
+
+		// Heal
+		EnhancedInputComponent->BindAction( HealAction, ETriggerEvent::Completed, Player, &AMetroPlayerCharacter::UseSyringe );
+
+		// Stomp
+		EnhancedInputComponent->BindAction( StompAction, ETriggerEvent::Started, Player, &AMetroPlayerCharacter::StompKick);
 	}
 
 	SetupDefaultValues();
@@ -77,10 +84,18 @@ FVector2D UCharacterControllerComponent::GetInputDirection()
 	return Player->InputDirection;
 }
 
+void UCharacterControllerComponent::OnMoveInputStart( const FInputActionValue& Value )
+{
+	Player->UpdateCrossHairOnMovement( CrossHairTranslationStrength );
+
+	HandleToggleRun();
+}
+
 void UCharacterControllerComponent::Move( const FInputActionValue& Value )
 {
 	if ( !bCanMove ) return;
 
+	bIsMoving = true;
 	Player->GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
 	// Get input action value
@@ -99,18 +114,10 @@ void UCharacterControllerComponent::Move( const FInputActionValue& Value )
 	Player->AddMovementInput( MovementDirection * ScalarMovement );
 
 	// Update Shooting Imprecision value
-	switch ( CurrentMovementState )
+	// We don't update when running as we can't shoot while running
+	if ( CurrentMovementState == EMovementState::Walk )
 	{
-		case EMovementState::Walk:
-		{
-			Player->ShootingImprecisionValue = 600.0f * Value.GetMagnitude();
-			break;
-		}
-		case EMovementState::Run:
-		{
-			Player->ShootingImprecisionValue = 1000.0f * Value.GetMagnitude();
-			break;
-		}
+		Player->ShootingImprecisionValue = 150 * Player->InputDirection.Length();
 	}
 }
 
@@ -118,33 +125,44 @@ void UCharacterControllerComponent::ToggleRun()
 {
 	if ( Player->bIsAiming || !bCanRun ) return;
 
-	switch ( CurrentMovementState )
-	{
-	case EMovementState::Walk:
+	bIsRunning = !bIsRunning;
+
+	if ( !bIsMoving ) return;
+
+	HandleToggleRun();
+}
+
+void UCharacterControllerComponent::HandleToggleRun()
+{
+	if ( bIsRunning )
 	{
 		CurrentMovementState = EMovementState::Run;
 		Player->GetCharacterMovement()->MaxWalkSpeed = PlayerMovementData->DefaultRunSpeed;
 		Player->UpdateTargetArmLength( PlayerMovementData->RunTargetArmLength );
-		break;
 	}
-	case EMovementState::Run:
+	else
 	{
 		CurrentMovementState = EMovementState::Walk;
 		Player->GetCharacterMovement()->MaxWalkSpeed = PlayerMovementData->DefaultWalkSpeed;
 		Player->UpdateTargetArmLength( PlayerMovementData->WalkTargetArmLength );
-		break;
 	}
-	}
+
+	OnMovementStateUpdate.Broadcast( CurrentMovementState );
 }
 
 void UCharacterControllerComponent::OnMoveInputReleased()
 {
+	bIsMoving = false;
+	Player->UpdateCrossHairOnMovement( 0.0f );
 	Player->ShootingImprecisionValue = 0.0f;
 
 	Player->GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	Player->UpdateTargetArmLength( PlayerMovementData->IdleTargetArmLength );
 
 	Player->InputDirection = FVector2D::Zero();
+
+	CurrentMovementState = EMovementState::Idle;
+	OnMovementStateUpdate.Broadcast( CurrentMovementState );
 }
 
 // TO DO: USE A SECOND CURVE DEPENDING ON DELTA TIME FOR THE ROTATION
@@ -177,26 +195,16 @@ void UCharacterControllerComponent::ToggleAim( const FInputActionValue& Value )
 			bWasRunning = false;
 		}
 
-		Player->bIsAiming = true;
-		Player->StartAimAssist();
-		Player->UpdateCameraFocal();
+		Player->StartAiming();
 	}
 	else
 	{
-		Player->bIsAiming = false;
-		Player->StopAimAssist();
+		Player->StopAiming();
 
 		if ( bWasRunning )
 		{
 			ToggleRun();
 		}
-
-		Player->ResetCameraFocal();
-		Player->ResetCameraFocusPoint();
-
-		// STOP AIM ASSIST
-		// RESTORE RUNNING (if was running)
 	}
-
 }
 

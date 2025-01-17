@@ -18,6 +18,8 @@ enum class EMovementState : uint8
 {
 	Walk,
 	Run,
+
+	Idle,
 };
 
 
@@ -39,9 +41,14 @@ public:
 	void ToggleFreezeRotation( bool bShouldFreeze );
 	UFUNCTION( BlueprintCallable, Category = "CharacterController|Movement" )
 	void ToggleFreezeRun( bool bShouldFreeze );
-
 	UFUNCTION( BlueprintCallable, Category = "CharacterController|Movement" )
 	FVector2D GetInputDirection();
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnMovementStateUpdate, EMovementState, MovementState );
+	UPROPERTY( BlueprintCallable, BlueprintAssignable, Category = "PlayerCharacter|Event|Movement" )
+	FOnMovementStateUpdate OnMovementStateUpdate;
+
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Movement" )
@@ -59,25 +66,37 @@ public:
 	UInputAction* LookAction = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Ability|Input" )
+	UInputAction* StompAction = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Ability|Input" )
 	UInputAction* AimAction = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Ability|Input" )
+	UInputAction* HealAction = nullptr;
+
+protected:
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|HUD" )
+	float CrossHairTranslationStrength = 10.0f;
 
 private:
 	void SetupDefaultValues();
 
+	void OnMoveInputStart( const FInputActionValue& Value );
 	void Move( const FInputActionValue& Value );
 	void OnMoveInputReleased();
 	void ToggleRun();
+	void HandleToggleRun();
 	void Look( const FInputActionValue& Value );
 	void ToggleAim( const FInputActionValue& Value );
 
 private:
 	AMetroPlayerCharacter* Player = nullptr;
 
-	EMovementState CurrentMovementState = EMovementState::Walk;
+	EMovementState CurrentMovementState = EMovementState::Idle;
 
 	bool bCanMove = true;
 	bool bCanRotate = true;
 	bool bCanRun = true;
+	bool bIsRunning = false;
+	bool bIsMoving = false;
 
 	bool bWasRunning = false;
 };

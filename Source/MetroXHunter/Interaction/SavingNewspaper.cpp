@@ -7,10 +7,15 @@
 
 #include "Library/UtilityLibrary.h"
 
-void ASavingNewspaper::Interact()
+void ASavingNewspaper::Save()
 {
 	auto GameInstance = CastChecked<UMetroGameInstance>( GetGameInstance() );
 	GameInstance->SaveLevel();
 
-	UUtilityLibrary::PrintMessage( TEXT( "You have saved your progress (kinda)!" ) );
+	UUtilityLibrary::PrintMessage( TEXT( "SavingNewspaper: Saved player's progress" ) );
+}
+
+void ASavingNewspaper::Interact()
+{
+	// Everything is coded inside the blueprint
 }

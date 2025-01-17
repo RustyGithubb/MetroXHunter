@@ -111,6 +111,11 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset, AA
 			PlayerController,
 			InputMappingContext.LoadSynchronous()
 		);
+
+		// Make sure the input action is loaded to compare it in OnInput
+		// Without it (and especially the Get for the comparison in OnInput), it created issues
+		// in build where it was impossible to send any inputs
+		DataAsset->InputAction.LoadSynchronous();
 	}
 
 	SetComponentTickEnabled( true );
@@ -210,7 +215,7 @@ void UQuickTimeEventComponent::OnInput( const FInputActionInstance& InputInstanc
 	if ( GetEventTime() < 0.0f ) return;
 
 	// Compare current input to the one from DataAsset
-	if ( InputInstance.GetSourceAction() != DataAsset->InputAction ) return;
+	if ( InputInstance.GetSourceAction() != DataAsset->InputAction.Get() ) return;
 
 	InputProgress += DataAsset->ProgressPerInput / 100.0f;
 

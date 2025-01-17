@@ -21,7 +21,8 @@ public class MetroXHunter : ModuleRules
 				"Niagara",
                 "StructUtils",
                 "CinematicCamera",
-                "MoviePlayer"
+                "MoviePlayer",
+                "DualSenseV"
             }
 		);
 

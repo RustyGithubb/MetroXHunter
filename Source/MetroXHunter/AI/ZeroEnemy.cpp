@@ -146,7 +146,6 @@ void AZeroEnemy::UnFakeDeath()
 	SetState( EZeroEnemyState::None );
 
 	UnRagdoll();
-	SetActorTickEnabled( true );
 }
 
 void AZeroEnemy::KnockOut()
@@ -198,6 +197,7 @@ void AZeroEnemy::UnRagdoll()
 
 	SimulateMeshBonesPhysics( true );
 	SetCollisionsEnabled( true );
+	SetActorTickEnabled( true );
 }
 
 void AZeroEnemy::SimulateMeshBonesPhysics( bool bSimulate )
@@ -531,7 +531,7 @@ void AZeroEnemy::Scream()
 	auto LightManagerComponent = Gamemode->GetComponentByClass<ULightManagerComponent>();
 	if ( IsValid( LightManagerComponent ) )
 	{
-		LightManagerComponent->FlickeringLights(
+		LightManagerComponent->FlickerLightsInRadius(
 			Data->ScreamFlickeringLightRadius,
 			GetActorLocation(),
 			Data->ScreamFlickeringLightCurve
@@ -561,14 +561,6 @@ void AZeroEnemy::SetState( EZeroEnemyState NewState )
 EZeroEnemyState AZeroEnemy::GetState() const
 {
 	return State;
-}
-
-bool AZeroEnemy::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
-{
-	// NOTE: We want to allow the call no matter what, even if already dead.
-	//		 Because we want to allow players to dismember dead bodies and to bring
-	//		 consistency in gameplay with death faker enemies.
-	return true;
 }
 
 bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
@@ -602,6 +594,9 @@ bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 				BulbMeshComponent->GetComponentLocation() - KnockbackDirection * Data->BulbHitNiagaraDistance,
 				BulbMeshComponent->GetComponentRotation()
 			);
+
+			// Force kill this actor
+			DamageContext.DamageAmount = HealthComponent->CurrentHealth;
 			return true;
 		}
 
@@ -640,6 +635,11 @@ bool AZeroEnemy::TakeDamage_Implementation( FDamageContext& DamageContext )
 	}
 
 	return false;
+}
+
+bool AZeroEnemy::IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType )
+{
+	return HealthComponent->IsAlive() && !GetMesh()->IsSimulatingPhysics();
 }
 
 #if ENABLE_VISUAL_LOG

@@ -34,9 +34,9 @@ bool ALock::TakeDamage_Implementation( FDamageContext& DamageContext )
 		|| DamageContext.DamageType == EDamageType::Melee;
 }
 
-bool ALock::CanCallTakeDamage_Implementation( const FDamageContext& DamageContext )
+bool ALock::IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType )
 {
-	return true;
+	return DamageType == EDamageType::Bullet;
 }
 
 void ALock::OnDeath( const FDamageContext& DamageContext )

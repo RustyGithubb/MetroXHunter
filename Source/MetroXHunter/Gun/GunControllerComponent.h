@@ -12,6 +12,7 @@ class UInputAction;
 class UEnhancedInputComponent;
 class AGun;
 class AMetroPlayerCharacter;
+struct FInputActionValue;
 
 UCLASS( ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class METROXHUNTER_API UGunControllerComponent : public UActorComponent
@@ -26,7 +27,8 @@ public:
 	void SetupInputComponent( AMetroPlayerCharacter* InPlayer, TObjectPtr<class UInputComponent> InputComponent );
 
 	void OnShootActionPressed();
-	void OnShootActionTriggered();
+	void OnShootActionTriggered( const FInputActionValue& Value );
+	void OnShootActionCompleted();
 
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GunController|Input" )

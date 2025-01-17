@@ -119,6 +119,11 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "HealthHolder" )
 	bool CanCallTakeDamage( const FDamageContext& DamageContext );
+	virtual bool CanCallTakeDamage_Implementation( const FDamageContext& DamageContext );
+
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "HealthHolder" )
+	bool IsShownAsDamageableToPlayer( EDamageType DamageType );
+	virtual bool IsShownAsDamageableToPlayer_Implementation( EDamageType DamageType );
 };
 
 /*
@@ -144,7 +149,7 @@ public:
 	 *
 	 * @param DamageContext Damage context
 	 */
-	UFUNCTION( BlueprintCallable, Category = "Health" )
+	UFUNCTION( BlueprintCallable, Category = "Health", meta = ( ReturnDisplayName = "bTookDamage" ) )
 	bool TakeDamage( FDamageContext DamageContext );
 	/*
 	 * Heal by a given amount. Resulted health is clamped to 'MaxHealth'.
@@ -166,6 +171,9 @@ public:
 	 */
 	UFUNCTION( BlueprintPure, Category = "Health" )
 	bool IsAlive() const;
+
+	UFUNCTION( BlueprintPure, Category = "Health" )
+	bool HasHealthHolderInterface() const;
 
 public:
 	/*

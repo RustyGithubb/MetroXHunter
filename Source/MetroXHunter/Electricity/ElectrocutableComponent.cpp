@@ -11,6 +11,18 @@
 UElectrocutableComponent::UElectrocutableComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+
+	// Hard-coding assets finding because it's not possible to reference them otherwise
+	// without creating a blueprint.
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> SkeletalLightningAsset(
+		TEXT("'/Game/Art/VFX/NS_Electrics/NS_Lightning_SkeletalMesh.NS_Lightning_SkeletalMesh'")
+	);
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> StaticLightningAsset(
+		TEXT("'/Game/Art/VFX/NS_Electrics/NS_Lightning_Cable.NS_Lightning_Cable'")
+	);
+	SkeletalLightningFX = SkeletalLightningAsset.Object;
+	StaticLightningFX = StaticLightningAsset.Object;
 }
 
 void UElectrocutableComponent::BeginPlay()
@@ -94,9 +106,16 @@ void UElectrocutableComponent::UpdateFX()
 {
 	if ( bIsFXPlaying ) return;
 
-	for ( auto AttachmentComponent : FXAttachmentComponents )
+	for ( USceneComponent* AttachmentComponent : FXAttachmentComponents )
 	{
 		if ( !IsValid( AttachmentComponent ) ) continue;
+
+		// Automatically choose between skeletal and static FX
+		UNiagaraSystem* LightningFX = StaticLightningFX;
+		if ( AttachmentComponent->IsA<USkeletalMeshComponent>() )
+		{
+			LightningFX = SkeletalLightningFX;
+		}
 
 		UNiagaraComponent* FXComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			LightningFX,
@@ -117,7 +136,7 @@ void UElectrocutableComponent::UpdateFX()
 
 void UElectrocutableComponent::DestroyFX()
 {
-	for ( auto FXComponent : FXPlayingComponents )
+	for ( UNiagaraComponent* FXComponent : FXPlayingComponents )
 	{
 		if ( !IsValid( FXComponent ) ) continue;
 		FXComponent->Deactivate();
