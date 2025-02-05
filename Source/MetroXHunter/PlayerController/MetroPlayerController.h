@@ -14,6 +14,7 @@ class UEnhancedInputLocalPlayerSubsystem;
 class AMetroPlayerCharacter;
 class UGunControllerComponent;
 class UCharacterControllerComponent;
+class UPlayerMovementData;
 
 /*
  * Player Controller of the unique MetroXHunter game
@@ -34,10 +35,22 @@ public:
 	void RevertInputMappingContext_Implementation( UInputMappingContext* MappingContext ) override;
 	// End IPlayerInputHandler interface
 
-	// Start ITickDebugger interface
+	// Begin ITickDebugger interface
 	void TickDebug_Implementation( float DeltaTime, FString& OutDebugText ) override;
 	// End ITickDebugger interface
-	
+
+	// Begin APlayerController interface
+	virtual void SetInputMode( const FInputModeDataBase& InData ) override;
+	// End APlayerController interface
+
+	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Player|Inputs" )
+	void ToggleFreezePlayer( bool bShouldFreeze );
+
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "Player|DataAssets" )
+	void UpdatePlayerData( UPlayerMovementData* InPlayerData);
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "Player|DataAssets" )
+	void ResetPlayerData();
+
 public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerController|Inputs" )
 	TArray<TSoftObjectPtr<UInputMappingContext>> DefaultMappingContexts {};
@@ -51,4 +64,6 @@ protected:
 
 	UInputMappingContext* LastOverriddenMappingContext = nullptr;
 	bool bAreDefaultMappingContextsActive = false;
+
+	FString InputModeDebugDisplayName = TEXT( "None" );
 };

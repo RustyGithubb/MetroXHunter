@@ -216,7 +216,7 @@ void AParasite::OnHit(
 	const FHitResult& Hit
 )
 {
-	if ( !bIsJumpAttacking && !bHasAlreadyDamaged ) return;
+	if ( !bIsJumpAttacking || bHasAlreadyDamaged ) return;
 
 	// Prevent damaging himself
 	if ( !IsValid( OtherActor ) || OtherActor == SelfActor ) return;
@@ -230,13 +230,21 @@ void AParasite::OnHit(
 	auto HitHealthComponent = OtherActor->GetComponentByClass<UHealthComponent>();
 	if ( !IsValid( HitHealthComponent ) ) return;
 
-	FDamageContext DamageContext {};
-	DamageContext.AttackerActor = this;
-	DamageContext.DamageAmount = DataAsset->JumpAttackDamage;
-	DamageContext.DamageType = EDamageType::Melee;
-	DamageContext.HitResult = Hit;
+	if ( CinematicMode == EParasiteCinematicMode::RushPlayer )
+	{
+		DoBiteAttack( OtherActor );
+	}
+	else
+	{
+		FDamageContext DamageContext {};
+		DamageContext.AttackerActor = this;
+		DamageContext.DamageAmount = DataAsset->JumpAttackDamage;
+		DamageContext.DamageType = EDamageType::Melee;
+		DamageContext.HitResult = Hit;
 
-	HitHealthComponent->TakeDamage( DamageContext );
+		HitHealthComponent->TakeDamage( DamageContext );
+	}
+
 
 	bHasAlreadyDamaged = true;
 }

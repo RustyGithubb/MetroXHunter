@@ -10,6 +10,7 @@
 
 class UQuickTimeEventData;
 class UInputAction;
+class UEnhancedInputComponent;
 
 /*
  * Represent the result of the quick time event.
@@ -103,6 +104,8 @@ private:
 	APlayerController* PlayerController = nullptr;
 	UQuickTimeEventData* DataAsset = nullptr;
 	AActor* Inflictor = nullptr;
+
+	UEnhancedInputComponent* InputComponent = nullptr;
 
 	float InputProgress = 0.0f;
 	float EventStartTime = 0.0f;

@@ -41,7 +41,7 @@ public:
 	void RemoveLock( ALock* Lock );
 
 protected:
-	UPROPERTY( EditAnywhere, Category = "Door" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Door" )
 	bool bIsLocked = false;
 	UPROPERTY( BlueprintReadWrite, Category = "Door" )
 	bool bIsOpened = false;

@@ -8,6 +8,8 @@
 #include "Reload/ReloadComponent.h"
 #include "Gun/GunData.h"
 
+#include <DualSenseFunctionLibrary.h>
+#include "DualSenseControllerComponent.h"
 #include "Camera/CameraShakeSourceComponent.h"
 #include "CineCameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -17,6 +19,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+
+#include "Library/UtilityLibrary.h"
 
 AGun::AGun()
 {
@@ -61,44 +65,34 @@ bool AGun::HandleCanFire()
 {
 	switch ( GunMode )
 	{
-	case EGunMode::Bullet:
-	{
-		if ( ReloadComponent->IsGunEmpty() )
+		case EGunMode::Bullet:
 		{
-			UGameplayStatics::PlaySound2D( GetWorld(), GunData->ShootFailedSound );
+			if ( ReloadComponent->IsGunEmpty() )
+			{
+				UGameplayStatics::PlaySound2D( GetWorld(), GunData->ShootFailedSound );
+				return false;
+			}
 
-			// TODO: MAKE FEEDBACK (DUAL SENSE) CANT FIRE
+			if ( ReloadComponent->IsReloading() ) return false;
+
+			float CurrentGameTime = UKismetSystemLibrary::GetGameTimeInSeconds( GetWorld() );
+			if ( CurrentGameTime - ShootCurentCooldown >= GunData->ShootCooldown ) return true;
+
 			return false;
 		}
-
-		if ( ReloadComponent->IsReloading() )
+		case EGunMode::Lightning:
 		{
-			// TODO: MAKE FEEDBACK (DUAL SENSE) CANT FIRE
+			if ( bIsLightningCharged && CurrentEnergyAmount > 0 ) return true;
 			return false;
 		}
-
-		// Check if the shoot is on cooldown
-		float CurrentGameTime = UKismetSystemLibrary::GetGameTimeInSeconds( GetWorld() );
-		if ( CurrentGameTime - ShootCurentCooldown >= GunData->ShootCooldown )
-		{
-			// TODO: MAKE WEAPON (DUAL SENSE) CAN FIRE
-			return true;
-		}
-		else
-		{
-			// TODO: MAKE FEEDBACK (DUAL SENSE) CANT FIRE
-			return false;
-		}
-	}
-	case EGunMode::Lightning:
-	{
-		if ( bIsLightningCharged && CurrentEnergyAmount > 0 ) return true;
-
-		return false;
-	}
 	}
 
 	return false;
+}
+
+void AGun::OnReload()
+{
+	PlayerCharacter->PlayAnimMontage( GunData->ReloadAnimationMontage );
 }
 
 void AGun::RetrieveFirstBeamHit()
@@ -122,16 +116,12 @@ void AGun::RetrieveFirstBeamHit()
 		ImpactPoint = WorldLocation + ( ForwardVector * GunData->LightningDistance );
 	}
 
+	AddForceAtTrace( HitResult, GunData->LightningImpulseForce );
 	TriggerLightningBeam( ImpactPoint );
-	bIsLightningActive = true;
-
-	// TODO: ADD FORCE FEEDBACK (HAPTIC)
 }
 
 void AGun::SwitchWeapon()
 {
-	// TODO: ADD FORCE FEEDBACK (HAPTIC)
-
 	switch ( GunMode )
 	{
 		case EGunMode::Bullet:
@@ -161,13 +151,22 @@ void AGun::SwitchWeapon()
 	}
 
 	OnToggleWeaponMode.Broadcast( GunMode );
+
+	if ( !GunData->ShootForceFeedback ) return;
+	PlayerController->ClientPlayForceFeedback( GunData->SwitchModeForceFeedback );
 }
 
 void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 {
 	if ( !HandleCanFire() ) return;
 
+	FVector ImpactPoint {};
+	FHitResult HitResult {};
+	CheckLineCollision( true, ImpactDirection, GunData->ShootingDistance, ImpactPoint, HitResult );
+
+
 	OnBulletShoot.Broadcast();
+	PlayerCharacter->PlayAnimMontage( GunData->ShootAnimationMontage );
 
 	// Update shoot cooldown
 	ShootCurentCooldown = UKismetSystemLibrary::GetGameTimeInSeconds( GetWorld() );
@@ -175,22 +174,20 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 	// Update Reload component
 	ReloadComponent->DecrementAmmo();
 
-	// Camera Feedback
-	CameraShakeSourceComponent->Start();
-	PlayerCharacter->CameraShakeFeedback();
-
 	// Alert nearby ennemies
 	MakeNoise( 1.0f, PlayerCharacter );
 
 	// Play Shooting Sound
 	UGameplayStatics::PlaySound2D( GetWorld(), GunData->ShootSound );
 
-	FVector ImpactPoint {};
-	FHitResult HitResult {};
-	CheckLineCollision( true, ImpactDirection, GunData->ShootingDistance ,ImpactPoint, HitResult );
+	// Camera Feedback
+	CameraShakeSourceComponent->Start();
+	PlayerCharacter->CameraShakeFeedback();
 
 	if ( !HitResult.bBlockingHit ) return;
 	FVector NormalHit = HitResult.Normal;
+
+	AddImpulseAtTrace( HitResult, GunData->ShootImpulseForce );
 
 	// Tansform for decals & FX
 	FTransform HitTransform( NormalHit.ToOrientationQuat(), ImpactPoint, FVector( 1.0f ) );
@@ -267,20 +264,37 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 		ShootPoint->GetComponentTransform().Rotator()
 	);
 
-	// TODO: ADD FORCE FEEDBACK (HAPTIC)
+	if ( !GunData->ShootForceFeedback ) return;
+	PlayerController->ClientPlayForceFeedback( GunData->ShootForceFeedback );
 }
 
 void AGun::OnLightningStart()
 {
 	if ( CurrentEnergyAmount <= 0 ) return;
 
-	// TODO: SET RIGHT TRIGGER EFFECT (HAPTIC)
+	bIsLightningActive = true;
+
+	// REPLACE WITH DATA ASSETS
+	PlayerCharacter->DualSenseComponent->SetRightTriggerEffect(
+		UDualSenseFunctionLibrary::MakeVibration( 0.0f, 1.0f, 1.0f )
+	);
 
 	// Activate Preload Lightning Niagara Effect
 	PreloadLightningNiagara->SetVisibility( true );
 	PreloadLightningNiagara->Activate();
 
 	PlayLightningChargeTimeline();
+
+	if ( !GunData->LightningForceFeedback ) return;
+
+	FForceFeedbackParameters ForceParam {};
+	ForceParam.Tag = TEXT( "LightningForceFeedback" );
+	ForceParam.bLooping = true;
+
+	PlayerController->ClientPlayForceFeedback(
+		GunData->LightningForceFeedback,
+		ForceParam
+	);
 }
 
 void AGun::OnLightningAbility( float ActionValue )
@@ -288,6 +302,11 @@ void AGun::OnLightningAbility( float ActionValue )
 	if ( !bIsLightningCharged ) return;
 
 	ChargingWeight = ActionValue;
+
+	// REPLACE WITH DATA ASSETS
+	PlayerCharacter->DualSenseComponent->SetRightTriggerEffect(
+		UDualSenseFunctionLibrary::MakeVibration( 0.0f, 1.0f, 0.5f )
+	);
 
 	if ( CurrentEnergyAmount <= 0 )
 	{
@@ -305,6 +324,16 @@ void AGun::OnLightningEnd()
 {
 	StopSound(); // Shouldn't we play an ending sound instead ?
 
+	PlayerCharacter->DualSenseComponent->SetRightTriggerEffect( UDualSenseFunctionLibrary::MakeOff() );
+
+	if ( GunData->LightningForceFeedback )
+	{
+		PlayerController->ClientStopForceFeedback(
+			GunData->LightningForceFeedback,
+			TEXT( "LightningForceFeedback" )
+		);
+	}
+
 	if ( !bIsLightningActive )
 	{
 		ReverseLightningChargeTimeline();
@@ -321,7 +350,6 @@ void AGun::OnLightningEnd()
 	LightningOrbNiagara->SetVisibility( false );
 	LightningOrbNiagara->Deactivate();
 
-	// STOP VIBRATION
 	StopCameraAnimation();
 	StopLightningChargeTimeline();
 }
@@ -329,7 +357,10 @@ void AGun::OnLightningEnd()
 void AGun::GetReferences()
 {
 	PlayerCharacter = Cast<AMetroPlayerCharacter>( UGameplayStatics::GetPlayerCharacter( GetWorld(), 0 ) );
+	PlayerController = UGameplayStatics::GetPlayerController( GetWorld(), 0 );
+
 	ReloadComponent = PlayerCharacter->GetComponentByClass<UReloadComponent>();
+	ReloadComponent->OnComputeReload.AddDynamic( this, &AGun::OnReload );
 
 	ActorsToIgnore.Add( PlayerCharacter );
 }
@@ -346,22 +377,22 @@ void AGun::CheckCurrentTargetType()
 
 	switch ( GunMode )
 	{
-		case EGunMode::Bullet:
-		{
-			CheckLineCollision( false, ImpactDirection, GunData->ShootingDistance, ImpactPoint, HitResult );
-			if ( !IsValid( HitResult.GetActor() ) ) break;
+	case EGunMode::Bullet:
+	{
+		CheckLineCollision( false, ImpactDirection, GunData->ShootingDistance, ImpactPoint, HitResult );
+		if ( !IsValid( HitResult.GetActor() ) ) break;
 
-			HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
-			break;
-		}
-		case EGunMode::Lightning:
-		{
-			CheckSphereCollision( false, GunData->LightningDistance ,ImpactPoint, HitResult, 20.0f );
-			if ( !IsValid( HitResult.GetActor() ) ) break;
+		HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
+		break;
+	}
+	case EGunMode::Lightning:
+	{
+		CheckSphereCollision( false, GunData->LightningDistance, ImpactPoint, HitResult, 20.0f );
+		if ( !IsValid( HitResult.GetActor() ) ) break;
 
-			HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
-			break;
-		}
+		HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
+		break;
+	}
 	}
 
 	if ( LastAimTarget != HealthComponent )

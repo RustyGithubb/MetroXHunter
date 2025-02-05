@@ -5,11 +5,18 @@
 #include "Character/MetroPlayerCharacter.h"
 #include "Reload/ReloadComponent.h"
 #include "Inventory/InventoryComponent.h"
+#include "Interaction/InteractionComponent.h"
 #include "Health/HealthComponent.h"
+#include "Electricity/ElectrocutableComponent.h"
+#include "Checkpoint/SaveLoadComponent.h"
+#include "AI/AITargetComponent.h"
+#include "QuickTimeEvent/QuickTimeEventComponent.h"
 #include "DualSenseControllerComponent.h"
 
 #include "CineCameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+
+#include "Library/UtilityLibrary.h"
 
 AMetroPlayerCharacter::AMetroPlayerCharacter()
 {
@@ -28,6 +35,12 @@ AMetroPlayerCharacter::AMetroPlayerCharacter()
 	ReloadComponent = CreateDefaultSubobject<UReloadComponent>( TEXT( "Reload" ) );
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>( TEXT( "Inventory" ) );
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>( TEXT( "Health" ) );
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>( TEXT( "Interaction" ) );
+	SaveLoadComponent = CreateDefaultSubobject<USaveLoadComponent>( TEXT( "SaveLoad" ) );
+	ElectrocutableComponent = CreateDefaultSubobject<UElectrocutableComponent>( TEXT( "Electrocutable" ) );
+	AITargetComponent = CreateDefaultSubobject<UAITargetComponent>( TEXT( "AITarget" ) );
+	QTEComponent = CreateDefaultSubobject<UQuickTimeEventComponent>( TEXT( "QTE" ) );
+
 	DualSenseComponent = CreateDefaultSubobject<UDualSenseControllerComponent>( TEXT( "DualSenseControllerComponent" ) );
 }
 
@@ -60,7 +73,7 @@ void AMetroPlayerCharacter::StartAiming()
 	OnAim.Broadcast( bIsAiming );
 }
 
-void AMetroPlayerCharacter::StopAiming()
+void AMetroPlayerCharacter::StopAiming_Implementation()
 {
 	bIsAiming = false;
 	StopAimAssist();

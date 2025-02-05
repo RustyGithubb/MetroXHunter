@@ -19,7 +19,7 @@ void UAITargetComponent::BeginPlay()
 
 void UAITargetComponent::TickDebug_Implementation( float DeltaTime, FString& OutDebugText )
 {
-	// Construct reservations string 
+	// Construct reservations string
 	FString Reservations = "";
 	for ( const auto& Pair : ReservedTokens )
 	{
@@ -27,15 +27,24 @@ void UAITargetComponent::TickDebug_Implementation( float DeltaTime, FString& Out
 		Reservations += "- " + GetNameSafe( Reserver->GetReserver() ) + ": " + FString::FromInt( Pair.Value ) + "\n";
 	}
 
-	// Construct attackers string 
+	// Construct attackers string
+	TMap<int32, FAIReserverArray> ActorsByPlaces = GetActorsByGroupPlaces();
+	ActorsByPlaces.KeySort(
+		[]( const int32 PlaceA, const int32 PlaceB ) {
+			return PlaceA < PlaceB;
+		}
+	);
 	FString GroupPlaces = "";
-	for ( const auto& Pair : ReservedGroupPlaces )
+	for ( const auto& Pair : ActorsByPlaces )
 	{
-		const UAIAttackerComponent* Reserver = Pair.Key;
-		GroupPlaces += "- " + GetNameSafe( Reserver->GetReserver() ) + " : " + FString::FromInt( Pair.Value ) + "\n";
+		for ( const UAIAttackerComponent* Reserver : Pair.Value.Data )
+		{
+			GroupPlaces += "- " + GetNameSafe( Reserver->GetReserver() )
+				+ " : " + FString::FromInt( Pair.Key ) + "\n";
+		}
 	}
 
-	// Construct attackers string 
+	// Construct attackers string
 	FString Attackers = "";
 	for ( const auto& Reserver : DeclaredAttackers )
 	{

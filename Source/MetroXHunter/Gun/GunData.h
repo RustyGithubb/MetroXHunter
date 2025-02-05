@@ -9,6 +9,8 @@
 
 class USoundBase;
 class UNiagaraSystem;
+class UAnimMontage;
+class UForceFeedbackEffect;
 
  /*
   * Data Asset of the gun.
@@ -30,6 +32,8 @@ public:
 	int32 MaxMagazineAmmo = 6;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility" )
 	float ShootingDistance = 3000.0f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility" )
+	float ShootImpulseForce = 5000.0f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|Sound" )
 	USoundBase* ShootFailedSound;
@@ -37,6 +41,9 @@ public:
 	USoundBase* CantShootSound;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|Sound" )
 	USoundBase* ShootSound;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|ForceFeedback" )
+	UForceFeedbackEffect* ShootForceFeedback;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|FX" )
 	TSubclassOf<AActor> BloodBulletDecal;
@@ -48,6 +55,11 @@ public:
 	UNiagaraSystem* StructurImpactNiagaraSystem;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|FX" )
 	UNiagaraSystem* BloodImpactNiagaraSystem;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|Animations" )
+	UAnimMontage* ShootAnimationMontage;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "ShootAbility|Animations" )
+	UAnimMontage* ReloadAnimationMontage;
 
 	/*
 	 * The cooldown time before Lightning Damage can be reapplied to the targets. 
@@ -76,6 +88,8 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility", meta = ( ClampMin = 1) )
 	int32 LightningTargetLimit = 3;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility" )
+	float LightningImpulseForce = 2500.f;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Sound" )
 	USoundBase* LightningAbilityOn;
@@ -83,6 +97,9 @@ public:
 	USoundBase* LightningAbilityOff;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Sound" )
 	USoundBase* LightningLoop;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|ForceFeedback" )
+	UForceFeedbackEffect* LightningForceFeedback;
 
 	/*
 	 * The maximum stun duration of the lightning
@@ -118,4 +135,7 @@ public:
 	 */
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "LightningAbility|Energy", meta = ( Units = "Seconds" ) )
 	float PassiveRegenerationCooldown = 1.0f;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Miscellaneous|ForceFeedback" )
+	UForceFeedbackEffect* SwitchModeForceFeedback;
 };

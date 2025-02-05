@@ -48,27 +48,27 @@ public:
 	virtual void ConsumeInteraction_Implementation();
 
 public:
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable" )
 	UStaticMeshComponent* StaticMesh = nullptr;
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable" )
 	USceneComponent* SceneRoot = nullptr;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Collisions" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable|Collisions" )
 	USphereComponent* InnerCollision = nullptr;
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Collisions" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable|Collisions" )
 	USphereComponent* OutterCollision = nullptr;
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Component" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable|Component" )
 	UInteractableComponent* InteractableComponent = nullptr;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Interactable|UI" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadOnly, Category = "Interactable|UI" )
 	UWidgetComponent* Widget = nullptr;
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|UI" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable|UI" )
 	UInteractableWidget* InteractableWidget = nullptr;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|Player" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable|Player" )
 	APlayerController* PlayerController = nullptr;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Interactable|System" )
+	UPROPERTY( VisibleDefaultsOnly, BlueprintReadWrite, Category = "Interactable|System" )
 	USaveLoadComponent* SaveComponent = nullptr;
 
 	/*

@@ -48,6 +48,8 @@ ABaseInteractable::ABaseInteractable()
 
 	InnerCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
 	OutterCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
+
+	bGenerateOverlapEventsDuringLevelStreaming = true;
 }
 
 void ABaseInteractable::BeginPlay()

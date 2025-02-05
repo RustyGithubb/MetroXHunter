@@ -17,6 +17,7 @@
 #include "Navigation/CrowdFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 constexpr auto ENEMY_KEYNAME = TEXT( "EnemyActor" );
 constexpr auto IN_DANGER_KEYNAME = TEXT( "bInDanger" );
@@ -28,7 +29,7 @@ constexpr auto JUMP_ATTACK_TOKEN = TEXT( "JumpAttackToken" );
 constexpr auto JUMP_ATTACK_TOKEN_COOLDOWN = TEXT( "JumpAttackTokenCooldown" );
 constexpr auto FLEE_AIM_FOV_COS_KEYNAME = TEXT( "FleeAimFOVCosinus" );
 constexpr auto CAN_EVER_USE_VENTS_KEYNAME = TEXT( "bCanEverUseVents" );
-constexpr auto IN_CINEMATIC_KEYNAME = TEXT( "bInCinematic" );
+constexpr auto IN_CINEMATIC_KEYNAME = TEXT( "CinematicMode" );
 
 // Set default FollowingComponent to CrowdFollowingComponent so they move around each other
 AParasiteAIController::AParasiteAIController( const FObjectInitializer& ObjectInitializer )
@@ -86,8 +87,10 @@ void AParasiteAIController::OnPossess( APawn* InPawn )
 		FLEE_AIM_FOV_COS_KEYNAME,
 		FMath::Cos( FMath::DegreesToRadians( DataAsset->FleeAimFOV * 0.5f ) )
 	);
+
+	// Update blackboard values with pawn
 	Blackboard->SetValueAsBool( CAN_EVER_USE_VENTS_KEYNAME, CustomPawn->bCanEverUseVents );
-	SetInCinematic( CustomPawn->bStartInCinematic );
+	SetCinematicMode( CustomPawn->CinematicMode );
 
 	// Assign possessing location
 	PossessingLocation = CustomPawn->GetActorLocation();
@@ -182,9 +185,14 @@ void AParasiteAIController::SetNextVentTime( float GameTime )
 	Blackboard->SetValueAsFloat( NEXT_VENT_TIME_KEYNAME, GameTime );
 }
 
-void AParasiteAIController::SetInCinematic( bool bValue )
+void AParasiteAIController::SetCinematicMode( EParasiteCinematicMode Mode )
 {
-	Blackboard->SetValueAsBool( IN_CINEMATIC_KEYNAME, bValue );
+	Blackboard->SetValueAsEnum( IN_CINEMATIC_KEYNAME, static_cast<uint8>( Mode ) );
+
+	if ( Mode == EParasiteCinematicMode::RushPlayer )
+	{
+		SetEnemy( UGameplayStatics::GetPlayerCharacter( this, 0 ) );
+	}
 }
 
 #if ENABLE_VISUAL_LOG

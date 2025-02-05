@@ -8,6 +8,7 @@
 class UReloadData;
 class UInventoryComponent;
 class UInputAction;
+class ABaseMetroPlayerCharacter;
 
 // Enumeration for the gun's state
 UENUM( BlueprintType )
@@ -103,6 +104,12 @@ public:
     UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
     FOnAmmoCountUpdated OnAmmoCountUpdated; 
 
+    // Event fired when the compute reload is triggered
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnComputeReload );
+    UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
+    FOnComputeReload OnComputeReload;
+
+
     // Event fired when reload input is received
     DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnReloadInputReceived );
     UPROPERTY( BlueprintAssignable, Category = "Reload|Events" )
@@ -153,6 +160,9 @@ private:
 
     // Player controller reference
     APlayerController* PlayerController = nullptr;
+
+    // Player character reference
+    ABaseMetroPlayerCharacter* PlayerCharacter = nullptr;
 
     // HUD reference
     AHUD* HUD = nullptr;

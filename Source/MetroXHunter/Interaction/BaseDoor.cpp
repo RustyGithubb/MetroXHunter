@@ -34,7 +34,6 @@ void ABaseDoor::ConsumeInteraction_Implementation()
 	RemoveAllLocks();
 	bIsLocked = false;
 	SetDoorOpened( true );
-
 }
 
 void ABaseDoor::Interact()

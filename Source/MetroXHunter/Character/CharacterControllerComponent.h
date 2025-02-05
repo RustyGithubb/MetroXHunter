@@ -49,14 +49,16 @@ public:
 	UPROPERTY( BlueprintCallable, BlueprintAssignable, Category = "PlayerCharacter|Event|Movement" )
 	FOnMovementStateUpdate OnMovementStateUpdate;
 
-
 public:
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Movement" )
+	UPROPERTY( BlueprintReadOnly, Category = "CharacterController|Movement" )
+	EMovementState CurrentMovementState = EMovementState::Idle;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "CharacterController|Movement" )
 	UPlayerMovementData* PlayerMovementData = nullptr;
 	UPROPERTY( BlueprintReadWrite, Category = "CharacterController|Movement" )
 	float ScaleMovementSpeed = 1.0f;
 	UPROPERTY( BlueprintReadWrite, Category = "CharacterController|Movement" )
-	FVector2D MouseSensitivity { 1.0f };
+	FVector2D CameraSensitivity { 1.0f };
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Movement|Input" )
 	UInputAction* MovementAction = nullptr;
@@ -80,17 +82,17 @@ private:
 	void SetupDefaultValues();
 
 	void OnMoveInputStart( const FInputActionValue& Value );
-	void Move( const FInputActionValue& Value );
 	void OnMoveInputReleased();
+	void Move( const FInputActionValue& Value );
+	void StompKick();
 	void ToggleRun();
 	void HandleToggleRun();
+	void OnLookInputStart( const FInputActionValue& Value );
 	void Look( const FInputActionValue& Value );
 	void ToggleAim( const FInputActionValue& Value );
 
 private:
 	AMetroPlayerCharacter* Player = nullptr;
-
-	EMovementState CurrentMovementState = EMovementState::Idle;
 
 	bool bCanMove = true;
 	bool bCanRotate = true;
@@ -99,4 +101,6 @@ private:
 	bool bIsMoving = false;
 
 	bool bWasRunning = false;
+
+	float RotationInputTimer = 0.0f;
 };

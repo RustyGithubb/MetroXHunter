@@ -46,7 +46,7 @@ public:
 	void SetNextVentTime( float GameTime );
 
 	UFUNCTION( BlueprintCallable, Category = "Parasite" )
-	void SetInCinematic( bool bValue );
+	void SetCinematicMode( EParasiteCinematicMode Mode );
 
 #if ENABLE_VISUAL_LOG
 	virtual void GrabDebugSnapshot( struct FVisualLogEntry* Snapshot ) const override;

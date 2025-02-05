@@ -14,7 +14,10 @@ void UScriptedEvent::RunScriptedEvent( AScriptedEventManager* InManager )
 {
 	Manager = InManager;
 
-	OnRunScriptedEvent();
+	if ( OnRunScriptedEvent() )
+	{
+		OnEventFinished.Broadcast( this );
+	}
 }
 
 UWorld* UScriptedEvent::GetWorld() const
@@ -23,12 +26,14 @@ UWorld* UScriptedEvent::GetWorld() const
 	return Manager->GetWorld();
 }
 
-void UScriptedEvent::OnRunScriptedEvent_Implementation()
+bool UScriptedEvent::OnRunScriptedEvent_Implementation()
 {
 	UUtilityLibrary::PrintWarning(
 		TEXT( "ScriptedEvent: %s is not implemented" ),
 		*GetName()
 	);
+
+	return true;
 }
 
 
@@ -57,6 +62,11 @@ void AScriptedEventManager::BeginPlay()
 	Super::BeginPlay();
 
 	SortScriptedEventsByStartTime();
+
+	for ( UScriptedEvent* ScriptedEvent : ScriptedEvents )
+	{
+		ScriptedEvent->OnEventFinished.AddDynamic( this, &AScriptedEventManager::OnEventFinished );
+	}
 }
 
 void AScriptedEventManager::Tick( float DeltaTime )
@@ -67,7 +77,7 @@ void AScriptedEventManager::Tick( float DeltaTime )
 	if ( CurrentEventIndex >= ScriptedEvents.Num() )
 	{
 		SetActorTickEnabled( false );
-		OnEventEnded.Broadcast( this );
+		OnRunEventsEnded.Broadcast( this );
 		return;
 	}
 
@@ -93,10 +103,11 @@ void AScriptedEventManager::RunScriptedEvents()
 {
 	CurrentEventTime = 0.0f;
 	CurrentEventIndex = 0;
+	CurrentFinishedEvents = 0;
 
 	SetActorTickEnabled( true );
 
-	OnEventStarted.Broadcast( this );
+	OnRunEventsStarted.Broadcast( this );
 }
 
 void AScriptedEventManager::SortScriptedEventsByStartTime()
@@ -108,4 +119,14 @@ void AScriptedEventManager::SortScriptedEventsByStartTime()
 			return A.EventStartTime < B.EventStartTime;
 		}
 	);
+}
+
+void AScriptedEventManager::OnEventFinished( UScriptedEvent* ScriptedEvent )
+{
+	CurrentFinishedEvents++;
+
+	if ( CurrentFinishedEvents == ScriptedEvents.Num() )
+	{
+		OnEventsFinished.Broadcast( this );
+	}
 }

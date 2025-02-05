@@ -150,7 +150,7 @@ public:
 	int32 MaxAttackersCount = 0;
 
 protected:
-	void OnRunScriptedEvent_Implementation() override;
+	bool OnRunScriptedEvent_Implementation() override;
 
 private:
 	bool CheckSpawnCondition() const;

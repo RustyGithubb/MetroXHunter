@@ -112,10 +112,16 @@ void UQuickTimeEventComponent::StartEvent( UQuickTimeEventData* NewDataAsset, AA
 			InputMappingContext.LoadSynchronous()
 		);
 
-		// Make sure the input action is loaded to compare it in OnInput
-		// Without it (and especially the Get for the comparison in OnInput), it created issues
-		// in build where it was impossible to send any inputs
-		DataAsset->InputAction.LoadSynchronous();
+		InputComponent->BindAction(
+			DataAsset->InputAction.LoadSynchronous(), ETriggerEvent::Started,
+			this, &UQuickTimeEventComponent::OnInput
+		);
+
+		UUtilityLibrary::PrintWarning(
+			TEXT( "QTE: Start event, HasMappingContext=%d, InputAction=%s" ),
+			PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->HasMappingContext( InputMappingContext.LoadSynchronous() ),
+			*GetNameSafe( DataAsset->InputAction.LoadSynchronous() )
+		);
 	}
 
 	SetComponentTickEnabled( true );
@@ -136,6 +142,8 @@ void UQuickTimeEventComponent::StopEvent( EQuickTimeEventResult EventResult )
 			PlayerController,
 			InputMappingContext.LoadSynchronous()
 		);
+
+		InputComponent->ClearBindingsForObject( this );
 	}
 
 	Result = EventResult;
@@ -189,28 +197,18 @@ float UQuickTimeEventComponent::GetInputProgress() const
 void UQuickTimeEventComponent::SetupPlayerInputComponent()
 {
 	PlayerController = UGameplayLibrary::GetPlayerControllerChecked( GetOwner() );
-
-	UInputComponent* PlayerInputComponent = PlayerController->InputComponent;
-	
-	verify( !InputMappingContext.IsNull() );
-
-	// Retrieve all mappings of the InputMappingContext
-	auto& InputMappings = InputMappingContext.LoadSynchronous()->GetMappings();
-	verifyf( !InputMappings.IsEmpty(), TEXT( "The InputMappingContext must not be empty!" ) );
-
-	// Set up action bindings
-	auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent );
-	for ( auto& InputMapping : InputMappings )
-	{
-		EnhancedInputComponent->BindAction(
-			InputMapping.Action, ETriggerEvent::Started,
-			this, &UQuickTimeEventComponent::OnInput
-		);
-	}
+	InputComponent = CastChecked<UEnhancedInputComponent>( PlayerController->InputComponent );
 }
 
 void UQuickTimeEventComponent::OnInput( const FInputActionInstance& InputInstance )
 {
+	UUtilityLibrary::PrintMessage(
+		TEXT( "QTE Input: %s need %s (EventTime %f)" ), 
+		*GetNameSafe( InputInstance.GetSourceAction() ),
+		*GetNameSafe( DataAsset->InputAction.Get() ),
+		GetEventTime()
+	);
+
 	// Check that the event actually started
 	if ( GetEventTime() < 0.0f ) return;
 
@@ -218,6 +216,7 @@ void UQuickTimeEventComponent::OnInput( const FInputActionInstance& InputInstanc
 	if ( InputInstance.GetSourceAction() != DataAsset->InputAction.Get() ) return;
 
 	InputProgress += DataAsset->ProgressPerInput / 100.0f;
+	UUtilityLibrary::PrintMessage( TEXT( "Input %f (%f)!" ), InputProgress, DataAsset->ProgressPerInput / 100.0f );
 
 	// Manually stop dead zone when a correct input is received
 	if ( bIsInDeadZone )

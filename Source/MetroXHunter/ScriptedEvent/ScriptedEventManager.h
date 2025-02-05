@@ -26,6 +26,11 @@ public:
 	UWorld* GetWorld() const override;
 
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnEventFinished, UScriptedEvent*, ScriptedEvent );
+	UPROPERTY( BlueprintAssignable, Category = "ScriptedEventManager" )
+	FOnEventFinished OnEventFinished {};
+
+public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, meta = ( Units = "Seconds" ) )
 	float EventStartTime = 0.0f;
 
@@ -33,7 +38,7 @@ public:
 
 protected:
 	UFUNCTION( BlueprintNativeEvent )
-	void OnRunScriptedEvent();
+	bool OnRunScriptedEvent();
 };
 
 /*
@@ -61,16 +66,20 @@ public:
 	/*
 	 * Called when the scripted event sequence has just started its execution.
 	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnEventStarted, AScriptedEventManager*, Manager );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnStartedRunEvents, AScriptedEventManager*, Manager );
 	UPROPERTY( BlueprintAssignable, Category = "ScriptedEventManager" )
-	FOnEventStarted OnEventStarted {};
+	FOnStartedRunEvents OnRunEventsStarted {};
 
 	/*
 	 * Called when the scripted event sequence has just ended its execution.
 	 */
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnEventEnded, AScriptedEventManager*, Manager );
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnEndedRunEvents, AScriptedEventManager*, Manager );
 	UPROPERTY( BlueprintAssignable, Category = "ScriptedEventManager" )
-	FOnEventEnded OnEventEnded {};
+	FOnEndedRunEvents OnRunEventsEnded {};
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnFinishedEvents, AScriptedEventManager*, Manager );
+	UPROPERTY( BlueprintAssignable, Category = "ScriptedEventManager" )
+	FOnFinishedEvents OnEventsFinished {};
 
 public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "ScriptedEventManager" )
@@ -83,6 +92,11 @@ public:
 	TArray<UScriptedEvent*> ScriptedEvents {};
 
 private:
+	UFUNCTION()
+	void OnEventFinished( UScriptedEvent* ScriptedEvent );
+
+private:
 	float CurrentEventTime = 0.0f;
 	int32 CurrentEventIndex = 0;
+	int32 CurrentFinishedEvents = 0;
 };

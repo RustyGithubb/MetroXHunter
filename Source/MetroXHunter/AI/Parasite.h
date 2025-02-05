@@ -18,6 +18,14 @@ class AVent;
 class UHealthComponent;
 class UPawnSensingComponent;
 
+UENUM( BlueprintType )
+enum class EParasiteCinematicMode : uint8
+{
+	None,
+	EatAnimation,
+	RushPlayer,
+};
+
 UCLASS( Abstract )
 class METROXHUNTER_API AParasite : public ACharacter, public IHealthHolder, public IEQSContextProvider
 {
@@ -54,10 +62,15 @@ public:
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Parasite" )
 	void StartExitingVent( AVent* Vent );
 
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Parasite" )
+	void PrepareJumpAttack();
 	UFUNCTION( BlueprintCallable, Category = "Parasite" )
 	void JumpAttack();
 	UFUNCTION( BlueprintPure, Category = "Parasite" )
 	bool IsJumpAttacking() const;
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Parasite" )
+	void DoBiteAttack( AActor* Target );
 
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Parasite" )
 	void EmitBloodSplash( const FDamageContext& DamageContext );
@@ -95,7 +108,7 @@ public:
 	bool bCanEverUseVents = true;
 
 	UPROPERTY( EditInstanceOnly, BlueprintReadOnly, Category = "Parasite" )
-	bool bStartInCinematic = false;
+	EParasiteCinematicMode CinematicMode = EParasiteCinematicMode::None;
 
 private:
 	UFUNCTION()

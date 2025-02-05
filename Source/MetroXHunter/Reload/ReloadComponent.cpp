@@ -7,6 +7,7 @@
 #include "HUD/MainHUD.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/PickupType.h"
+#include "Character/BaseMetroPlayerCharacter.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
@@ -102,6 +103,8 @@ void UReloadComponent::StartReloadSequence()
 	bIsReloadActive = true;
 	CurrentGunState = EGunState::Reloading;
 
+	PlayerCharacter->bIsUnderAction = true;
+
 	// Start the normal reload timer (player did not interact)
 	StartReloadTimer( ReloadDataAsset->NormalReloadDuration, EReloadState::Normal );
 }
@@ -155,6 +158,7 @@ void UReloadComponent::TriggerReload( EReloadState ReloadState, float ReloadDura
 		// Notify that the reload state has changed (e.g., update UI)
 		OnReloadStateChanged.Broadcast( ReloadState );
 
+		PlayerCharacter->bIsUnderAction = false;
 		return; // Do not proceed further, do not reload the weapon
 	}
 
@@ -205,7 +209,6 @@ void UReloadComponent::FinalizeReload( int NewAmmoCount, int InventoryAmmoCountU
 
 			// Event that say reload is finished
 			OnReloadComplete.Broadcast();
-
 		},
 		ReloadDuration,
 		false
@@ -236,7 +239,7 @@ void UReloadComponent::StartReloadTimer( float Duration, EReloadState ReloadStat
 			}
 
 			// Trigger reloading with equivalent time
-			TriggerReload( ReloadState, ReloadDuration );
+			TriggerReload( ReloadState, 0.5f );
 		},
 		Duration,
 		false
@@ -247,6 +250,8 @@ void UReloadComponent::RetrieveReferences()
 {
 	// Retrieve references to other components or systems
 	RetrievePlayerInventory();
+
+	PlayerCharacter = Cast<ABaseMetroPlayerCharacter>(GetOwner());
 }
 
 void UReloadComponent::RetrievePlayerInventory()
@@ -293,6 +298,8 @@ void UReloadComponent::GetMaxAmmo( int& MaxAmmo ) const
 
 void UReloadComponent::ComputeReloadAmmoCount( int& NewMagazineAmmoCount, int& InventoryAmmoConsumed )
 {
+	OnComputeReload.Broadcast();
+
 	// Calculate how much ammo is needed to fill the magazine
 	int AmmoNeeded = MaxAmmoInMagazine - CurrentAmmoInMagazine;
 

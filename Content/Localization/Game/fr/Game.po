@@ -1,0 +1,813 @@
+﻿# Game French translation.
+# /* * Implemented by Firstname Lastname (Nickname) */
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Game\n"
+"POT-Creation-Date: 2025-01-29 14:38\n"
+"PO-Revision-Date: 2025-01-29 14:38\n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. Key:	Accessibility
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Accessibility"
+msgid "ACCESSIBILITY"
+msgstr "ACCESSIBILITÉ"
+
+#. Key:	Audio
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Audio"
+msgid "AUDIO"
+msgstr "SON"
+
+#. Key:	Back
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Back"
+msgid "Back"
+msgstr "Retour"
+
+#. Key:	Camera
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Camera"
+msgid "CAMERA"
+msgstr "CAMÉRA"
+
+#. Key:	Controls
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Controls"
+msgid "CONTROLS"
+msgstr "CONTRÔLES"
+
+#. Key:	Display
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Display"
+msgid "DISPLAY"
+msgstr "AFFICHAGE"
+
+#. Key:	INFORMATION
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,INFORMATION"
+msgid "INFORMATION"
+msgstr "INFORMATION"
+
+#. Key:	INFORMATIONS
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,INFORMATIONS"
+msgid "INFORMATIONS"
+msgstr "INFORMATIONS"
+
+#. Key:	Languages
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Languages"
+msgid "LANGUAGES"
+msgstr "LANGUES"
+
+#. Key:	Loading
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Loading"
+msgid "LOADING..."
+msgstr "CHARGEMENT..."
+
+#. Key:	Play
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Play"
+msgid "Play"
+msgstr "Jouer"
+
+#. Key:	Press
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Press"
+msgid "Press"
+msgstr "Appuyez"
+
+#. Key:	Quit
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Quit"
+msgid "Quit"
+msgstr "Quitter"
+
+#. Key:	Settings
+#. SourceLocation:	/Game/Design/Language/ST_Words.ST_Words
+#: /Game/Design/Language/ST_Words.ST_Words
+msgctxt "ST_Words,Settings"
+msgid "Settings"
+msgstr "Paramètres"
+
+#. Key:	05B86AB44D19DD116423778E2398FE3B
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Interact.WBPC_Interact_C:WidgetTree.CommonTextBlock_79.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Interact.WBPC_Interact_C:WidgetTree.CommonTextBlock_79.Text
+msgctxt ",05B86AB44D19DD116423778E2398FE3B"
+msgid "Read"
+msgstr "Lire"
+
+#. Key:	23FAC22E4F648BF0F4D2E18B75DEDFDB
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Intoxication.WBPC_Translate_LaCite_Intoxication_C:WidgetTree.CommonTextBlock_2.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Intoxication.WBPC_Translate_LaCite_Intoxication_C:WidgetTree.CommonTextBlock_2.Text
+msgctxt ",23FAC22E4F648BF0F4D2E18B75DEDFDB"
+msgid "WE POISONING YOU!"
+msgstr "ON VOUS INTOXIQUE !"
+
+#. Key:	6EAD2B9E4F506B18BA3D95ABC6D34D54
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_1.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_1.Text
+msgctxt ",6EAD2B9E4F506B18BA3D95ABC6D34D54"
+msgid "YES \r\nto\r\nsocial development"
+msgstr "OUI à l'essor social"
+
+#. Key:	CD8161AB44E4A34567D1A6A3F678491C
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_2.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_2.Text
+msgctxt ",CD8161AB44E4A34567D1A6A3F678491C"
+msgid "FRANCE"
+msgstr "FRANCE"
+
+#. Key:	FE9DF2E54CE2309E39931199F0E33813
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_3.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_3.Text
+msgctxt ",FE9DF2E54CE2309E39931199F0E33813"
+msgid "NO to Republic"
+msgstr "NON à la république"
+
+#. Key:	97F3F49F4ECBED13EB20778C13DBEA74
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_67.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_LaCite_Marianne.WBPC_Translate_LaCite_Marianne_C:WidgetTree.CommonTextBlock_67.Text
+msgctxt ",97F3F49F4ECBED13EB20778C13DBEA74"
+msgid "YES\r\nto\r\nCommunity"
+msgstr "OUI à la communauté"
+
+#. Key:	5FD74BA8479BE5D95DF3A3A4CEF0433F
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_UpperTunnel_OutOfOrder.WBPC_Translate_UpperTunnel_OutOfOrder_C:WidgetTree.CommonTextBlock_2.Text
+#: /Game/Design/Widgets/MainMenu/Interaction/WBPC_Translate_UpperTunnel_OutOfOrder.WBPC_Translate_UpperTunnel_OutOfOrder_C:WidgetTree.CommonTextBlock_2.Text
+msgctxt ",5FD74BA8479BE5D95DF3A3A4CEF0433F"
+msgid "OUT OF ORDER"
+msgstr "RUPTURE DE STOCK"
+
+#. Key:	1D893B9D4D750DB21D8559A8ADB62AE1
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_1.WBPC_Questionlaunch_1_C:WidgetTree.No.In Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_1.WBPC_Questionlaunch_1_C:WidgetTree.No.In Text
+msgctxt ",1D893B9D4D750DB21D8559A8ADB62AE1"
+msgid "No, i don't"
+msgstr "Non"
+
+#. Key:	8737C85341B871CB03CC37B4CE0FED51
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_1.WBPC_Questionlaunch_1_C:WidgetTree.TextBlock_86.Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_1.WBPC_Questionlaunch_1_C:WidgetTree.TextBlock_86.Text
+msgctxt ",8737C85341B871CB03CC37B4CE0FED51"
+msgid "Do you often play with controller ?"
+msgstr "Jouez-vous souvent à la manette ?"
+
+#. Key:	155284C5445A5BB5F0859893F07BE193
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_1.WBPC_Questionlaunch_1_C:WidgetTree.Yes.In Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_1.WBPC_Questionlaunch_1_C:WidgetTree.Yes.In Text
+msgctxt ",155284C5445A5BB5F0859893F07BE193"
+msgid "Yes, I do"
+msgstr "Oui"
+
+#. Key:	6384305843585A540C79D9BD5BA08BF5
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_2.WBPC_Questionlaunch_2_C:WidgetTree.No.In Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_2.WBPC_Questionlaunch_2_C:WidgetTree.No.In Text
+msgctxt ",6384305843585A540C79D9BD5BA08BF5"
+msgid "No, i don't"
+msgstr "Non"
+
+#. Key:	F4BB01AF4AF8C0CF7AFF3DA9F6CBB7D5
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_2.WBPC_Questionlaunch_2_C:WidgetTree.TextBlock_86.Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_2.WBPC_Questionlaunch_2_C:WidgetTree.TextBlock_86.Text
+msgctxt ",F4BB01AF4AF8C0CF7AFF3DA9F6CBB7D5"
+msgid "Do you often play TPS game  ?"
+msgstr "Jouez-vous souvent à des TPS ?"
+
+#. Key:	F18EC20040DBFDB2E51F9FB10CABF572
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_2.WBPC_Questionlaunch_2_C:WidgetTree.Yes.In Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_2.WBPC_Questionlaunch_2_C:WidgetTree.Yes.In Text
+msgctxt ",F18EC20040DBFDB2E51F9FB10CABF572"
+msgid "Yes, I do"
+msgstr "Oui"
+
+#. Key:	28C00D01437A02604FCC438F3DF0D20D
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_3.WBPC_Questionlaunch_3_C:WidgetTree.No.In Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_3.WBPC_Questionlaunch_3_C:WidgetTree.No.In Text
+msgctxt ",28C00D01437A02604FCC438F3DF0D20D"
+msgid "No, I haven't"
+msgstr "Non"
+
+#. Key:	8BBFC18E45C22C75D0BE1D93E80D16B0
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_3.WBPC_Questionlaunch_3_C:WidgetTree.TextBlock_86.Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_3.WBPC_Questionlaunch_3_C:WidgetTree.TextBlock_86.Text
+msgctxt ",8BBFC18E45C22C75D0BE1D93E80D16B0"
+msgid "Have you already played this prototype ?"
+msgstr "Avez-vous déjà joué à cette version du jeu ?"
+
+#. Key:	C34F0A354F0B8C0280AE988028DED61D
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_3.WBPC_Questionlaunch_3_C:WidgetTree.Yes.In Text
+#: /Game/Design/Widgets/MainMenu/Menu_Question/WBPC_Questionlaunch_3.WBPC_Questionlaunch_3_C:WidgetTree.Yes.In Text
+msgctxt ",C34F0A354F0B8C0280AE988028DED61D"
+msgid "Yes, I have"
+msgstr "Oui"
+
+#. Key:	8C1BC24E4549BC21D57C9B88F507D609
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Accessibility.WBPC_Setting_Accessibility_C:WidgetTree.ControllerVibrationCheckBox.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Accessibility.WBPC_Setting_Accessibility_C:WidgetTree.ControllerVibrationCheckBox.In Text
+msgctxt ",8C1BC24E4549BC21D57C9B88F507D609"
+msgid "Controller Vibrations"
+msgstr "Vibrations"
+
+#. Key:	1B50BCD5441130A44FA1A6A36E571079
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.AmbientVolumeSlider.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.AmbientVolumeSlider.In Text
+msgctxt ",1B50BCD5441130A44FA1A6A36E571079"
+msgid "Ambient"
+msgstr "Environnement"
+
+#. Key:	181799EB44EC0A420A09EFB8BBEC8D41
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.GlobalVolumeSlider.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.GlobalVolumeSlider.In Text
+msgctxt ",181799EB44EC0A420A09EFB8BBEC8D41"
+msgid "Global"
+msgstr "Général"
+
+#. Key:	642E270C4D44928290D3D7A4F6927DD8
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.MusicVolumeSlider.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.MusicVolumeSlider.In Text
+msgctxt ",642E270C4D44928290D3D7A4F6927DD8"
+msgid "Music"
+msgstr "Musique"
+
+#. Key:	6BA021E24BDE26EB009648A54A140983
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.SFXVolumeSlider.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.SFXVolumeSlider.In Text
+msgctxt ",6BA021E24BDE26EB009648A54A140983"
+msgid "SFX"
+msgstr "Effets"
+
+#. Key:	8D088B5140E56DB00D3E1DBB95C0D892
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.VoiceVolumeSlider.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Audio.WBPC_Setting_Audio_C:WidgetTree.VoiceVolumeSlider.In Text
+msgctxt ",8D088B5140E56DB00D3E1DBB95C0D892"
+msgid "Voice"
+msgstr "Voix"
+
+#. Key:	120241D246F74498AF4DBBAD30F1E3A4
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Camera.WBPC_Setting_Camera_C:WidgetTree.SensitivitySlider.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Camera.WBPC_Setting_Camera_C:WidgetTree.SensitivitySlider.In Text
+msgctxt ",120241D246F74498AF4DBBAD30F1E3A4"
+msgid "Sensitivity"
+msgstr "Sensibilité"
+
+#. Key:	023A78EA4F83C6732EDB258EA13D50D4
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Display.WBPC_Setting_Display_C:WidgetTree.MotionBlurCheckBox.In Text
+#: /Game/Design/Widgets/MainMenu/Settings/WBPC_Setting_Display.WBPC_Setting_Display_C:WidgetTree.MotionBlurCheckBox.In Text
+msgctxt ",023A78EA4F83C6732EDB258EA13D50D4"
+msgid "Motion Blur"
+msgstr "Flou de mouvement"
+
+#. Key:	AF3E9C2D466FD7DE1D8D6C9B8443617E
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_ChapterMenu.WBPC_ChapterMenu_C:WidgetTree.VerticleSlice.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_ChapterMenu.WBPC_ChapterMenu_C:WidgetTree.VerticleSlice.In Text
+msgctxt ",AF3E9C2D466FD7DE1D8D6C9B8443617E"
+msgid "Vertical Slice GoToProd"
+msgstr "Verticale Slice"
+
+#. Key:	08EECE2544B4AF0DCE7E7283BA45ED7C
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_CommonButton_Base.WBPC_CommonButton_Base_C:WidgetTree.TexteBouton.Text
+#: /Game/Design/Widgets/MainMenu/WBPC_CommonButton_Base.WBPC_CommonButton_Base_C:WidgetTree.TexteBouton.Text
+msgctxt ",08EECE2544B4AF0DCE7E7283BA45ED7C"
+msgid "Play"
+msgstr "Jouer"
+
+#. Key:	48C4F21A42EAD9C1BAB349A6CA283510
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_MainMenu.Default__WBPC_MainMenu_C:WBPC_CommonButton_Base_C_1.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_MainMenu.Default__WBPC_MainMenu_C:WBPC_CommonButton_Base_C_1.In Text
+msgctxt ",48C4F21A42EAD9C1BAB349A6CA283510"
+msgid "Jouer"
+msgstr "Jouer"
+
+#. Key:	D79396AE427EF5EF3DAF7D9F372DAF9C
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_MainMenu.WBPC_MainMenu_C:WidgetTree.About.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_MainMenu.WBPC_MainMenu_C:WidgetTree.About.In Text
+msgctxt ",D79396AE427EF5EF3DAF7D9F372DAF9C"
+msgid "About"
+msgstr "À propos"
+
+#. Key:	52BD6E9249A99773AAB035A050A230E2
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_MainMenu.WBPC_MainMenu_C:WidgetTree.Load.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_MainMenu.WBPC_MainMenu_C:WidgetTree.Load.In Text
+msgctxt ",52BD6E9249A99773AAB035A050A230E2"
+msgid "Load"
+msgstr "Charger"
+
+#. Key:	EBD59B4C4ADF2F334D2B91AC0568A9C0
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_OppeningScreen.WBPC_OppeningScreen_C:WidgetTree.WBPC_CommonButton_Screening.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_OppeningScreen.WBPC_OppeningScreen_C:WidgetTree.WBPC_CommonButton_Screening.In Text
+msgctxt ",EBD59B4C4ADF2F334D2B91AC0568A9C0"
+msgid "Start"
+msgstr "Commencer"
+
+#. Key:	6F4182704F5667F06E0C94BC2E0A2B70
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.CommonTextBlock.Text
+#: /Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.CommonTextBlock.Text
+msgctxt ",6F4182704F5667F06E0C94BC2E0A2B70"
+msgid "CONTINUE ?"
+msgstr "Continuer ?"
+
+#. Key:	31753C24493E4D903B9169B2F878BDD3
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.CommonTextBlock_60.Text
+#: /Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.CommonTextBlock_60.Text
+msgctxt ",31753C24493E4D903B9169B2F878BDD3"
+msgid "YOU ARE ABOUT TO SAVE"
+msgstr "VOUS ÊTES SUR LE POINT DE  SAUVEGARDER"
+
+#. Key:	AF8AE3EE4C750CC80717E6B200EF2E03
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.No.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.No.In Text
+msgctxt ",AF8AE3EE4C750CC80717E6B200EF2E03"
+msgid "No"
+msgstr "Non"
+
+#. Key:	FF50E8694F2FE4F7697251B04683B250
+#. SourceLocation:	/Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.Yes.In Text
+#: /Game/Design/Widgets/MainMenu/WBPC_Save.WBPC_Save_C:WidgetTree.Yes.In Text
+msgctxt ",FF50E8694F2FE4F7697251B04683B250"
+msgid "Yes"
+msgstr "Oui"
+
+#. Key:	E06D6DAA4A189DAEF8C6DBA828393AEA
+#. SourceLocation:	/Game/Design/Widgets/Menu_Pause/WBPC_MainPause.WBPC_MainPause_C:WidgetTree.BackMenu.In Text
+#: /Game/Design/Widgets/Menu_Pause/WBPC_MainPause.WBPC_MainPause_C:WidgetTree.BackMenu.In Text
+msgctxt ",E06D6DAA4A189DAEF8C6DBA828393AEA"
+msgid "Return to main menu"
+msgstr "Revenir au menu principal"
+
+#. Key:	17F4FA7C4C45DF4250EDA5A47196A8D7
+#. SourceLocation:	/Game/Design/Widgets/Menu_Pause/WBPC_MainPause.WBPC_MainPause_C:WidgetTree.Play.In Text
+#: /Game/Design/Widgets/Menu_Pause/WBPC_MainPause.WBPC_MainPause_C:WidgetTree.Play.In Text
+msgctxt ",17F4FA7C4C45DF4250EDA5A47196A8D7"
+msgid "Resume"
+msgstr "Continuer"
+
+#. Key:	5A91E8B4460AE38FC42449AC04099C90
+#. SourceLocation:	/Game/Design/Widgets/Menu_Pause/WBPC_MainPause.WBPC_MainPause_C:WidgetTree.Quit_1.In Text
+#: /Game/Design/Widgets/Menu_Pause/WBPC_MainPause.WBPC_MainPause_C:WidgetTree.Quit_1.In Text
+msgctxt ",5A91E8B4460AE38FC42449AC04099C90"
+msgid "Quit"
+msgstr "Quitter"
+
+#. Key:	6950A5B047A2359B6DF0EDB2CE3F64CC
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_ActivateEMP.WBP_Tutorial_ActivateEMP_C:WidgetTree.CommonTextBlock_4.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_ActivateEMP.WBP_Tutorial_ActivateEMP_C:WidgetTree.CommonTextBlock_4.Text
+msgctxt ",6950A5B047A2359B6DF0EDB2CE3F64CC"
+msgid "Activate EMP beacons with your electrical weapon."
+msgstr "Activer les balises IEM avec votre arme électrique."
+
+#. Key:	A67B6E264B05084A3010889F98E9644C
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_PlaceEMP.WBP_Tutorial_PlaceEMP_C:WidgetTree.CommonTextBlock_1.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_PlaceEMP.WBP_Tutorial_PlaceEMP_C:WidgetTree.CommonTextBlock_1.Text
+msgctxt ",A67B6E264B05084A3010889F98E9644C"
+msgid "to place EMP beacons around the rift"
+msgstr "pour placer les balises IEM autour de la faille"
+
+#. Key:	DB2EFEA74FE310C327E589B1533D82F1
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Run.WBP_Tutorial_Run_C:WidgetTree.CommonTextBlock.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Run.WBP_Tutorial_Run_C:WidgetTree.CommonTextBlock.Text
+msgctxt ",DB2EFEA74FE310C327E589B1533D82F1"
+msgid "or"
+msgstr "ou"
+
+#. Key:	E0DFFEE840A711B4914AFAB3C830B90A
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Run.WBP_Tutorial_Run_C:WidgetTree.CommonTextBlock_1.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Run.WBP_Tutorial_Run_C:WidgetTree.CommonTextBlock_1.Text
+msgctxt ",E0DFFEE840A711B4914AFAB3C830B90A"
+msgid "to run"
+msgstr "pour courrir"
+
+#. Key:	9F32CEDD4D1D55B8404562BF19678BE9
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock.Text
+msgctxt ",9F32CEDD4D1D55B8404562BF19678BE9"
+msgid "Then press"
+msgstr "Puis appuyez"
+
+#. Key:	241940DD4E36FDC2E27BBB8B2632C7E8
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock_1.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock_1.Text
+msgctxt ",241940DD4E36FDC2E27BBB8B2632C7E8"
+msgid "to aim with your rifle"
+msgstr "pour viser avec votre fusil"
+
+#. Key:	FE1AACFD453E95C450595DBF92712D24
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock_2.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock_2.Text
+msgctxt ",FE1AACFD453E95C450595DBF92712D24"
+msgid "to shoot"
+msgstr "pour tirer"
+
+#. Key:	AF8431624B9680B773A7BDACB0B264AB
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock_4.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Shoot.WBP_Tutorial_Shoot_C:WidgetTree.CommonTextBlock_4.Text
+msgctxt ",AF8431624B9680B773A7BDACB0B264AB"
+msgid "Hold"
+msgstr "Maintenir"
+
+#. Key:	FC521F04417D24BE0F3E5BA629665017
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock.Text
+msgctxt ",FC521F04417D24BE0F3E5BA629665017"
+msgid "to fire electrics arcs"
+msgstr "pour projetter des arcs électriques"
+
+#. Key:	30F465554CCF560D9ECF91BF115830E9
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock_1.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock_1.Text
+msgctxt ",30F465554CCF560D9ECF91BF115830E9"
+msgid "to switch your rifle mode to \"electric\""
+msgstr "pour changer le mode de votre arme en \"électrique\""
+
+#. Key:	C829F3C8433A14FE9C1E61A95ED0057B
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock_5.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock_5.Text
+msgctxt ",C829F3C8433A14FE9C1E61A95ED0057B"
+msgid "Aim with "
+msgstr "Viser avec"
+
+#. Key:	96C6DE5A4FC1B7193289C38CC0B4CD17
+#. SourceLocation:	/Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock_6.Text
+#: /Game/Design/Widgets/Tutorial/WBP_Tutorial_Switch_Mode.WBP_Tutorial_Switch_Mode_C:WidgetTree.CommonTextBlock_6.Text
+msgctxt ",96C6DE5A4FC1B7193289C38CC0B4CD17"
+msgid "and hold"
+msgstr "et maintenez"
+
+#. Key:	3FC62CEB4B864BE538DE3790C3B105E4
+#. SourceLocation:	/Game/Sounds/Audio/SFX/Staging/SW_Cinematic_Introduction.SW_Cinematic_Introduction.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/SFX/Staging/SW_Cinematic_Introduction.SW_Cinematic_Introduction.Subtitles(1).Subtitles.Text
+msgctxt ",3FC62CEB4B864BE538DE3790C3B105E4"
+msgid "Iris: Are you inside?"
+msgstr "Iris: Es tu à l'intérieur ?"
+
+#. Key:	C7294027415272FFBAD46085F64E04D3
+#. SourceLocation:	/Game/Sounds/Audio/SFX/Staging/SW_Cinematic_Introduction.SW_Cinematic_Introduction.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/SFX/Staging/SW_Cinematic_Introduction.SW_Cinematic_Introduction.Subtitles(2).Subtitles.Text
+msgctxt ",C7294027415272FFBAD46085F64E04D3"
+msgid "Charles: Not yet, I'm on my way."
+msgstr "Charles: Pas encore, je suis en chemin."
+
+#. Key:	737D06984AA5FA7516D8D2B191FFDCA7
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(0).Subtitles.Text
+msgctxt ",737D06984AA5FA7516D8D2B191FFDCA7"
+msgid "Charles: This is the twelfth operation in three days."
+msgstr "Charles : C'est la douzième intervention en trois jours."
+
+#. Key:	0932D8F3451970A4907F28B0499006F3
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(1).Subtitles.Text
+msgctxt ",0932D8F3451970A4907F28B0499006F3"
+msgid "Charles: With so much chaos, we'll soon need a second team."
+msgstr "Charles : Avec autant de perturbations, il faudra bientôt une seconde équipe."
+
+#. Key:	7ADA73BC49A9396DB1EBF19FDDDA52FC
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(2).Subtitles.Text
+msgctxt ",7ADA73BC49A9396DB1EBF19FDDDA52FC"
+msgid "Charles: Yesterday I had to miss my daughter's tenth birthday."
+msgstr "Charles : Hier, j'ai dû louper le dixième anniversaire de ma fille."
+
+#. Key:	ADD9B28B48E7A935659643AFBE247D62
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(3).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(3).Subtitles.Text
+msgctxt ",ADD9B28B48E7A935659643AFBE247D62"
+msgid "Iris: She didn't hold it against you ?"
+msgstr "Iris : Elle ne t'en a pas trop voulu ?"
+
+#. Key:	FB8A5D714F1A1C77C78C1588BF0A3B00
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(4).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part1.SW_Script_Family_Part1.Subtitles(4).Subtitles.Text
+msgctxt ",FB8A5D714F1A1C77C78C1588BF0A3B00"
+msgid "Charles: You know, at that age, they tend to move on quickly."
+msgstr "Charles : Tu sais, à cet âge là, ça lui passera..."
+
+#. Key:	D1B9E8AE4BD36C74F0DB93B9DFAFC1FA
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(0).Subtitles.Text
+msgctxt ",D1B9E8AE4BD36C74F0DB93B9DFAFC1FA"
+msgid "Charles : My wife, on the other hand, holds it against me."
+msgstr "Charles : Ma femme par contre, m'en tient rigueur."
+
+#. Key:	155603A74632E2527C0A1399A2BEDC8E
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(1).Subtitles.Text
+msgctxt ",155603A74632E2527C0A1399A2BEDC8E"
+msgid "Charles: How can you blame her?"
+msgstr "Charles: Comment lui en vouloir ?"
+
+#. Key:	421996974E24CF2F9C4A1A9B6F7C698C
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(2).Subtitles.Text
+msgctxt ",421996974E24CF2F9C4A1A9B6F7C698C"
+msgid "Charles: If I do it, it's for their sake first and foremost..."
+msgstr "Charles : Si je fais ce travail c’est avant tout pour elles..."
+
+#. Key:	24A392024F9113EC83BD9A86EC18BD94
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(3).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Family/SW_Script_Family_Part2.SW_Script_Family_Part2.Subtitles(3).Subtitles.Text
+msgctxt ",24A392024F9113EC83BD9A86EC18BD94"
+msgid "Iris: I'm sure she understands that, family is important."
+msgstr "Iris : Je suis sûr qu'elle le comprend."
+
+#. Key:	E61233154F5DDE666BAA348E7A5211E3
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_End.SW_Script_FirstRift_End.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_End.SW_Script_FirstRift_End.Subtitles(0).Subtitles.Text
+msgctxt ",E61233154F5DDE666BAA348E7A5211E3"
+msgid "Iris: You can come back to the Cité"
+msgstr "Iris: Tu peux revenir à la Cité."
+
+#. Key:	C7889A2548F771E04B4ADC97F91D5511
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_End.SW_Script_FirstRift_End.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_End.SW_Script_FirstRift_End.Subtitles(1).Subtitles.Text
+msgctxt ",C7889A2548F771E04B4ADC97F91D5511"
+msgid "Iris: I start to make my report."
+msgstr "Iris: Je commence mon rapport."
+
+#. Key:	73AB1F074D5022AA0D5C6F9ED82CF74C
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(0).Subtitles.Text
+msgctxt ",73AB1F074D5022AA0D5C6F9ED82CF74C"
+msgid "Charles: I've got the distortion in front of me."
+msgstr "Charles : J'ai l'interférence en face de moi."
+
+#. Key:	4E569DED498A7C010887E8BF28B4BFD1
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(1).Subtitles.Text
+msgctxt ",4E569DED498A7C010887E8BF28B4BFD1"
+msgid "Iris: Do you have everything you need?"
+msgstr "Iris : Tu as tout ce qu'il te faut ?"
+
+#. Key:	D6E839B346A83A1E69FC08A0C9FB9D02
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(2).Subtitles.Text
+msgctxt ",D6E839B346A83A1E69FC08A0C9FB9D02"
+msgid "Charles : Yes, I'm going to set them up all around."
+msgstr "Charles : Oui, je vais les installer autour."
+
+#. Key:	DC208B614E565CE5E94F309DF59B7BB4
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(3).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(3).Subtitles.Text
+msgctxt ",DC208B614E565CE5E94F309DF59B7BB4"
+msgid "Iris: Take care."
+msgstr "Iris : Fais attention à toi."
+
+#. Key:	44220AAC4761BB3D64521B8F55E701BC
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(4).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_Part1.SW_Script_FirstRift_Part1.Subtitles(4).Subtitles.Text
+msgctxt ",44220AAC4761BB3D64521B8F55E701BC"
+msgid "Charles: I'm waiting for them."
+msgstr "Charles : Je les attends."
+
+#. Key:	D172F2EF4BC072DCC1433A90358149AE
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_ShootEMP.SW_Script_FirstRift_ShootEMP.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_ShootEMP.SW_Script_FirstRift_ShootEMP.Subtitles(0).Subtitles.Text
+msgctxt ",D172F2EF4BC072DCC1433A90358149AE"
+msgid "Charles: It's all set!"
+msgstr "Charles: Tout est en place !"
+
+#. Key:	E4C2458748DAF758F8EC8594684F75ED
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_ShootEMP.SW_Script_FirstRift_ShootEMP.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_ShootEMP.SW_Script_FirstRift_ShootEMP.Subtitles(1).Subtitles.Text
+msgctxt ",E4C2458748DAF758F8EC8594684F75ED"
+msgid "Iris: OK, all you have to do now is activate them with your electric weapon."
+msgstr "Iris: Bien, il ne te reste plus qu'à les activer avec ton arme électrique."
+
+#. Key:	891134F642758C7217ED588EF1903B16
+#. SourceLocation:	/Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_ShutDownLight.SW_Script_FirstRift_ShutDownLight.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/FirstRift/SW_Script_FirstRift_ShutDownLight.SW_Script_FirstRift_ShutDownLight.Subtitles(0).Subtitles.Text
+msgctxt ",891134F642758C7217ED588EF1903B16"
+msgid "Charles: Fucking fuses!"
+msgstr "Charles: Merde ! Les plombs !"
+
+#. Key:	17420853476B748687B4349CC1F8512F
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(0).Subtitles.Text
+msgctxt ",17420853476B748687B4349CC1F8512F"
+msgid "Charles: Erm... didn't you already intervene?"
+msgstr "Charles : Euh... vous n'êtes pas déjà intervenus ?"
+
+#. Key:	D36040454F18EF752276658DD6591216
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(1).Subtitles.Text
+msgctxt ",D36040454F18EF752276658DD6591216"
+msgid "Iris: No, I haven't had time to make my report yet."
+msgstr "Iris : Non je n'ai pas encore eu le temps de faire mon rapport."
+
+#. Key:	98D10C154AD711A7E293EB8EAF6E8822
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(2).Subtitles.Text
+msgctxt ",98D10C154AD711A7E293EB8EAF6E8822"
+msgid "Charles: Well, I think the corpse has gone."
+msgstr "Charles : Bin, je crois bien que le corps s'est fait la malle."
+
+#. Key:	3D19374E4C476B6124AFF0BC0177BD3C
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(3).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(3).Subtitles.Text
+msgctxt ",3D19374E4C476B6124AFF0BC0177BD3C"
+msgid "Iris: What do you mean by that?"
+msgstr "Iris: Qu'est-ce que tu veux dire ?"
+
+#. Key:	4604CBFE4795CF2C3E295D9801C1F5F4
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(4).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_CorpseGone.SW_Script_Hollandais_CorpseGone.Subtitles(4).Subtitles.Text
+msgctxt ",4604CBFE4795CF2C3E295D9801C1F5F4"
+msgid "Charles: He's no longer there."
+msgstr "Charles : Il n'est plus là."
+
+#. Key:	77979D5449844B8DF1815A993A4FB70F
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_Meet.SW_Script_Hollandais_Meet.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_Meet.SW_Script_Hollandais_Meet.Subtitles(0).Subtitles.Text
+msgctxt ",77979D5449844B8DF1815A993A4FB70F"
+msgid "Charles: Fuck!"
+msgstr "Charles : Bon... le pauvre n'a pas eu le temps de fuir."
+
+#. Key:	7A5569C840940FD1BF9A488E35D808F4
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_Meet.SW_Script_Hollandais_Meet.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_Meet.SW_Script_Hollandais_Meet.Subtitles(1).Subtitles.Text
+msgctxt ",7A5569C840940FD1BF9A488E35D808F4"
+msgid "Charles: I came too late!"
+msgstr "Charles : Tu peux envoyer une equipe de nettoyage."
+
+#. Key:	8C919C76417360AFEC347EA1A6CDA5A5
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(0).Subtitles.Text
+msgctxt ",8C919C76417360AFEC347EA1A6CDA5A5"
+msgid "HELP! HELP!"
+msgstr "Á L'AIDE ! AIDEZ-MOI !"
+
+#. Key:	C6346A764A466416F04788A4C098CD2C
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(1).Subtitles.Text
+msgctxt ",C6346A764A466416F04788A4C098CD2C"
+msgid "\"Inaudible noises\""
+msgstr "\"Bruits inaudible\""
+
+#. Key:	50F1CD3E48505DFFD5406784A0FECE7A
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(2).Subtitles.Text
+msgctxt ",50F1CD3E48505DFFD5406784A0FECE7A"
+msgid "Charles: I thought everyone had evacuated!"
+msgstr "Charles : Je croyais que tout le monde avait évacué !"
+
+#. Key:	FB29F0D24785C2DF9AD205A19CD465E8
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(3).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(3).Subtitles.Text
+msgctxt ",FB29F0D24785C2DF9AD205A19CD465E8"
+msgid "Iris : Why? Isn't that the case?"
+msgstr "Iris : Pourquoi ? Ce n'est pas le cas ?"
+
+#. Key:	DF9848B34FC1ECA02A4B19BFB6D8A1EB
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(4).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Hollandais/SW_Script_Hollandais_ScreamForHelp.SW_Script_Hollandais_ScreamForHelp.Subtitles(4).Subtitles.Text
+msgctxt ",DF9848B34FC1ECA02A4B19BFB6D8A1EB"
+msgid "Charles: I'M COMING! WHERE ARE YOU?"
+msgstr "Charles : J'ARRIVE ! OU ÊTES VOUS ?"
+
+#. Key:	233BE68C4E9FBAEF3E5A89AA5A1A8FBC
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Cite.SW_Script_Introduction_Cite.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Cite.SW_Script_Introduction_Cite.Subtitles(0).Subtitles.Text
+msgctxt ",233BE68C4E9FBAEF3E5A89AA5A1A8FBC"
+msgid "Charles: Are we sure everyone's been evacuated?"
+msgstr "Charles : On est bien sûr que tout le monde a été évacué ?"
+
+#. Key:	C15595CB4D82F6505AC67ABC9FDF8DA4
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Cite.SW_Script_Introduction_Cite.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Cite.SW_Script_Introduction_Cite.Subtitles(1).Subtitles.Text
+msgctxt ",C15595CB4D82F6505AC67ABC9FDF8DA4"
+msgid "Iris: Until there's proof to the contrary, you're on your own, so head for the upper tunnels."
+msgstr "Iris : Jusqu'à preuve du contraire, tu es seul, dirige-toi vers les tunnels supérieurs."
+
+#. Key:	251F2372422EBE407390A19D4F6B598A
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Cite.SW_Script_Introduction_Cite.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Cite.SW_Script_Introduction_Cite.Subtitles(2).Subtitles.Text
+msgctxt ",251F2372422EBE407390A19D4F6B598A"
+msgid "Iris: Head towards \"Porte de Clignancourt\"."
+msgstr "Iris : Prends la direction de 'Porte de Clignancourt'."
+
+#. Key:	7BF393A44A288B66E26065B07C568168
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(0).Subtitles.Text
+msgctxt ",7BF393A44A288B66E26065B07C568168"
+msgid "Charles : Hey? Did I really have to make a diversion? "
+msgstr "Charles: Eh ? Est-ce que le détour était vraiment nécessaire ?"
+
+#. Key:	2C54F6DD4C0B1DE89E1A77BC033E54B2
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(1).Subtitles.Text
+msgctxt ",2C54F6DD4C0B1DE89E1A77BC033E54B2"
+msgid "Iris: You know you mustn't be seen."
+msgstr "Iris : Tu sais bien que tu ne dois pas être vue."
+
+#. Key:	BBC387C943297A987A3027BE13EF07DE
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(2).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(2).Subtitles.Text
+msgctxt ",BBC387C943297A987A3027BE13EF07DE"
+msgid "Charles : I could have done without it..."
+msgstr "Charles : J'aurais pu m'en passer..."
+
+#. Key:	540DDF3B4272A0F50033108C77E4309C
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(3).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(3).Subtitles.Text
+msgctxt ",540DDF3B4272A0F50033108C77E4309C"
+msgid "Iris: Perhaps you'd prefer to make your way through the crowd..."
+msgstr "Iris : Tu préférerais peut-être te frayer un chemin dans la foule ?"
+
+#. Key:	8D61A524407C01E21CD1C29B7C70448A
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(4).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(4).Subtitles.Text
+msgctxt ",8D61A524407C01E21CD1C29B7C70448A"
+msgid "Charles: Not really, trade unionists were never my thing."
+msgstr "Charles : Pas vraiment, les syndicalistes ça n'a jamais été mon truc."
+
+#. Key:	A6372F094A7B7F38578F66B1E45F75A9
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(5).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(5).Subtitles.Text
+msgctxt ",A6372F094A7B7F38578F66B1E45F75A9"
+msgid "Iris: I would have thought so !"
+msgstr "Iris : Je m'en serais douté !"
+
+#. Key:	6B5C3C6D48777E70A9999DB93C7C08BB
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(6).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(6).Subtitles.Text
+msgctxt ",6B5C3C6D48777E70A9999DB93C7C08BB"
+msgid "Charles: Let's stick to the mission, if you don't mind."
+msgstr "Charles : Ne relançons pas le sujet tu veux ?"
+
+#. Key:	40EF7C28477381B50B91099A14C7724F
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(7).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_Introduction_Elevator.SW_Script_Introduction_Elevator.Subtitles(7).Subtitles.Text
+msgctxt ",40EF7C28477381B50B91099A14C7724F"
+msgid "Iris: Well, good !"
+msgstr "Iris : Bien bien comme tu voudras !"
+
+#. Key:	4CD4BBEA404C2FBB16F6DDA17040490E
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Introduction/SW_Script_UpperTunnel_Electrical.SW_Script_UpperTunnel_Electrical.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Introduction/SW_Script_UpperTunnel_Electrical.SW_Script_UpperTunnel_Electrical.Subtitles(0).Subtitles.Text
+msgctxt ",4CD4BBEA404C2FBB16F6DDA17040490E"
+msgid "Charles: It seems that maintenance is lacking."
+msgstr "Charles : La maintenance laisse à désirer."
+
+#. Key:	E66B556344C6C6841C9AB49B675E51F5
+#. SourceLocation:	/Game/Sounds/Audio/Voices/SW_Script_AttemptFlee1.SW_Script_AttemptFlee1.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/SW_Script_AttemptFlee1.SW_Script_AttemptFlee1.Subtitles(0).Subtitles.Text
+msgctxt ",E66B556344C6C6841C9AB49B675E51F5"
+msgid "Iris: I know we've been doing a lot of missions recently."
+msgstr "Iris : Je sais qu'on a accumulé les missions ces derniers temps."
+
+#. Key:	F30EDE7149F3D81DF55797B47AD0653B
+#. SourceLocation:	/Game/Sounds/Audio/Voices/SW_Script_AttemptFlee1.SW_Script_AttemptFlee1.Subtitles(1).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/SW_Script_AttemptFlee1.SW_Script_AttemptFlee1.Subtitles(1).Subtitles.Text
+msgctxt ",F30EDE7149F3D81DF55797B47AD0653B"
+msgid "Iris: But that's no reason to abort the mission."
+msgstr "Iris : Mais ce n'est pas une raison pour abandonner la mission."
+
+#. Key:	B13B39E64D79494D041A259301B37579
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Tutorial/CircuitBreaker/SW_Script_Tutorial_CircuitBreaker_Variant_1.SW_Script_Tutorial_CircuitBreaker_Variant_1.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Tutorial/CircuitBreaker/SW_Script_Tutorial_CircuitBreaker_Variant_1.SW_Script_Tutorial_CircuitBreaker_Variant_1.Subtitles(0).Subtitles.Text
+msgctxt ",B13B39E64D79494D041A259301B37579"
+msgid "Charles : I should be able to restore power with my gun."
+msgstr "Charles : Je devais être capable de l'alimenter avec mon fusil."
+
+#. Key:	1706F4E14209F0B28F55ADA9CAD0096F
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Tutorial/CircuitBreaker/SW_Script_Tutorial_CircuitBreaker_Variant_2.SW_Script_Tutorial_CircuitBreaker_Variant_2.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Tutorial/CircuitBreaker/SW_Script_Tutorial_CircuitBreaker_Variant_2.SW_Script_Tutorial_CircuitBreaker_Variant_2.Subtitles(0).Subtitles.Text
+msgctxt ",1706F4E14209F0B28F55ADA9CAD0096F"
+msgid "Charles : He probably needs a little burst of energy."
+msgstr "Charles : Il a probablement besoin d'un petit coup de jus."
+
+#. Key:	ED2131ED4EE7D1731BAE1D860FE0C736
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Tutorial/CircuitBreaker/SW_Script_Tutorial_CircuitBreaker_Variant_3.SW_Script_Tutorial_CircuitBreaker_Variant_3.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Tutorial/CircuitBreaker/SW_Script_Tutorial_CircuitBreaker_Variant_3.SW_Script_Tutorial_CircuitBreaker_Variant_3.Subtitles(0).Subtitles.Text
+msgctxt ",ED2131ED4EE7D1731BAE1D860FE0C736"
+msgid "Charles : I might have to recharge it with my gun..."
+msgstr "Charles : Je devrais peut être le recharger avec mon fusil..."
+
+#. Key:	125041974679E5EE40A92FBD61C0309E
+#. SourceLocation:	/Game/Sounds/Audio/Voices/Tutorial/SW_Script_Tutorial_BreakDoor.SW_Script_Tutorial_BreakDoor.Subtitles(0).Subtitles.Text
+#: /Game/Sounds/Audio/Voices/Tutorial/SW_Script_Tutorial_BreakDoor.SW_Script_Tutorial_BreakDoor.Subtitles(0).Subtitles.Text
+msgctxt ",125041974679E5EE40A92FBD61C0309E"
+msgid "Charles : I'm going to smash the door down!"
+msgstr "Charles : Je vais défoncer la porte !"
+

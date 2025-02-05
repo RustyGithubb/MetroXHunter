@@ -12,9 +12,16 @@ class UCineCameraComponent;
 class USpringArmComponent;
 class UReloadComponent;
 class UInventoryComponent;
+class UInteractionComponent;
 class UHealthComponent;
-class UDualSenseControllerComponent;
+class USaveLoadComponent;
+class UElectrocutableComponent;
+class UAITargetComponent;
+class UQuickTimeEventComponent;
 class AGun;
+class UDualSenseControllerComponent;
+class UCameraAnimationSequence;
+struct FCameraAnimationParams;
 
 UCLASS()
 class METROXHUNTER_API AMetroPlayerCharacter : public ABaseMetroPlayerCharacter
@@ -28,7 +35,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION( BlueprintImplementableEvent, Category = "PlayerCharacter|SpringArm")
+	void StompKick();
+
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "PlayerCharacter|SpringArm")
 	void UpdateTargetArmLength( float TargetArmLength );
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "PlayerCharacter|Camera" )
@@ -46,9 +55,6 @@ public:
 	UFUNCTION( BlueprintImplementableEvent, Category = "PlayerCharacter|Camera" )
 	void CameraShakeFeedback();
 
-	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Weapon" )
-	void EquipWeapon(bool bShouldEquip);
-
 	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
 	void UpdateCrossHairOnMovement( float MovementSpeed );
 	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
@@ -58,16 +64,14 @@ public:
 
 	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
 	void UseSyringe();
-
-	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
-	void StompKick();
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
+	void OnStompKick(float InitialVelocity, FVector Direction);
 
 	UFUNCTION( BlueprintCallable, Category = "PlayerCharacter|Aim" )
 	void StartAiming();
+	virtual void StopAiming_Implementation() override;
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Aim" )
 	void StartAimAssist();
-	UFUNCTION( BlueprintCallable, Category = "PlayerCharacter|Aim" )
-	void StopAiming();
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Aim" )
 	void StopAimAssist();
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Aim" )
@@ -80,6 +84,8 @@ public:
 	USceneComponent* PivotCamera = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Camera" )
 	UCineCameraComponent* CineCameraComponent = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|DualSens" )
+	UDualSenseControllerComponent* DualSenseComponent;
 
 	UPROPERTY( BlueprintReadOnly, Category = "CharacterController|Movement" )
 	FVector2D InputDirection {};
@@ -94,6 +100,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "PlayerCharacter|Aim" )
 	float ShootingImprecisionValue = 1.0f;
+	
+	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|MovementData" )
+	float RunMaxSpeed = 480.0f;
 
 	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|Reference" )
 	AActor* Bobine = nullptr;
@@ -103,8 +112,19 @@ protected:
 	UReloadComponent* ReloadComponent = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Inventory" )
 	UInventoryComponent* InventoryComponent = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Interact" )
+	UInteractionComponent* InteractionComponent = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Save" )
+	USaveLoadComponent* SaveLoadComponent = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Elec" )
+	UElectrocutableComponent* ElectrocutableComponent = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Health" )
 	UHealthComponent* HealthComponent = nullptr;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|DualSens" )
-	UDualSenseControllerComponent* DualSenseComponent;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|AI" )
+	UAITargetComponent* AITargetComponent;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|QTE" )
+	UQuickTimeEventComponent* QTEComponent;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|ForceFeedback" )
+	UForceFeedbackEffect* KickForceFeedback;
 };

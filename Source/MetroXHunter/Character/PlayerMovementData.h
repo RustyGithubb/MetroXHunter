@@ -8,7 +8,7 @@
 #include "Engine/DataAsset.h"
 #include "PlayerMovementData.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class METROXHUNTER_API UPlayerMovementData : public UDataAsset
 {
 	GENERATED_BODY()
@@ -23,9 +23,11 @@ public:
 	FVector2D DefaultMouseSensitivity { 0.6f };
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerMovement" )
-	UCurveFloat* MovementCurve = nullptr;
+	UCurveFloat* MovementInputLengthCurve = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerMovement" )
-	UCurveFloat* RotationCurve = nullptr;
+	UCurveFloat* RotationInputLengthCurve = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerMovement" )
+	UCurveFloat* RotationDurationCurve = nullptr;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerMovement|SpringArm" )
 	float IdleTargetArmLength = 170.0f;

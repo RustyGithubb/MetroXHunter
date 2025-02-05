@@ -52,6 +52,9 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Gun" )
 	USkeletalMeshComponent* WeaponSkeletonMesh = nullptr;
 
+	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
+	bool bIsLightningActive = false;
+
 protected:
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable )
 	void CheckLineCollision(
@@ -72,6 +75,11 @@ protected:
 
 	UFUNCTION( BlueprintImplementableEvent )
 	void GetNiagaraEffects();
+
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun" )
+	void AddImpulseAtTrace( UPARAM( ref ) FHitResult& HitResult, float ImpulseForce );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun" )
+	void AddForceAtTrace( UPARAM( ref ) FHitResult& HitResult, float ImpulseForce );
 
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Gun|LightningAbility" )
 	void RetrieveReflectedEnemies( UPARAM( ref ) FVector& ImpactionPoint );
@@ -104,8 +112,6 @@ protected:
 	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
 	bool bIsLightningCharged = false;
 	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
-	bool bIsLightningActive = false;
-	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
 	float LightningTimer = 0.0f;
 	UPROPERTY( BlueprintReadWrite, Category = "Gun|LightningAbility" )
 	TMap<AActor*, AActor*> EnemiesTargeted {};
@@ -122,12 +128,17 @@ protected:
 	UPROPERTY( BlueprintReadWrite, Category = "Gun|References" )
 	UNiagaraComponent* LightningOrbNiagara = nullptr;
 
+	UFUNCTION()
+	void OnReload();
+
 private:
 	void GetReferences();
 	void CheckCurrentTargetType();
 	bool HandleCanFire();
+
 	void RetrieveFirstBeamHit();
 
 private:
 	UHealthComponent* LastAimTarget = nullptr;
+	APlayerController* PlayerController = nullptr;
 };

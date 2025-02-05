@@ -23,6 +23,7 @@ void UEnemySpawnerScriptedEvent::Tick( float DeltaTime )
 	if ( ScheduledSpawners.IsEmpty() )
 	{
 		bIsRunning = false;
+		OnEventFinished.Broadcast( this );
 		return;
 	}
 
@@ -45,7 +46,7 @@ TStatId UEnemySpawnerScriptedEvent::GetStatId() const
 	RETURN_QUICK_DECLARE_CYCLE_STAT( UEnemySpawnerScriptedEvent, STATGROUP_Tickables );
 }
 
-void UEnemySpawnerScriptedEvent::OnRunScriptedEvent_Implementation()
+bool UEnemySpawnerScriptedEvent::OnRunScriptedEvent_Implementation()
 {
 	bIsRunning = true;
 	CurrentSpawnTime = 0.0f;
@@ -103,6 +104,8 @@ void UEnemySpawnerScriptedEvent::OnRunScriptedEvent_Implementation()
 			return A.Time > B.Time;
 		}
 	);
+
+	return false;
 }
 
 bool UEnemySpawnerScriptedEvent::CheckSpawnCondition() const

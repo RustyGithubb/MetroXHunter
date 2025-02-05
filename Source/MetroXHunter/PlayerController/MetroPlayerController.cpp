@@ -6,6 +6,7 @@
 #include "Gun/GunControllerComponent.h"
 #include "Character/CharacterControllerComponent.h"
 #include "Character/MetroPlayerCharacter.h"
+#include "Character/PlayerMovementData.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -31,14 +32,16 @@ void AMetroPlayerController::LateBeginPlay()
 	GunController = GetComponentByClass<UGunControllerComponent>();
 	CharacterController = GetComponentByClass<UCharacterControllerComponent>();
 
-	if ( GunController )
+	if ( IsValid( GunController ) )
 	{
 		GunController->SetupInputComponent( PlayerCharacter, InputComponent );
 	}
 
-	if ( CharacterController )
+	if ( IsValid( CharacterController ) )
 	{
 		CharacterController->SetupInputComponent( PlayerCharacter, InputComponent );
+
+		PlayerCharacter->RunMaxSpeed = CharacterController->PlayerMovementData->DefaultRunSpeed;
 	}
 }
 
@@ -67,20 +70,19 @@ void AMetroPlayerController::SetInputMappingContext_Implementation( UInputMappin
 	{
 		for ( const TSoftObjectPtr<UInputMappingContext>& SoftMappingContext : DefaultMappingContexts )
 		{
-			const UInputMappingContext* MappingContext = SoftMappingContext.LoadSynchronous();
-
 			verifyf(
-				IsValid( MappingContext ),
+				!SoftMappingContext.IsNull(),
 				TEXT( "MetroPlayerController: Trying to remove a default input mapping context from an invalid asset" )
 			);
 
+			const UInputMappingContext* MappingContext = SoftMappingContext.LoadSynchronous();
 			InputSystem->RemoveMappingContext( MappingContext );
 		}
 		bAreDefaultMappingContextsActive = false;
 	}
 
 	// Switch to the new mapping context
-	InputSystem->AddMappingContext( NewMappingContext, 0 );
+	InputSystem->AddMappingContext( NewMappingContext, 1 );
 	LastOverriddenMappingContext = NewMappingContext;
 }
 
@@ -106,13 +108,12 @@ void AMetroPlayerController::ResetInputMappingContext_Implementation()
 	// Add default mapping contexts
 	for ( const TSoftObjectPtr<UInputMappingContext>& SoftMappingContext : DefaultMappingContexts )
 	{
-		const UInputMappingContext* MappingContext = SoftMappingContext.LoadSynchronous();
-
 		verifyf(
-			IsValid( MappingContext ),
+			!SoftMappingContext.IsNull(),
 			TEXT( "MetroPlayerController: Trying to add a default input mapping context from an invalid asset" )
 		);
 
+		const UInputMappingContext* MappingContext = SoftMappingContext.LoadSynchronous();
 		InputSystem->AddMappingContext( MappingContext, 0 );
 	}
 	bAreDefaultMappingContextsActive = true;
@@ -131,23 +132,41 @@ void AMetroPlayerController::TickDebug_Implementation( float DeltaTime, FString&
 	FString DefaultMappingContextsString = "";
 	for ( const TSoftObjectPtr<UInputMappingContext>& SoftMappingContext : DefaultMappingContexts )
 	{
-		DefaultMappingContextsString += "- " + GetNameSafe( SoftMappingContext.Get() ) + "\n";
+		DefaultMappingContextsString += "- " + GetNameSafe( SoftMappingContext.Get() )
+			+ "=" + FString::FromInt( InputSystem->HasMappingContext( SoftMappingContext.Get() ) ) + "\n";
 	}
 
 	// Constructs formating arguments
 	FStringFormatNamedArguments Args {};
+	Args.Add( "InputMode", InputModeDebugDisplayName );
 	Args.Add( "bAreDefaultMappingContextsActive", bAreDefaultMappingContextsActive ? "true" : "false" );
 	Args.Add( "LastOverriddenMappingContext", GetNameSafe( LastOverriddenMappingContext ) );
+	Args.Add( "bLastOverriddenMappingContextActive", InputSystem->HasMappingContext( LastOverriddenMappingContext ) );
 	Args.Add( "DefaultMappingContexts", DefaultMappingContextsString );
 	Args.Add( "DefaultMappingContextsCount", DefaultMappingContexts.Num() );
 
 	// Formats debug string
 	constexpr auto Format = TEXT(
 		"[MetroPlayerController]\n"
+		"InputMode: {InputMode}\n"
 		"bAreDefaultMappingContextsActive: {bAreDefaultMappingContextsActive}\n"
-		"LastOverriddenMappingContext: {LastOverriddenMappingContext}\n"
+		"LastOverriddenMappingContext: {LastOverriddenMappingContext}={bLastOverriddenMappingContextActive}\n"
 		"DefaultMappingContexts[{DefaultMappingContextsCount}]\n"
 		"{DefaultMappingContexts}\n"
 	);
 	OutDebugText = FString::Format( Format, Args );
+}
+
+void AMetroPlayerController::SetInputMode( const FInputModeDataBase& InData )
+{
+	Super::SetInputMode( InData );
+
+	InputModeDebugDisplayName = InData.GetDebugDisplayName();
+}
+
+void AMetroPlayerController::ToggleFreezePlayer_Implementation( bool bShouldFreeze )
+{
+	PlayerCharacter->bIsUnderAction = bShouldFreeze;
+	CharacterController->ToggleFreezeMovement(bShouldFreeze);
+	CharacterController->ToggleFreezeRotation(bShouldFreeze);
 }

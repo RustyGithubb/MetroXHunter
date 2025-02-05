@@ -13,8 +13,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-#include "Library/UtilityLibrary.h"
-
 UCharacterControllerComponent::UCharacterControllerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -39,6 +37,7 @@ void UCharacterControllerComponent::SetupInputComponent( AMetroPlayerCharacter* 
 		EnhancedInputComponent->BindAction( MovementAction, ETriggerEvent::Canceled, this, &UCharacterControllerComponent::OnMoveInputReleased );
 
 		// Looking
+		EnhancedInputComponent->BindAction( LookAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::OnLookInputStart );
 		EnhancedInputComponent->BindAction( LookAction, ETriggerEvent::Triggered, this, &UCharacterControllerComponent::Look );
 
 		// Toggle Run
@@ -47,12 +46,13 @@ void UCharacterControllerComponent::SetupInputComponent( AMetroPlayerCharacter* 
 		// Aim
 		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::ToggleAim );
 		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Completed, this, &UCharacterControllerComponent::ToggleAim );
+		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Canceled, this, &UCharacterControllerComponent::ToggleAim );
 
 		// Heal
 		EnhancedInputComponent->BindAction( HealAction, ETriggerEvent::Completed, Player, &AMetroPlayerCharacter::UseSyringe );
 
 		// Stomp
-		EnhancedInputComponent->BindAction( StompAction, ETriggerEvent::Started, Player, &AMetroPlayerCharacter::StompKick);
+		EnhancedInputComponent->BindAction( StompAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::StompKick );
 	}
 
 	SetupDefaultValues();
@@ -60,7 +60,7 @@ void UCharacterControllerComponent::SetupInputComponent( AMetroPlayerCharacter* 
 
 void UCharacterControllerComponent::SetupDefaultValues()
 {
-	MouseSensitivity = PlayerMovementData->DefaultMouseSensitivity;
+	CameraSensitivity = PlayerMovementData->DefaultMouseSensitivity;
 	Player->GetCharacterMovement()->MaxWalkSpeed = PlayerMovementData->DefaultWalkSpeed;
 }
 
@@ -76,6 +76,11 @@ void UCharacterControllerComponent::ToggleFreezeRotation( bool bShouldFreeze )
 
 void UCharacterControllerComponent::ToggleFreezeRun( bool bShouldFreeze )
 {
+	if ( bShouldFreeze && bIsRunning )
+	{
+		ToggleRun();
+	}
+
 	bCanRun = !bShouldFreeze;
 }
 
@@ -91,16 +96,36 @@ void UCharacterControllerComponent::OnMoveInputStart( const FInputActionValue& V
 	HandleToggleRun();
 }
 
+void UCharacterControllerComponent::OnMoveInputReleased()
+{
+	bIsMoving = false;
+	Player->UpdateCrossHairOnMovement( 0.0f );
+	Player->ShootingImprecisionValue = 0.0f;
+
+	Player->GetCharacterMovement()->bUseControllerDesiredRotation = false;
+
+	Player->UpdateTargetArmLength( PlayerMovementData->IdleTargetArmLength );
+
+	Player->InputDirection = FVector2D::Zero();
+
+	CurrentMovementState = EMovementState::Idle;
+	OnMovementStateUpdate.Broadcast( CurrentMovementState );
+}
+
 void UCharacterControllerComponent::Move( const FInputActionValue& Value )
 {
-	if ( !bCanMove ) return;
+	if ( !bCanMove )
+	{
+		bIsMoving = false;
+		return;
+	}
 
 	bIsMoving = true;
 	Player->GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
 	// Get input action value
 	Player->InputDirection = Value.Get<FVector2D>();
-	float CurveValue = PlayerMovementData->MovementCurve->GetFloatValue( Player->InputDirection.Length() );
+	float CurveValue = PlayerMovementData->MovementInputLengthCurve->GetFloatValue( Player->InputDirection.Length() );
 
 	// Calculate Movement Direction
 	FVector MakeVector( Player->InputDirection.Y, Player->InputDirection.X, 0 );
@@ -119,6 +144,46 @@ void UCharacterControllerComponent::Move( const FInputActionValue& Value )
 	{
 		Player->ShootingImprecisionValue = 150 * Player->InputDirection.Length();
 	}
+}
+
+void UCharacterControllerComponent::OnLookInputStart( const FInputActionValue& Value )
+{
+	RotationInputTimer = GetWorld()->GetTimeSeconds();;
+}
+
+void UCharacterControllerComponent::Look( const FInputActionValue& Value )
+{
+	if ( !bCanRotate ) return;
+
+	float Timer = GetWorld()->GetTimeSeconds() - RotationInputTimer;
+
+	// Get input action value
+	Player->LookDirection = Value.Get<FVector2D>();
+	float CurveIntensityValue = PlayerMovementData->RotationInputLengthCurve->GetFloatValue( Player->LookDirection.Length() );
+	float CurveDurationValue = PlayerMovementData->RotationDurationCurve->GetFloatValue( Timer );
+
+	// TODO: ADD AIM ASSIST DECELERATION RATE (replace mouse sensitivity by mouse sensitivity * deceleration rate)
+
+	// Add yaw and pitch input to controller
+	Player->AddControllerYawInput( Player->LookDirection.X * CameraSensitivity.X * CurveIntensityValue * CurveDurationValue );
+	Player->AddControllerPitchInput( Player->LookDirection.Y * CameraSensitivity.Y * CurveIntensityValue * CurveDurationValue );
+}
+
+void UCharacterControllerComponent::StompKick()
+{
+	if ( Player->bIsUnderAction || Player->bIsAiming ) return;
+
+	float InitialVelocity = UKismetMathLibrary::VSizeXY( Player->GetVelocity() );
+
+	FVector MakeVector( Player->InputDirection.Y, Player->InputDirection.X, 0 );
+	FVector Direction = UKismetMathLibrary::TransformDirection(
+		Player->GetActorTransform(),
+		MakeVector
+	);
+
+	ToggleFreezeMovement( true );
+	ToggleFreezeRotation( true );
+	Player->OnStompKick( InitialVelocity, Direction );
 }
 
 void UCharacterControllerComponent::ToggleRun()
@@ -148,35 +213,6 @@ void UCharacterControllerComponent::HandleToggleRun()
 	}
 
 	OnMovementStateUpdate.Broadcast( CurrentMovementState );
-}
-
-void UCharacterControllerComponent::OnMoveInputReleased()
-{
-	bIsMoving = false;
-	Player->UpdateCrossHairOnMovement( 0.0f );
-	Player->ShootingImprecisionValue = 0.0f;
-
-	Player->GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	Player->UpdateTargetArmLength( PlayerMovementData->IdleTargetArmLength );
-
-	Player->InputDirection = FVector2D::Zero();
-
-	CurrentMovementState = EMovementState::Idle;
-	OnMovementStateUpdate.Broadcast( CurrentMovementState );
-}
-
-// TO DO: USE A SECOND CURVE DEPENDING ON DELTA TIME FOR THE ROTATION
-void UCharacterControllerComponent::Look( const FInputActionValue& Value )
-{
-	if ( !bCanRotate ) return;
-
-	// Get input action value
-	Player->LookDirection = Value.Get<FVector2D>();
-	float CurveValue = PlayerMovementData->RotationCurve->GetFloatValue( Player->LookDirection.Length() );
-
-	// Add yaw and pitch input to controller
-	Player->AddControllerYawInput( Player->LookDirection.X * MouseSensitivity.X * CurveValue );
-	Player->AddControllerPitchInput( Player->LookDirection.Y * MouseSensitivity.Y * CurveValue );
 }
 
 void UCharacterControllerComponent::ToggleAim( const FInputActionValue& Value )

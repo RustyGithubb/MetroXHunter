@@ -41,7 +41,7 @@ void UGunControllerComponent::SetupInputComponent( AMetroPlayerCharacter* InPlay
 
 void UGunControllerComponent::OnShootActionPressed()
 {
-	if ( !Player->bIsAiming ) return;
+	if ( !Player->bIsAiming || Player->bIsUnderAction ) return;
 
 	switch ( Springfield->GunMode )
 	{
@@ -62,13 +62,16 @@ void UGunControllerComponent::OnShootActionPressed()
 
 void UGunControllerComponent::OnShootActionTriggered( const FInputActionValue& Value )
 {
-	if ( Springfield->GunMode != EGunMode::Lightning ) return;
-
-	if ( Player->bIsAiming )
+	if ( !Player->bIsUnderAction 
+		&& Player->bIsAiming 
+		&& Springfield->GunMode == EGunMode::Lightning )
 	{
-		Springfield->OnLightningAbility( Value.Get<float>());
+		Springfield->OnLightningAbility( Value.Get<float>() );
+		return;
 	}
-	else
+
+
+	if ( Springfield->bIsLightningActive )
 	{
 		Springfield->OnLightningEnd();
 	}
@@ -76,7 +79,8 @@ void UGunControllerComponent::OnShootActionTriggered( const FInputActionValue& V
 
 void UGunControllerComponent::OnShootActionCompleted()
 {
-	if ( Springfield->GunMode != EGunMode::Lightning ) return;
-
-	Springfield->OnLightningEnd();
+	if ( Springfield->bIsLightningActive && Springfield->GunMode == EGunMode::Lightning )
+	{
+		Springfield->OnLightningEnd();
+	}
 }
