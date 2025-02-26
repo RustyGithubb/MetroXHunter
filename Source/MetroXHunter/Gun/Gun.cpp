@@ -8,18 +8,20 @@
 #include "Reload/ReloadComponent.h"
 #include "Gun/GunData.h"
 
+#include "Sounds/GunSoundManagerComponent.h"
+
 #include <DualSenseFunctionLibrary.h>
 #include "DualSenseControllerComponent.h"
 #include "Camera/CameraShakeSourceComponent.h"
 #include "CineCameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Sound/SoundBase.h"
 #include "Library/GameplayLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
+#include "Animation/AnimationAsset.h"
 #include "Library/UtilityLibrary.h"
 
 AGun::AGun()
@@ -44,6 +46,9 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SoundManagerComponent = GetComponentByClass<UGunSoundManagerComponent>();
+	checkf( IsValid( SoundManagerComponent ), TEXT( "Add a GunSoundManagerComponent on the Gun class!" ) );
+
 	// Late Begin Play
 	GetWorld()->OnWorldBeginPlay.AddUObject( this, &AGun::LateBeginPlay );
 }
@@ -67,13 +72,13 @@ bool AGun::HandleCanFire()
 	{
 		case EGunMode::Bullet:
 		{
+			if ( ReloadComponent->IsReloading() ) return false;
+
 			if ( ReloadComponent->IsGunEmpty() )
 			{
-				UGameplayStatics::PlaySound2D( GetWorld(), GunData->ShootFailedSound );
+				SoundManagerComponent->OnRifleShootEmpty();
 				return false;
 			}
-
-			if ( ReloadComponent->IsReloading() ) return false;
 
 			float CurrentGameTime = UKismetSystemLibrary::GetGameTimeInSeconds( GetWorld() );
 			if ( CurrentGameTime - ShootCurentCooldown >= GunData->ShootCooldown ) return true;
@@ -93,6 +98,7 @@ bool AGun::HandleCanFire()
 void AGun::OnReload()
 {
 	PlayerCharacter->PlayAnimMontage( GunData->ReloadAnimationMontage );
+	WeaponSkeletonMesh->PlayAnimation( ReloadAnim, false );
 }
 
 void AGun::RetrieveFirstBeamHit()
@@ -122,12 +128,14 @@ void AGun::RetrieveFirstBeamHit()
 
 void AGun::SwitchWeapon()
 {
+	if ( PlayerCharacter->bIsUnderAction || !PlayerCharacter->bIsWeaponEquipped ) return;
+
 	switch ( GunMode )
 	{
 		case EGunMode::Bullet:
 		{
 			GunMode = EGunMode::Lightning;
-			UGameplayStatics::PlaySound2D( GetWorld(), GunData->LightningAbilityOn );
+			SoundManagerComponent->OnLightningSwitch( /* bIsLightningActive */ true );
 
 			if ( PlayerCharacter->bIsAiming )
 			{
@@ -139,7 +147,7 @@ void AGun::SwitchWeapon()
 		case EGunMode::Lightning:
 		{
 			GunMode = EGunMode::Bullet;
-			UGameplayStatics::PlaySound2D( GetWorld(), GunData->LightningAbilityOff );
+			SoundManagerComponent->OnLightningSwitch( /* bIsLightningActive */ false );
 
 			if ( PlayerCharacter->bIsAiming )
 			{
@@ -178,11 +186,24 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 	MakeNoise( 1.0f, PlayerCharacter );
 
 	// Play Shooting Sound
-	UGameplayStatics::PlaySound2D( GetWorld(), GunData->ShootSound );
+	SoundManagerComponent->OnRifleShoot( HitResult );
 
 	// Camera Feedback
 	CameraShakeSourceComponent->Start();
 	PlayerCharacter->CameraShakeFeedback();
+
+	// Spawn system muzzle flash
+	UNiagaraComponent* MuzzleFlash = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		GunData->MuzzleFlashNiagaraSystem,
+		ShootPoint->GetComponentTransform().GetLocation(),
+		ShootPoint->GetComponentTransform().Rotator()
+	);
+
+	if ( GunData->ShootForceFeedback )
+	{
+		PlayerController->ClientPlayForceFeedback( GunData->ShootForceFeedback );
+	}
 
 	if ( !HitResult.bBlockingHit ) return;
 	FVector NormalHit = HitResult.Normal;
@@ -255,17 +276,6 @@ void AGun::TriggerShootAbility( UPARAM( ref ) FVector& ImpactDirection )
 			ImpactRotation
 		);
 	}
-
-	// Spawn system muzzle flash
-	UNiagaraComponent* MuzzleFlash = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		GetWorld(),
-		GunData->MuzzleFlashNiagaraSystem,
-		ShootPoint->GetComponentTransform().GetLocation(),
-		ShootPoint->GetComponentTransform().Rotator()
-	);
-
-	if ( !GunData->ShootForceFeedback ) return;
-	PlayerController->ClientPlayForceFeedback( GunData->ShootForceFeedback );
 }
 
 void AGun::OnLightningStart()
@@ -310,6 +320,8 @@ void AGun::OnLightningAbility( float ActionValue )
 
 	if ( CurrentEnergyAmount <= 0 )
 	{
+		SoundManagerComponent->OnLightningShootEmpty();
+
 		UpdateCrossHairStopLightning();
 		OnLightningEnd();
 		return;
@@ -322,7 +334,7 @@ void AGun::OnLightningAbility( float ActionValue )
 
 void AGun::OnLightningEnd()
 {
-	StopSound(); // Shouldn't we play an ending sound instead ?
+	SoundManagerComponent->OnLightningStopShoot();
 
 	PlayerCharacter->DualSenseComponent->SetRightTriggerEffect( UDualSenseFunctionLibrary::MakeOff() );
 
@@ -377,22 +389,22 @@ void AGun::CheckCurrentTargetType()
 
 	switch ( GunMode )
 	{
-	case EGunMode::Bullet:
-	{
-		CheckLineCollision( false, ImpactDirection, GunData->ShootingDistance, ImpactPoint, HitResult );
-		if ( !IsValid( HitResult.GetActor() ) ) break;
+		case EGunMode::Bullet:
+		{
+			CheckLineCollision( false, ImpactDirection, GunData->ShootingDistance, ImpactPoint, HitResult );
+			if ( !IsValid( HitResult.GetActor() ) ) break;
 
-		HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
-		break;
-	}
-	case EGunMode::Lightning:
-	{
-		CheckSphereCollision( false, GunData->LightningDistance, ImpactPoint, HitResult, 20.0f );
-		if ( !IsValid( HitResult.GetActor() ) ) break;
+			HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
+			break;
+		}
+		case EGunMode::Lightning:
+		{
+			CheckSphereCollision( false, GunData->LightningDistance, ImpactPoint, HitResult, 20.0f );
+			if ( !IsValid( HitResult.GetActor() ) ) break;
 
-		HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
-		break;
-	}
+			HealthComponent = HitResult.GetActor()->GetComponentByClass<UHealthComponent>();
+			break;
+		}
 	}
 
 	if ( LastAimTarget != HealthComponent )

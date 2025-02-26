@@ -11,6 +11,8 @@
 
 #include "Library/UtilityLibrary.h"
 
+constexpr auto GLOBAL_SAVE_NAME = TEXT( "GlobalSaved" );
+
 DEFINE_LOG_CATEGORY( LogMetroSaveSystem );
 
 void UMetroGameInstance::Init()
@@ -66,9 +68,9 @@ void UMetroGameInstance::DeleteOldSaves()
 
 void UMetroGameInstance::LoadLastSave()
 {
-	if ( UGameplayStatics::DoesSaveGameExist( SaveName, UserIndex ) )
+	if ( UGameplayStatics::DoesSaveGameExist( GLOBAL_SAVE_NAME, UserIndex ) )
 	{
-		SaveGame = Cast<UMetroSaveGame>( UGameplayStatics::LoadGameFromSlot( SaveName, UserIndex ) );
+		SaveGame = Cast<UMetroSaveGame>( UGameplayStatics::LoadGameFromSlot( GLOBAL_SAVE_NAME, UserIndex ) );
 	}
 }
 
@@ -100,7 +102,7 @@ void UMetroGameInstance::SaveLevel()
 		UE_LOG( LogMetroSaveSystem, Log, TEXT( "Saved level streaming: %s" ), *LevelName.ToString() );
 	}
 
-	UGameplayStatics::SaveGameToSlot( SaveGame, SaveName, UserIndex );
+	UGameplayStatics::SaveGameToSlot( SaveGame, GLOBAL_SAVE_NAME, UserIndex );
 
 	UE_LOG( LogMetroSaveSystem, Log, TEXT( "Saving game completed" ) );
 }

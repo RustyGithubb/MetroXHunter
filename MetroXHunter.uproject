@@ -25,6 +25,11 @@
 			"Name": "EasySequencer_Editor",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit"
+		},
+		{
+			"Name": "MetroXHunterEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
 		}
 	],
 	"Plugins": [
@@ -86,6 +91,10 @@
 		},
 		{
 			"Name": "PCG",
+			"Enabled": true
+		},
+		{
+			"Name": "TemplateSequence",
 			"Enabled": true
 		}
 	],

@@ -16,8 +16,6 @@
 #include "CineCameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-#include "Library/UtilityLibrary.h"
-
 AMetroPlayerCharacter::AMetroPlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;

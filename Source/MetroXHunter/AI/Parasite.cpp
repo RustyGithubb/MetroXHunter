@@ -8,6 +8,8 @@
 #include "AI/ZeroEnemy.h"
 #include "AI/ZeroEnemyAIController.h"
 
+#include "Sounds/ParasiteSoundManagerComponent.h"
+
 #include "Vent/Vent.h"
 #include "Health/HealthComponent.h"
 
@@ -38,6 +40,8 @@ void AParasite::BeginPlay()
 
 	OnActorHit.AddDynamic( this, &AParasite::OnHit );
 	HealthComponent->OnDeath.AddDynamic( this, &AParasite::OnDeath );
+
+	SoundManagerComponent = GetComponentByClass<UParasiteSoundManagerComponent>();
 
 	Super::BeginPlay();
 }
@@ -109,8 +113,9 @@ void AParasite::UpdateDataAsset()
 	verifyf( IsValid( DataAsset ), TEXT( "%s doesn't reference a DataAsset" ), *GetName() );
 
 	// Randomize scale
-	const FVector Scale = FVector( UUtilityLibrary::RandomInRange( DataAsset->ScaleRange ) );
-	SetActorScale3D( Scale );
+	RandomMeshScale = UUtilityLibrary::RandomInRange( DataAsset->ScaleRange );
+	const FVector Scale = FVector( RandomMeshScale );
+	GetMesh()->SetRelativeScale3D( Scale );
 
 	// Randomize movement speed
 	const float MovementSpeedScale = FMath::GetMappedRangeValueUnclamped(
@@ -140,7 +145,7 @@ void AParasite::PossessCorpse( APossessableCorpse* Corpse )
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	// Spawn enemy
-	auto Enemy = GetWorld()->SpawnActor<AZeroEnemy>(
+	AZeroEnemy* Enemy = GetWorld()->SpawnActor<AZeroEnemy>(
 		Corpse->EnemyClass,
 		// TODO: Export location offset
 		Corpse->GetActorLocation() + FVector { 0.0f, 0.0f, 180.0f * 0.5f },
@@ -151,8 +156,8 @@ void AParasite::PossessCorpse( APossessableCorpse* Corpse )
 	Enemy->Data = Corpse->DataAsset;
 	Enemy->Stun( 2.0f, false );
 
-	auto SelfAIController = GetController<AParasiteAIController>();
-	auto EnemyAIController = Enemy->GetController<AZeroEnemyAIController>();
+	AParasiteAIController* SelfAIController = GetController<AParasiteAIController>();
+	AZeroEnemyAIController* EnemyAIController = Enemy->GetController<AZeroEnemyAIController>();
 	if ( SelfAIController != nullptr && EnemyAIController != nullptr )
 	{
 		// Transfer current target to the new enemy
@@ -166,6 +171,23 @@ void AParasite::PossessCorpse( APossessableCorpse* Corpse )
 	// NOTE: It is important to destroy these as late as possible within the function
 	Corpse->Destroy();
 	Destroy();
+}
+
+void AParasite::PrepareJumpAttack_Implementation()
+{
+	bIsPreparingJump = true;
+
+	// Rest of the code like play sound, animation and warts blinking are in the blueprint.
+}
+
+void AParasite::EndPrepareJumpAttack_Implementation()
+{
+	bIsPreparingJump = false;
+}
+
+bool AParasite::IsPreparingJump() const
+{
+	return bIsPreparingJump;
 }
 
 void AParasite::JumpAttack()
@@ -210,6 +232,11 @@ float AParasite::GetFleeMoveSpeed() const
 	return FleeMoveSpeed;
 }
 
+float AParasite::GetRandomMeshScale() const
+{
+	return RandomMeshScale;
+}
+
 void AParasite::OnHit(
 	AActor* SelfActor, AActor* OtherActor,
 	FVector NormalImpulse,
@@ -227,12 +254,15 @@ void AParasite::OnHit(
 		if ( !OtherPawn->IsPlayerControlled() ) return;
 	}
 
-	auto HitHealthComponent = OtherActor->GetComponentByClass<UHealthComponent>();
+	UHealthComponent* HitHealthComponent = OtherActor->GetComponentByClass<UHealthComponent>();
 	if ( !IsValid( HitHealthComponent ) ) return;
 
 	if ( CinematicMode == EParasiteCinematicMode::RushPlayer )
 	{
 		DoBiteAttack( OtherActor );
+
+		//	Remove cinematic mode so we're not rushed twice by the same enemy
+		CinematicMode = EParasiteCinematicMode::None;
 	}
 	else
 	{

@@ -14,6 +14,8 @@
 #include "Library/UtilityLibrary.h"
 #include "InputMappingContext.h"
 #include <Engine/Console.h>
+#include <Character/BaseMetroPlayerCharacter.h>
+#include <Kismet/GameplayStatics.h>
 
 constexpr auto INTERACTABLE_PROFILE_NAME = TEXT( "Interactable" );
 
@@ -43,7 +45,7 @@ ABaseInteractable::ABaseInteractable()
 
 	Widget = CreateDefaultSubobject<UWidgetComponent>( TEXT( "WidgetComponent" ) );
 	Widget->SetupAttachment( StaticMesh );
-	Widget->SetWorldScale3D( FVector(1) );
+	Widget->SetWorldScale3D( FVector( 1 ) );
 	Widget->SetVisibility( true );
 
 	InnerCollision->SetCollisionProfileName( INTERACTABLE_PROFILE_NAME );
@@ -92,8 +94,8 @@ void ABaseInteractable::BindToDelegates()
 
 void ABaseInteractable::SetInteractionFreezed( bool bShouldFreeze )
 {
-	if ( !IsValid( InnerCollision ) 
-		|| !IsValid( OutterCollision ) 
+	if ( !IsValid( InnerCollision )
+		|| !IsValid( OutterCollision )
 		|| !IsValid( InteractableComponent ) ) return;
 
 	if ( !bShouldFreeze )
@@ -188,7 +190,10 @@ void ABaseInteractable::SwitchCameraTarget()
 		BlendExp
 	);
 
-	PlayerController->GetPawn()->SetActorHiddenInGame( true );
+	Cast<ABaseMetroPlayerCharacter>(
+		UGameplayStatics::GetPlayerCharacter( GetWorld(), 0 )
+	)->ToggleHiddenInGame( true );
+
 	OverridePlayerMappingContext();
 }
 
@@ -207,10 +212,12 @@ void ABaseInteractable::ResetCameraTarget()
 		BlendExp
 	);
 
-	PlayerController->GetPawn()->SetActorHiddenInGame( false );
+	Cast<ABaseMetroPlayerCharacter>(
+		UGameplayStatics::GetPlayerCharacter( GetWorld(), 0 )
+	)->ToggleHiddenInGame( false );
 
 	verify( !InteractableMappingContext.IsNull() );
-	IPlayerInputHandler::Execute_RevertInputMappingContext( 
+	IPlayerInputHandler::Execute_RevertInputMappingContext(
 		PlayerController,
 		InteractableMappingContext.LoadSynchronous()
 	);

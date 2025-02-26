@@ -13,8 +13,6 @@
 #include <Device.h>
 #include <DS5State.h>
 
-#include <Windows.h>
-
 namespace __DS5W {
 	namespace Input {
 		/// <summary>

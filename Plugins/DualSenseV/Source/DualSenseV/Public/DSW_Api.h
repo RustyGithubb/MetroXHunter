@@ -23,6 +23,7 @@
 #define DS5W_E_CURRENTLY_NOT_SUPPORTED _DS5W_ReturnValue::E_CURRENTLY_NOT_SUPPORTED
 #define DS5W_E_DEVICE_REMOVED _DS5W_ReturnValue::E_DEVICE_REMOVED
 #define DS5W_E_BT_COM _DS5W_ReturnValue::E_BT_COM
+#define DS5W_E_PLATFORM_NOT_SUPPORTED _DS5W_ReturnValue::E_PLATFORM_NOT_SUPPORTED;
 
 /// <summary>
 /// Enum for return values
@@ -72,5 +73,7 @@ typedef enum class _DS5W_ReturnValue : unsigned int {
 	/// Bluetooth communication error
 	/// </summary>
 	E_BT_COM = 8,
+
+	E_PLATFORM_NOT_SUPPORTED = 9,
 
 } DS5W_ReturnValue, DS5W_RV;

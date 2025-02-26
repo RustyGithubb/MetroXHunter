@@ -39,6 +39,8 @@ public:
 
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "PlayerCharacter|SpringArm")
 	void UpdateTargetArmLength( float TargetArmLength );
+	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, Category = "PlayerCharacter|SpringArm" )
+	void UpdateTargetArmOffset( FVector TargetArmOffset );
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "PlayerCharacter|Camera" )
 	void UpdateCameraPosition();
@@ -55,6 +57,12 @@ public:
 	UFUNCTION( BlueprintImplementableEvent, Category = "PlayerCharacter|Camera" )
 	void CameraShakeFeedback();
 
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Camera" )
+	void PlayMovementCameraAnimation( UCameraAnimationSequence* CameraAnimation);
+
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Camera" )
+	void StopMovementCameraAnimation();
+
 	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
 	void UpdateCrossHairOnMovement( float MovementSpeed );
 	UFUNCTION( Blueprintcallable, BlueprintImplementableEvent, Category = "PlayerCharacter|CrossHair" )
@@ -66,6 +74,8 @@ public:
 	void UseSyringe();
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
 	void OnStompKick(float InitialVelocity, FVector Direction);
+	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "PlayerCharacter|Ability" )
+	void CancelCurrentAction();
 
 	UFUNCTION( BlueprintCallable, Category = "PlayerCharacter|Aim" )
 	void StartAiming();
@@ -97,15 +107,25 @@ public:
 
 	UPROPERTY( BlueprintReadOnly, Category = "PlayerCharacter|Aim" )
 	bool bIsAiming = false;
-
-	UPROPERTY(BlueprintReadWrite, Category = "PlayerCharacter|Aim" )
+	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|Aim" )
 	float ShootingImprecisionValue = 1.0f;
-	
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "PlayerCharacter|ForceFeedback" )
+	bool bCanAim = true;
+
 	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|MovementData" )
 	float RunMaxSpeed = 480.0f;
 
 	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|Reference" )
 	AActor* Bobine = nullptr;
+
+	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|CameraRotation" )
+	float AimDecelerationRate = 1.0f;
+
+	UPROPERTY( BlueprintReadWrite, Category = "PlayerCharacter|Input" )
+	float TimeSinceLastAction = 0.3f;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Input" )
+	float CancelActionTimer = 0.3f;
 
 protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "PlayerCharacter|Reload" )

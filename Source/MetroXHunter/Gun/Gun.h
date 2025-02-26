@@ -16,6 +16,8 @@ class UGunData;
 class UReloadComponent;
 class UHealthComponent;
 class AMetroPlayerCharacter;
+class UAnimationAsset;
+class UGunSoundManagerComponent;
 
 UCLASS()
 class METROXHUNTER_API AGun : public ABaseGun
@@ -54,6 +56,9 @@ public:
 
 	UPROPERTY( BlueprintReadWrite, Category = "Gun|GunData|LightningAbility" )
 	bool bIsLightningActive = false;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Gun" )
+	UAnimationAsset* ReloadAnim = nullptr;
 
 protected:
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable )
@@ -99,10 +104,6 @@ protected:
 	void UpdateCrossHairOnLightning();
 
 	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Miscellaneous" )
-	void PlaySound( USoundBase* SoundToPlay, bool bShouldOverrideSound );
-	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Miscellaneous" )
-	void StopSound();
-	UFUNCTION( BlueprintImplementableEvent, BlueprintCallable, category = "Miscellaneous" )
 	void StopCameraAnimation();
 
 protected:
@@ -141,4 +142,5 @@ private:
 private:
 	UHealthComponent* LastAimTarget = nullptr;
 	APlayerController* PlayerController = nullptr;
+	UGunSoundManagerComponent* SoundManagerComponent = nullptr;
 };

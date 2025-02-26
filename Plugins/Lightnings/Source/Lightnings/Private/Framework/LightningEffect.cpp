@@ -157,10 +157,15 @@ void ALightningEffect::UpdateLifetime(float DeltaTime)
 		const float TimerRate = LightningEmitter->TimeMultiplier *
 			Rnd.FRandRange(LightningParams.SparksRangeDelay.GetLowerBoundValue(), LightningParams.SparksRangeDelay.GetUpperBoundValue());
 
-		GetWorld()->GetTimerManager().SetTimer(SparkData.SparkDelayTimer,
-			[&, this] { SparkData.SparkDelayTimer.Invalidate(); },
-			TimerRate,
-			false);
+		//GetWorld()->GetTimerManager().SetTimer(SparkData.SparkDelayTimer,
+			//[&, this] { SparkData.SparkDelayTimer.Invalidate(); },
+			//TimerRate,
+			//false);
+
+		FTimerDelegate TimerDel;
+		TimerDel.BindUObject( this, &ALightningEffect::InvalidateSparkDelayTimer );
+
+		GetWorld()->GetTimerManager().SetTimer( SparkData.SparkDelayTimer, TimerDel, TimerRatee, false );
 
 		if (SparkData.SparkTargetPosIdx >= LightningPattern.Points.Num() - 1)
 		{
@@ -700,4 +705,9 @@ void ALightningEffect::Deactivate()
 	}
 
 	Destroy();
+}
+
+void ALightningEffect::InvalidateSparkDelayTimer()
+{
+	SparkDelayTimer.Invalidate();
 }

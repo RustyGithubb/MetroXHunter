@@ -78,6 +78,30 @@ void AZeroEnemy::Tick( float DeltaTime )
 
 	switch ( State )
 	{
+		case EZeroEnemyState::UnRagdoll:
+		{
+			const FTimerManager& TimerManager = GetWorldTimerManager();
+			const float ElapsedTime = TimerManager.GetTimerElapsed( UnRagdollTimerHandle );
+			const float RemainingTime = TimerManager.GetTimerRemaining( UnRagdollTimerHandle );
+			const float Alpha = ElapsedTime / ( ElapsedTime + RemainingTime );
+
+			const FTransform ActorToWorld = GetTransform();
+
+			USkeletalMeshComponent* MeshComponent = GetMesh();
+			MeshComponent->SetWorldLocationAndRotation(
+				FMath::Lerp(
+					LastWorldRagdollLocation, 
+					ActorToWorld.TransformPosition( DefaultMeshRelativeTransform.GetLocation() ),
+					Alpha
+				),
+				FQuat::Slerp(
+					LastWorldRagdollRotation.Quaternion(),
+					ActorToWorld.TransformRotation( DefaultMeshRelativeTransform.GetRotation() ),
+					Alpha
+				)
+			);
+			break;
+		}
 		case EZeroEnemyState::RushAttackResolve:
 		case EZeroEnemyState::Stun:
 		{
@@ -112,8 +136,8 @@ void AZeroEnemy::Tick( float DeltaTime )
 		case EZeroEnemyState::RushAttack:
 		{
 			// Get current rush time
-			FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-			float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
+			const FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+			const float CurrentRushTime = TimerManager.GetTimerElapsed( RushTimerHandle );
 
 			// Apply new walk speed
 			UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
@@ -143,13 +167,17 @@ void AZeroEnemy::UnFakeDeath()
 		*GetName()
 	);
 
-	SetState( EZeroEnemyState::None );
-
 	UnRagdoll();
 }
 
 void AZeroEnemy::KnockOut()
 {
+	// TODO: I may need a real state machine at this point.
+	if ( State == EZeroEnemyState::RushAttack )
+	{
+		StopRushAttack();
+	}
+
 	if ( State != EZeroEnemyState::KnockOut )
 	{
 		SetState( EZeroEnemyState::KnockOut );
@@ -161,9 +189,7 @@ void AZeroEnemy::KnockOut()
 
 void AZeroEnemy::UnKnockOut()
 {
-	SetState( EZeroEnemyState::None );
 	UnRagdoll();
-
 	GetWorldTimerManager().ClearTimer( KnockOutTimerHandle );
 }
 
@@ -185,19 +211,26 @@ void AZeroEnemy::UnRagdoll()
 {
 	// Un-ragdoll mesh
 	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->GetAnimInstance()->SavePoseSnapshot( TEXT( "Ragdoll" ) );
+
+	LastWorldRagdollLocation = MeshComponent->GetSocketLocation( NAME_None );
+	LastWorldRagdollRotation = MeshComponent->GetSocketRotation( NAME_None );
+
+	ResolveLocationFromRagdoll();
+
 	MeshComponent->SetSimulatePhysics( false );
 	// NOTE: We must re-attach the mesh to the root component because simulating physics
 	// de-attach components from their parent.
 	MeshComponent->AttachToComponent( RootComponent, FAttachmentTransformRules::KeepRelativeTransform );
-	MeshComponent->SetRelativeTransform( DefaultMeshRelativeTransform );
+	//MeshComponent->SetRelativeTransform( DefaultMeshRelativeTransform );
 	MeshComponent->SetCollisionResponseToChannels( DefaultMeshCollisions );
 
-	// Enable tick and character movement
-	GetCharacterMovement()->SetActive( true );
-
-	SimulateMeshBonesPhysics( true );
 	SetCollisionsEnabled( true );
 	SetActorTickEnabled( true );
+
+	// Unragdoll for a small time
+	SetState( EZeroEnemyState::UnRagdoll );
+	GetWorldTimerManager().SetTimer( UnRagdollTimerHandle, this, &AZeroEnemy::EndRagdollState, 1.0f );
 }
 
 void AZeroEnemy::SimulateMeshBonesPhysics( bool bSimulate )
@@ -222,9 +255,12 @@ void AZeroEnemy::SetCollisionsEnabled( bool bEnabled )
 	ECollisionEnabled::Type CollisionType = bEnabled
 		? ECollisionEnabled::QueryAndPhysics
 		: ECollisionEnabled::NoCollision;
+	ECollisionEnabled::Type BulbCollisionType = bEnabled
+		? ECollisionEnabled::QueryAndPhysics
+		: ECollisionEnabled::QueryOnly;
 
 	GetCapsuleComponent()->SetCollisionEnabled( CollisionType );
-	BulbMeshComponent->SetCollisionEnabled( CollisionType );
+	BulbMeshComponent->SetCollisionEnabled( BulbCollisionType );
 }
 
 void AZeroEnemy::OpenBulb( float OpenTime )
@@ -288,10 +324,12 @@ void AZeroEnemy::Stun( float StunTime, bool bUseDefaultAnimation )
 
 void AZeroEnemy::UnStun()
 {
-	SetState( EZeroEnemyState::None );
+	if ( State == EZeroEnemyState::Stun )
+	{
+		SetState( EZeroEnemyState::None );
+	}
 
 	GetWorld()->GetTimerManager().ClearTimer( StunTimerHandle );
-
 	OnUnStun.Broadcast();
 
 	UE_VLOG( this, LogTemp, Verbose, TEXT( "Stop Stun" ) );
@@ -332,8 +370,20 @@ bool AZeroEnemy::DestroyBodyPart(
 		const bool bLegBone = BoneNameString.Contains( "leg" );
 		if ( !bLegBone )
 		{
-			const bool bBoneKnockable = BoneNameString.Contains( "neck" )
-				|| ( BoneNameString.Contains( "spine" ) && DistanceFromAttacker < MaxKnockOutDistance );
+			const bool bIsBodyBone = BoneNameString.Contains( "spine" ) || BoneNameString.Contains( "claw" );
+			const bool bIsHeadBone = BoneNameString.Contains( "head" );
+			if ( bIsHeadBone )
+			{
+				SkeletalMesh->HideBoneByName( BoneName, EPhysBodyOp::PBO_None );
+
+				// NOTE: Using SetCollisionEnabled doesn't seem to work so we use this one instead.
+				SkeletalMesh->GetBodyInstance( BoneName )->SetShapeCollisionEnabled(
+					0,
+					ECollisionEnabled::NoCollision
+				);
+			}
+
+			const bool bBoneKnockable = bIsHeadBone || ( bIsBodyBone && DistanceFromAttacker < MaxKnockOutDistance );
 			if ( bIsAlive && bBoneKnockable )
 			{
 				KnockOut();
@@ -747,6 +797,53 @@ void AZeroEnemy::UpdateWalkSpeed()
 	WalkSpeed -= Data->WalkSpeedLossPerBodyPartLost * ( StartBodyPartsCount - LeftBodyPartsCount );
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AZeroEnemy::ResolveLocationFromRagdoll()
+{
+	const USkeletalMeshComponent* MeshComponent = GetMesh();
+	const FVector PelvisLocation = MeshComponent->GetSocketLocation( "pelvis" );
+
+	UCapsuleComponent* CollisionComponent = GetCapsuleComponent();
+	const float CapsuleHalfHeight = CollisionComponent->GetScaledCapsuleHalfHeight();
+	const float CapsuleRadius = CollisionComponent->GetScaledCapsuleRadius();
+
+	FHitResult Hit {};
+	bool bHit = UKismetSystemLibrary::CapsuleTraceSingle(
+		this,
+		PelvisLocation + FVector::UpVector * CapsuleHalfHeight * 2.0f,
+		PelvisLocation,
+		CapsuleRadius, CapsuleHalfHeight,
+		UEngineTypes::ConvertToTraceType( ECollisionChannel::ECC_Visibility ),
+		/* bTraceComplex */ false,
+		TArray<AActor*> {},
+		UConvarLibrary::IsAIDebugConvarEnabled() ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None,
+		Hit,
+		/* bIgnoreSelf */ true
+	);
+
+	// Simulated mesh is moving independently from the root component (i.e. CapsuleComponent)
+	// so we have to re-locate the capsule before un-ragdolling.
+	if ( bHit )
+	{
+		const FRotator NewRotation { 0.0f, CollisionComponent->GetComponentRotation().Yaw, 0.0f };
+		CollisionComponent->SetWorldLocationAndRotation( Hit.Location, NewRotation );
+	}
+}
+
+void AZeroEnemy::EndRagdollState()
+{
+	SetState( EZeroEnemyState::None );
+	GetWorldTimerManager().ClearTimer( UnRagdollTimerHandle );
+
+	// Safe-guard for getting up not lerping completely the location and rotation
+	// due to premature state switching.
+	GetMesh()->SetRelativeTransform( DefaultMeshRelativeTransform );
+
+	SimulateMeshBonesPhysics( true );
+
+	// Enable tick and character movement
+	GetCharacterMovement()->SetActive( true );
 }
 
 void AZeroEnemy::OnElectricStart( float Duration )

@@ -47,9 +47,11 @@ void __DS5W::Output::createHidOutputBuffer(unsigned char* hidOutBuffer, DS5W::DS
 }
 
 void __DS5W::Output::processTrigger(const DS5W::TriggerEffect* ptrEffect, unsigned char* buffer) {
+#if PLATFORM_WINDOWS
 	constexpr rsize_t BufferSize = sizeof(DS5W::TriggerEffect);
 	memcpy_s(
 		buffer, BufferSize,
 		ptrEffect, BufferSize
 	);
+#endif
 }

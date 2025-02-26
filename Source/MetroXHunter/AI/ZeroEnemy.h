@@ -53,6 +53,10 @@ enum class EZeroEnemyState : uint8
 	 * Currently knocked out and ragdolled for a given time.
 	 */
 	KnockOut,
+	/*
+	 * Currently unragdolling for a given time.
+	 */
+	UnRagdoll,
 };
 
 USTRUCT( BlueprintType )
@@ -235,6 +239,9 @@ private:
 	void RetrieveReferences();
 
 	void UpdateWalkSpeed();
+	
+	void ResolveLocationFromRagdoll();
+	void EndRagdollState();
 
 	UFUNCTION()
 	void OnElectricStart( float Duration );
@@ -277,8 +284,12 @@ private:
 
 	FZeroEnemyModifiers Modifiers {};
 
+	FVector LastWorldRagdollLocation = FVector::ZeroVector;
+	FRotator LastWorldRagdollRotation = FRotator::ZeroRotator;
+
 	FTimerHandle OpeningBulbTimerHandle {};
 	FTimerHandle StunTimerHandle {};
 	FTimerHandle RushTimerHandle {};
 	FTimerHandle KnockOutTimerHandle {};
+	FTimerHandle UnRagdollTimerHandle {};
 };

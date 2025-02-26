@@ -15,6 +15,7 @@
 
 #define NOMINMAX
 
+#if PLATFORM_WINDOWS
 #include <Windows.h>
 #include <malloc.h>
 
@@ -22,6 +23,7 @@
 #include <Hidclass.h>
 #include <SetupAPI.h>
 #include <hidsdi.h>
+#endif
 
 DS5W_API DS5W_ReturnValue DS5W::enumDevices(void* ptrBuffer, unsigned int inArrLength, unsigned int* requiredLength, bool pointerToArray) {
 	// Check for invalid non expected buffer
@@ -29,6 +31,7 @@ DS5W_API DS5W_ReturnValue DS5W::enumDevices(void* ptrBuffer, unsigned int inArrL
 		inArrLength = 0;
 	}
 
+#if PLATFORM_WINDOWS
 	// Get all hid devices from devs
 	HANDLE hidDiHandle = SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, NULL, NULL, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
 	if (!hidDiHandle || (hidDiHandle == INVALID_HANDLE_VALUE)) {
@@ -152,7 +155,7 @@ DS5W_API DS5W_ReturnValue DS5W::enumDevices(void* ptrBuffer, unsigned int inArrL
 
 	// Close device enum list
 	SetupDiDestroyDeviceInfoList(hidDiHandle);
-	
+
 	// Set required size if exists
 	if (requiredLength) {
 		*requiredLength = inputArrIndex;
@@ -166,9 +169,13 @@ DS5W_API DS5W_ReturnValue DS5W::enumDevices(void* ptrBuffer, unsigned int inArrL
 	else {
 		return DS5W_E_INSUFFICIENT_BUFFER;
 	}
+#elif PLATFORM_MAC
+	return DS5W_E_PLATFORM_NOT_SUPPORTED;
+#endif
 }
 
 DS5W_API DS5W_ReturnValue DS5W::initDeviceContext(DS5W::DeviceEnumInfo* ptrEnumInfo, DS5W::DeviceContext* ptrContext) {
+#if PLATFORM_WINDOWS
 	// Check if pointers are valid
 	if (!ptrEnumInfo || !ptrContext) {
 		return DS5W_E_INVALID_ARGS;
@@ -211,9 +218,13 @@ DS5W_API DS5W_ReturnValue DS5W::initDeviceContext(DS5W::DeviceEnumInfo* ptrEnumI
 	
 	// Return OK
 	return DS5W_OK;
+#else
+	return DS5W_E_PLATFORM_NOT_SUPPORTED;
+#endif
 }
 
 DS5W_API void DS5W::freeDeviceContext(DS5W::DeviceContext* ptrContext) {
+#if PLATFORM_WINDOWS
 	// Check if handle is existing
 	if (ptrContext->_internal.deviceHandle) {
 		// Send zero output report to disable all onging outputs
@@ -237,9 +248,11 @@ DS5W_API void DS5W::freeDeviceContext(DS5W::DeviceContext* ptrContext) {
 
 	// Unset string
 	ptrContext->_internal.devicePath[0] = 0x0;
+#endif
 }
 
 DS5W_API DS5W_ReturnValue DS5W::reconnectDevice(DS5W::DeviceContext* ptrContext) {	
+#if PLATFORM_WINDOWS
 	// Check len
 	if (wcslen(ptrContext->_internal.devicePath) == 0) {
 		return DS5W_E_INVALID_ARGS;
@@ -257,9 +270,13 @@ DS5W_API DS5W_ReturnValue DS5W::reconnectDevice(DS5W::DeviceContext* ptrContext)
 
 	// Return ok
 	return DS5W_OK;
+#else
+	return DS5W_E_PLATFORM_NOT_SUPPORTED;
+#endif
 }
 
 DS5W_API DS5W_ReturnValue DS5W::getDeviceInputState(DS5W::DeviceContext* ptrContext, DS5W::DS5InputState* ptrInputState) {
+#if PLATFORM_WINDOWS
 	// Check pointer
 	if (!ptrContext || !ptrInputState) {
 		return DS5W_E_INVALID_ARGS;
@@ -308,9 +325,13 @@ DS5W_API DS5W_ReturnValue DS5W::getDeviceInputState(DS5W::DeviceContext* ptrCont
 	
 	// Return ok
 	return DS5W_OK;
+#else
+	return DS5W_E_PLATFORM_NOT_SUPPORTED;
+#endif
 }
 
 DS5W_API DS5W_ReturnValue DS5W::setDeviceOutputState(DS5W::DeviceContext* ptrContext, DS5W::DS5OutputState* ptrOutputState) {
+#if PLATFORM_WINDOWS
 	// Check pointer
 	if (!ptrContext || !ptrOutputState) {
 		return DS5W_E_INVALID_ARGS;
@@ -344,7 +365,7 @@ DS5W_API DS5W_ReturnValue DS5W::setDeviceOutputState(DS5W::DeviceContext* ptrCon
 		__DS5W::Output::createHidOutputBuffer(&ptrContext->_internal.hidBuffer[2], ptrOutputState);
 
 		// Hash
-		const UINT32 crcChecksum = __DS5W::CRC32::compute(ptrContext->_internal.hidBuffer, 74);
+		const uint32 crcChecksum = __DS5W::CRC32::compute(ptrContext->_internal.hidBuffer, 74);
 
 		ptrContext->_internal.hidBuffer[0x4A] = (unsigned char)((crcChecksum & 0x000000FF) >> 0UL);
 		ptrContext->_internal.hidBuffer[0x4B] = (unsigned char)((crcChecksum & 0x0000FF00) >> 8UL);
@@ -373,4 +394,7 @@ DS5W_API DS5W_ReturnValue DS5W::setDeviceOutputState(DS5W::DeviceContext* ptrCon
 
 	// OK 
 	return DS5W_OK;
+#else
+	return DS5W_E_PLATFORM_NOT_SUPPORTED;
+#endif
 }

@@ -110,6 +110,8 @@ public :
 	UFUNCTION( BlueprintNativeEvent )
 	void OnLightningSparkEndMove();
 
+	void InvalidateSparkDelayTimer();
+
 	/*
 	 * Called when lightning is branched
 	 * @param Branch - new spawned lightning effect actor of the branch;
@@ -169,6 +171,11 @@ public :
 	FLightningIntensityParams IntensityDef;
 	UPROPERTY( BlueprintReadOnly, Category = LightningParams )
 	FLightningIntensityParams IntensityCur;
+
+	// Votre structure ou variable contenant SparkDelayTimer
+	FTimerHandle SparkDelayTimer;
+	// Timer rate
+	float TimerRatee = 1.0f;
 
 	// BLUEPRINT ASSIGNABLE EVENTS
 

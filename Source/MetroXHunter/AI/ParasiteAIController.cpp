@@ -90,7 +90,6 @@ void AParasiteAIController::OnPossess( APawn* InPawn )
 
 	// Update blackboard values with pawn
 	Blackboard->SetValueAsBool( CAN_EVER_USE_VENTS_KEYNAME, CustomPawn->bCanEverUseVents );
-	SetCinematicMode( CustomPawn->CinematicMode );
 
 	// Assign possessing location
 	PossessingLocation = CustomPawn->GetActorLocation();
@@ -183,16 +182,6 @@ bool AParasiteAIController::IsInDanger() const
 void AParasiteAIController::SetNextVentTime( float GameTime )
 {
 	Blackboard->SetValueAsFloat( NEXT_VENT_TIME_KEYNAME, GameTime );
-}
-
-void AParasiteAIController::SetCinematicMode( EParasiteCinematicMode Mode )
-{
-	Blackboard->SetValueAsEnum( IN_CINEMATIC_KEYNAME, static_cast<uint8>( Mode ) );
-
-	if ( Mode == EParasiteCinematicMode::RushPlayer )
-	{
-		SetEnemy( UGameplayStatics::GetPlayerCharacter( this, 0 ) );
-	}
 }
 
 #if ENABLE_VISUAL_LOG

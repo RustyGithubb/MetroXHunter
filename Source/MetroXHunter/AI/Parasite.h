@@ -17,6 +17,7 @@ class AVent;
 
 class UHealthComponent;
 class UPawnSensingComponent;
+class UParasiteSoundManagerComponent;
 
 UENUM( BlueprintType )
 enum class EParasiteCinematicMode : uint8
@@ -62,8 +63,13 @@ public:
 	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Parasite" )
 	void StartExitingVent( AVent* Vent );
 
-	UFUNCTION( BlueprintCallable, BlueprintImplementableEvent, Category = "Parasite" )
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "Parasite" )
 	void PrepareJumpAttack();
+	UFUNCTION( BlueprintCallable, BlueprintNativeEvent, Category = "Parasite" )
+	void EndPrepareJumpAttack();
+	UFUNCTION( BlueprintPure, Category = "Parasite" )
+	bool IsPreparingJump() const;
+
 	UFUNCTION( BlueprintCallable, Category = "Parasite" )
 	void JumpAttack();
 	UFUNCTION( BlueprintPure, Category = "Parasite" )
@@ -81,6 +87,8 @@ public:
 	float GetDefaultMoveSpeed() const;
 	UFUNCTION( BlueprintPure, Category = "Parasite" )
 	float GetFleeMoveSpeed() const;
+	UFUNCTION( BlueprintPure, Category = "Parasite" )
+	float GetRandomMeshScale() const;
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( 
@@ -98,6 +106,9 @@ public:
 	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "Parasite" )
 	UPawnSensingComponent* PawnSensingComponent = nullptr;
 
+	UPROPERTY( BlueprintReadOnly, Category = "Parasite" )
+	UParasiteSoundManagerComponent* SoundManagerComponent = nullptr;
+
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = "Parasite" )
 	USaveLoadComponent* SaveComponent = nullptr;
 
@@ -107,7 +118,7 @@ public:
 	UPROPERTY( EditInstanceOnly, BlueprintReadOnly, Category = "Parasite" )
 	bool bCanEverUseVents = true;
 
-	UPROPERTY( EditInstanceOnly, BlueprintReadOnly, Category = "Parasite" )
+	UPROPERTY( EditInstanceOnly, BlueprintReadWrite, Category = "Parasite", meta = ( ExposeOnSpawn = true ) )
 	EParasiteCinematicMode CinematicMode = EParasiteCinematicMode::None;
 
 private:
@@ -135,7 +146,9 @@ private:
 private:
 	float DefaultMoveSpeed = 0.0f;
 	float FleeMoveSpeed = 0.0f;
+	float RandomMeshScale = 0.0f;
 
+	bool bIsPreparingJump = false;
 	bool bIsJumpAttacking = false;
 	bool bHasAlreadyDamaged = false;
 	bool bHasEmittedBlood = false;

@@ -73,6 +73,8 @@ public:
 	UInputAction* AimAction = nullptr;
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Ability|Input" )
 	UInputAction* HealAction = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|Ability|Input" )
+	UInputAction* ReloadAction = nullptr;
 
 protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "CharacterController|HUD" )
@@ -103,4 +105,7 @@ private:
 	bool bWasRunning = false;
 
 	float RotationInputTimer = 0.0f;
+
+	bool bWasRunningBeforeStop = false;
+	float StopMovementTimer = 0.0f;
 };

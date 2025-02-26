@@ -74,8 +74,8 @@ FDS5TriggerEffect UDualSenseFunctionLibrary::MakeWeapon(
     
     const uint8 StartPositionByte = FMath::Clamp(
         RemapFloatToByteClamped( StartPosition, 0, 8 ),
-        2ui8,
-        7ui8
+        2,
+        7
     );
     const uint8 EndPositionByte = FMath::Max(
         RemapFloatToByteClamped( EndPosition, 0, 8 ),

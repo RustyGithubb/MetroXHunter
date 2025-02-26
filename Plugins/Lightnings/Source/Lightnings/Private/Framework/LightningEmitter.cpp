@@ -428,3 +428,7 @@ void ALightningEmitter::DoSpawnLightning( ALightningEffect* Parent, FLightningPa
 	}
 }
 
+void ALightningEmitter::SetBranchesLimit( FBranchingParams& BranchingParam, int32 NewLimit )
+{
+	BranchingParam.BranchesLimit = NewLimit;
+}

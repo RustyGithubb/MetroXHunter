@@ -46,7 +46,6 @@ void ULightManagerComponent::TickComponent( float DeltaTime,
 
 	const float CurrentTime = GetWorld()->GetTimeSeconds();
 
-	//for ( int32 Index = FlickeringLightsData.Num() - 1; Index >= 0; Index-- )
 	for ( auto Itr = FlickeringLightsData.CreateIterator(); Itr; ++Itr )
 	{
 		FLightData& LightData = Itr.Value();
@@ -190,6 +189,8 @@ void ULightManagerComponent::FlickerLightsInArray(
 	float MaxDistance = 0.0f;
 	for ( const ULightComponent* LightComponent : Lights )
 	{
+		if ( !IsValid( LightComponent ) ) continue;
+
 		const float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
 		MaxDistance = FMath::Max( MaxDistance, Distance );
 	}
@@ -215,6 +216,8 @@ void ULightManagerComponent::FlickerLights(
 	// Flick all lights passing conditions
 	for ( ULightComponent* LightComponent : Lights )
 	{
+		if ( !IsValid( LightComponent ) ) continue;
+
 		const float Distance = FVector::Dist( Origin, LightComponent->GetComponentLocation() );
 
 		// First try to find an existing LightData to the LightComponent
@@ -267,7 +270,7 @@ void ULightManagerComponent::FlickerLights(
 		LightData->FlickeringLightCurve = FlickeringLightCurve;
 
 		// Apply a delay before restoring lights based on distance from origin
-		float RestorationFactor = Distance / MaxDistance;
+		const float RestorationFactor = Distance / MaxDistance;
 		LightData->RestorationDelay = RestorationFactor * MaxCurveTime * RestorationTimeFactor;
 
 		IFlickableLight::Execute_OnFlickLightStart( LightData->LightComponent->GetOwner(), *LightData );
@@ -322,9 +325,14 @@ void ULightManagerComponent::FindAllLightsInWorld()
 		AActor* Actor = *ActorItr;
 		if ( !Actor->Implements<UFlickableLight>() ) continue;
 
-		TArray<ULightComponent*> LightComponents = IFlickableLight::Execute_RetrieveFlickableLights( Actor );
+		// Ensure actor is initialized before getting lights
+		if ( !Actor->HasActorBegunPlay() )
+		{
+			Actor->DispatchBeginPlay();
+		}
 
-		for ( auto LightComponent : LightComponents )
+		const TArray<ULightComponent*> LightComponents = IFlickableLight::Execute_RetrieveFlickableLights( Actor );
+		for ( ULightComponent* LightComponent : LightComponents )
 		{
 			RegisterLight( LightComponent );
 		}

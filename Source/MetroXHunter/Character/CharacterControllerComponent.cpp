@@ -12,6 +12,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "CameraAnimationSequence.h"
+
+#include "Library/UtilityLibrary.h"
 
 UCharacterControllerComponent::UCharacterControllerComponent()
 {
@@ -44,7 +47,7 @@ void UCharacterControllerComponent::SetupInputComponent( AMetroPlayerCharacter* 
 		EnhancedInputComponent->BindAction( RunAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::ToggleRun );
 
 		// Aim
-		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Started, this, &UCharacterControllerComponent::ToggleAim );
+		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Triggered, this, &UCharacterControllerComponent::ToggleAim );
 		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Completed, this, &UCharacterControllerComponent::ToggleAim );
 		EnhancedInputComponent->BindAction( AimAction, ETriggerEvent::Canceled, this, &UCharacterControllerComponent::ToggleAim );
 
@@ -62,6 +65,9 @@ void UCharacterControllerComponent::SetupDefaultValues()
 {
 	CameraSensitivity = PlayerMovementData->DefaultMouseSensitivity;
 	Player->GetCharacterMovement()->MaxWalkSpeed = PlayerMovementData->DefaultWalkSpeed;
+
+	Player->SpringArmComponent->CameraLagSpeed = PlayerMovementData->MovementCameraLag;
+	Player->SpringArmComponent->CameraRotationLagSpeed = PlayerMovementData->MovementCameraRotationLag;
 }
 
 void UCharacterControllerComponent::ToggleFreezeMovement( bool bShouldFreeze )
@@ -91,25 +97,38 @@ FVector2D UCharacterControllerComponent::GetInputDirection()
 
 void UCharacterControllerComponent::OnMoveInputStart( const FInputActionValue& Value )
 {
+	bIsMoving = true;
+
 	Player->UpdateCrossHairOnMovement( CrossHairTranslationStrength );
+
+	if ( GetWorld()->GetTimeSeconds() - StopMovementTimer < PlayerMovementData->DelayStopStart
+		&& bWasRunningBeforeStop )
+	{
+		ToggleRun();
+	}
 
 	HandleToggleRun();
 }
 
 void UCharacterControllerComponent::OnMoveInputReleased()
 {
-	bIsMoving = false;
+	StopMovementTimer = GetWorld()->GetTimeSeconds();
+	bWasRunningBeforeStop = bIsRunning;
+
 	Player->UpdateCrossHairOnMovement( 0.0f );
 	Player->ShootingImprecisionValue = 0.0f;
 
 	Player->GetCharacterMovement()->bUseControllerDesiredRotation = false;
-
 	Player->UpdateTargetArmLength( PlayerMovementData->IdleTargetArmLength );
 
 	Player->InputDirection = FVector2D::Zero();
 
+	bIsMoving = false;
+	bIsRunning = false;
 	CurrentMovementState = EMovementState::Idle;
+
 	OnMovementStateUpdate.Broadcast( CurrentMovementState );
+	Player->PlayMovementCameraAnimation( PlayerMovementData->IdleCameraAnimation );
 }
 
 void UCharacterControllerComponent::Move( const FInputActionValue& Value )
@@ -121,7 +140,7 @@ void UCharacterControllerComponent::Move( const FInputActionValue& Value )
 	}
 
 	bIsMoving = true;
-	Player->GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
 
 	// Get input action value
 	Player->InputDirection = Value.Get<FVector2D>();
@@ -142,7 +161,7 @@ void UCharacterControllerComponent::Move( const FInputActionValue& Value )
 	// We don't update when running as we can't shoot while running
 	if ( CurrentMovementState == EMovementState::Walk )
 	{
-		Player->ShootingImprecisionValue = 150 * Player->InputDirection.Length();
+		Player->ShootingImprecisionValue = PlayerMovementData->WalkingShootImprecesionValue * Player->InputDirection.Length() * DeltaTime;
 	}
 }
 
@@ -156,22 +175,28 @@ void UCharacterControllerComponent::Look( const FInputActionValue& Value )
 	if ( !bCanRotate ) return;
 
 	float Timer = GetWorld()->GetTimeSeconds() - RotationInputTimer;
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
 
 	// Get input action value
 	Player->LookDirection = Value.Get<FVector2D>();
-	float CurveIntensityValue = PlayerMovementData->RotationInputLengthCurve->GetFloatValue( Player->LookDirection.Length() );
-	float CurveDurationValue = PlayerMovementData->RotationDurationCurve->GetFloatValue( Timer );
 
-	// TODO: ADD AIM ASSIST DECELERATION RATE (replace mouse sensitivity by mouse sensitivity * deceleration rate)
+	float CurveIntensityValue = PlayerMovementData->RotationInputLengthCurve->GetFloatValue( Player->LookDirection.Length() );
+	float CurveDurationValue = 1.0f;
+	if ( Player->bIsAiming )
+	{
+		CurveDurationValue = PlayerMovementData->RotationDurationCurve->GetFloatValue( Timer );
+	}
 
 	// Add yaw and pitch input to controller
-	Player->AddControllerYawInput( Player->LookDirection.X * CameraSensitivity.X * CurveIntensityValue * CurveDurationValue );
-	Player->AddControllerPitchInput( Player->LookDirection.Y * CameraSensitivity.Y * CurveIntensityValue * CurveDurationValue );
+	Player->AddControllerYawInput( Player->LookDirection.X * CameraSensitivity.X * Player->AimDecelerationRate * CurveIntensityValue * CurveDurationValue * DeltaTime );
+	Player->AddControllerPitchInput( Player->LookDirection.Y * CameraSensitivity.Y * Player->AimDecelerationRate * CurveIntensityValue * CurveDurationValue * DeltaTime );
 }
 
 void UCharacterControllerComponent::StompKick()
 {
-	if ( Player->bIsUnderAction || Player->bIsAiming ) return;
+	if ( Player->bIsUnderAction || Player->bIsAiming || !Player->bIsWeaponEquipped ) return;
+
+	Player->TimeSinceLastAction = GetWorld()->GetTimeSeconds();
 
 	float InitialVelocity = UKismetMathLibrary::VSizeXY( Player->GetVelocity() );
 
@@ -204,12 +229,14 @@ void UCharacterControllerComponent::HandleToggleRun()
 		CurrentMovementState = EMovementState::Run;
 		Player->GetCharacterMovement()->MaxWalkSpeed = PlayerMovementData->DefaultRunSpeed;
 		Player->UpdateTargetArmLength( PlayerMovementData->RunTargetArmLength );
+		Player->PlayMovementCameraAnimation( PlayerMovementData->RunCameraAnimation );
 	}
 	else
 	{
 		CurrentMovementState = EMovementState::Walk;
 		Player->GetCharacterMovement()->MaxWalkSpeed = PlayerMovementData->DefaultWalkSpeed;
 		Player->UpdateTargetArmLength( PlayerMovementData->WalkTargetArmLength );
+		Player->PlayMovementCameraAnimation( PlayerMovementData->WalkCameraAnimation );
 	}
 
 	OnMovementStateUpdate.Broadcast( CurrentMovementState );
@@ -217,10 +244,18 @@ void UCharacterControllerComponent::HandleToggleRun()
 
 void UCharacterControllerComponent::ToggleAim( const FInputActionValue& Value )
 {
-	if ( !Player->bIsWeaponEquipped ) return;
+	if ( !Player->bIsWeaponEquipped || !Player->bCanAim ) return;
 
-	if ( Value.Get<bool>() )
+	if ( Player->bIsUnderAction &&
+		GetWorld()->GetTimeSeconds() - Player->TimeSinceLastAction <= Player->CancelActionTimer)
 	{
+		Player->CancelCurrentAction();
+	}
+
+	if ( Value.Get<bool>() && !Player->bIsUnderAction )
+	{
+		if ( Player->bIsAiming ) return;
+
 		if ( CurrentMovementState == EMovementState::Run )
 		{
 			bWasRunning = true;
@@ -232,15 +267,22 @@ void UCharacterControllerComponent::ToggleAim( const FInputActionValue& Value )
 		}
 
 		Player->StartAiming();
+		Player->UpdateTargetArmOffset( PlayerMovementData->AimTargetOffset );
+		Player->SpringArmComponent->CameraLagSpeed = PlayerMovementData->AimCameraLag;
+		Player->SpringArmComponent->CameraRotationLagSpeed = PlayerMovementData->AimCameraRotationLag;
 	}
 	else
 	{
-		Player->StopAiming();
+		if ( !Player->bIsAiming ) return;
 
-		if ( bWasRunning )
+		Player->StopAiming();
+		Player->UpdateTargetArmOffset( PlayerMovementData->DefaultTargetOffset );
+		Player->SpringArmComponent->CameraLagSpeed = PlayerMovementData->MovementCameraLag;
+		Player->SpringArmComponent->CameraRotationLagSpeed = PlayerMovementData->MovementCameraRotationLag;
+
+		if ( bWasRunning && bIsMoving )
 		{
 			ToggleRun();
 		}
 	}
 }
-

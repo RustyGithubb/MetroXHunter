@@ -13,8 +13,6 @@
 #include <Device.h>
 #include <DS5State.h>
 
-#include <Windows.h>
-
 namespace __DS5W {
 	/// <summary>
 	/// Pre gennerated CRC hashing for DS5
@@ -24,12 +22,12 @@ namespace __DS5W {
 		/// <summary>
 		/// Fast lookup precalculated byte crc hashes
 		/// </summary>
-		const static UINT32 hashTable[256];
+		const static uint32 hashTable[256];
 
 		/// <summary>
 		/// Start seed for crc hash
 		/// </summary>
-		const static UINT32 crcSeed;
+		const static uint32 crcSeed;
 
 
 	public:
@@ -39,6 +37,6 @@ namespace __DS5W {
 		/// <param name="buffer">Input buffer</param>
 		/// <param name="len">Length of buffer</param>
 		/// <returns>Computed crc value</returns>
-		static UINT32 compute(unsigned char* buffer, size_t len);
+		static uint32 compute(unsigned char* buffer, size_t len);
 	};
 }

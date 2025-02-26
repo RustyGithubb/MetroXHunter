@@ -73,7 +73,8 @@ void UReloadComponent::SetupPlayerInputComponent()
 void UReloadComponent::OnReloadInput()
 {
 	// If the magazine is already full, do nothing
-	if ( IsAmmoFull() ) return;
+	if ( IsAmmoFull()) return;
+	if ( PlayerCharacter->bIsUnderAction && !bIsReloadActive ) return;
 
 	// Get the current ammo amount from the player's inventory
 	int CurrentAmmoAmount = PlayerInventory->GetCurrentAmmoAmount();

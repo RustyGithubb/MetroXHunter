@@ -71,7 +71,6 @@ public:
 	UMetroSaveGame* SaveGame = nullptr;
 
 private:
-	const FString& SaveName = "GlobalSaved";
 	const int32 UserIndex = 0;
 
 	TSet<FName> CurrentStreamedLevelNames {};

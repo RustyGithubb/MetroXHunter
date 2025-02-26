@@ -58,6 +58,13 @@ public:
 	float JumpAttackTokenCooldown = 1.0f;
 
 	/*
+	 * Damage amount to deal to the Player whenever he succeeds to overcome
+	 * a scripted rush QTE.
+	 */
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Attacks|Rush" )
+	int32 ScriptedRushAttackSucceedDamage = 50;
+
+	/*
 	 * When exiting a vent, the time to apply as a cooldown to prevent the use of a vent,
 	 * forcing the parasite to flee around in the map.
 	 */

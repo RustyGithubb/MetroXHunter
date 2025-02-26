@@ -87,6 +87,9 @@ public :
 	// Spawns a new lightning actor with the passed pattern
 	void DoSpawnLightning( ALightningEffect* Root, FLightningPattern Pattern );
 
+	UFUNCTION( BlueprintCallable, Category = "Branching" )
+	void SetBranchesLimit( FBranchingParams& BranchingParam, int32 NewLimit );
+
 #if WITH_EDITOR
 	/*
 	 * Forces garbage to be collected on the next tick (for edit-mode only)
