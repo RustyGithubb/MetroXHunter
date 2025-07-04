@@ -1,0 +1,395 @@
+/*
+ * Implemented by Arthur Cathelain (arkaht)
+ */
+
+#include "AI/AITargetComponent.h"
+#include "AI/AIAttackerComponent.h"
+
+#include "Library/ConvarLibrary.h"
+
+UAITargetComponent::UAITargetComponent()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UAITargetComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void UAITargetComponent::TickDebug_Implementation( float DeltaTime, FString& OutDebugText )
+{
+	// Construct reservations string
+	FString Reservations = "";
+	for ( const auto& Pair : ReservedTokens )
+	{
+		const UAIAttackerComponent* Reserver = Pair.Key;
+		const FAIReservedToken& Token = Pair.Value;
+		Reservations += FString::Printf(
+			TEXT( "- %s: %d\n" ),
+			*GetNameSafe( Reserver->GetReserver() ),
+			*FString::FromInt( Token.Amount )
+		);
+	}
+
+	// Construct attackers string
+	TMap<int32, FAIReserverArray> ActorsByPlaces = GetActorsByGroupPlaces();
+	ActorsByPlaces.KeySort(
+		[]( const int32 PlaceA, const int32 PlaceB ) {
+			return PlaceA < PlaceB;
+		}
+	);
+	FString GroupPlaces = "";
+	for ( const auto& Pair : ActorsByPlaces )
+	{
+		for ( const UAIAttackerComponent* Reserver : Pair.Value.Data )
+		{
+			GroupPlaces += "- " + GetNameSafe( Reserver->GetReserver() )
+				+ " : " + FString::FromInt( Pair.Key ) + "\n";
+		}
+	}
+
+	// Construct attackers string
+	FString Attackers = "";
+	for ( const auto& Reserver : DeclaredAttackers )
+	{
+		Attackers += "- " + GetNameSafe( Reserver->GetReserver() ) + "\n";
+	}
+
+	// Construct tokens string
+	FString Tokens = "";
+	for ( int32 SlotIndex = 0; SlotIndex < static_cast<int32>( EAITokenSlot::MAX ); SlotIndex++ )
+	{
+		EAITokenSlot SlotEnum = static_cast<EAITokenSlot>( SlotIndex );
+		FString SlotName = UEnum::GetValueAsString( SlotEnum );
+		Tokens += FString::Printf(
+			TEXT( "- %s %d/%d %.2fs\n" ),
+			*SlotName,
+			GetRemainingTokens( SlotEnum ),
+			MaxTokens[SlotIndex],
+			GetTokenCooldown( SlotEnum )
+		);
+	}
+
+	// Construct formating arguments
+	FStringFormatNamedArguments Args {};
+	Args.Add( "Tokens", Tokens );
+	Args.Add( "SlotsCount", static_cast<int32>( EAITokenSlot::MAX ) );
+	Args.Add( "Reservations", Reservations );
+	Args.Add( "ReservationsCount", ReservedTokens.Num() );
+	Args.Add( "GroupPlaces", GroupPlaces );
+	Args.Add( "GroupPlacesCount", ReservedGroupPlaces.Num() );
+	Args.Add( "Attackers", Attackers );
+	Args.Add( "AttackersCount", DeclaredAttackers.Num() );
+
+	// Format debug string
+	constexpr auto Format = TEXT( 
+		"[AITargetComponent]\n"
+		"Tokens[{SlotsCount}]:\n{Tokens}"
+		"Reservations[{ReservationsCount}]:\n{Reservations}"
+		"GroupPlaces[{GroupPlacesCount}]:\n{GroupPlaces}"
+		"Attackers[{AttackersCount}]:\n{Attackers}"
+	);
+	OutDebugText = FString::Format( Format, Args );
+}
+
+bool UAITargetComponent::ReserveTokens( UAIAttackerComponent* Reserver, EAITokenSlot Slot, int32 Tokens )
+{
+	verify( Reserver != nullptr );
+
+	// Check for cooldown
+	if ( GetTokenCooldown( Slot ) > 0.0f )
+	{
+		UE_VLOG(
+			GetOwner(),
+			LogTemp, Verbose,
+			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: token reservation in cooldown." ),
+			Tokens, *Reserver->GetReserver()->GetName()
+		);
+		return false;
+	}
+
+	// Check if enough tokens are available
+	if ( Tokens > GetRemainingTokens( Slot ) ) 
+	{
+		UE_VLOG(
+			GetOwner(),
+			LogTemp, Verbose,
+			TEXT( "AITargetComponent: Failed to reserve %d tokens for %s: not enough tokens available." ),
+			Tokens, *Reserver->GetReserver()->GetName()
+		);
+		return false;
+	}
+
+	// Add new tokens, in order to keep the already reserved tokens
+	const int32 ReserverTokens = GetReservedTokens( Reserver );
+	const int32 ResultingTokens = Tokens + ReserverTokens;
+
+	FAIReservedToken Token {};
+	Token.Amount = ResultingTokens;
+	Token.Slot = Slot;
+	ReservedTokens.Add( Reserver, Token );
+
+	UE_VLOG(
+		GetOwner(),
+		LogTemp, Verbose,
+		TEXT( "AITargetComponent: Reserved %d tokens for %s (now a total of %d tokens)" ),
+		Tokens, *Reserver->GetReserver()->GetName(), ResultingTokens
+	);
+
+	return true;
+}
+
+bool UAITargetComponent::FreeTokens( UAIAttackerComponent* Reserver, int32 Tokens )
+{
+	verify( Reserver != nullptr );
+
+	const int32 ReserverTokens = GetReservedTokens( Reserver );
+	if ( ReserverTokens == 0 )
+	{
+		UE_VLOG(
+			GetOwner(),
+			LogTemp, Verbose,
+			TEXT( "AITargetComponent: Failed to free %d tokens for %s: no reservations." ),
+			Tokens, *Reserver->GetReserver()->GetName()
+		);
+		return false;
+	}
+	
+	// Automatically fill with reserved tokens if set to zero
+	if ( Tokens == 0 )
+	{
+		Tokens = ReserverTokens;
+	}
+
+	// Remove the reserver if we result to zero...
+	const int32 ResultingTokens = FMath::Max( 0, ReserverTokens - Tokens );
+	if ( ResultingTokens == 0 )
+	{
+		ReservedTokens.Remove( Reserver );
+	}
+	// ...or set to resulting tokens
+	else
+	{
+		FAIReservedToken* Token = ReservedTokens.Find( Reserver );
+		Token->Amount = ResultingTokens;
+	}
+
+	UE_VLOG(
+		GetOwner(),
+		LogTemp, Verbose,
+		TEXT( "AITargetComponent: Freed %d tokens for %s (now a total of %d tokens)" ),
+		Tokens, *Reserver->GetReserver()->GetName(), ResultingTokens
+	);
+
+	return true;
+}
+
+void UAITargetComponent::ClearTokens()
+{
+	ReservedTokens.Empty();
+}
+
+void UAITargetComponent::SetTokenCooldown( EAITokenSlot Slot, float Seconds )
+{
+	UE_VLOG(
+		GetOwner(),
+		LogTemp, Verbose,
+		TEXT( "AITargetComponent: Set token cooldown to %.2fs" ),
+		Seconds
+	);
+
+	EndTokenCooldownTime[static_cast<int>( Slot )] = GetWorld()->GetTimeSeconds() + Seconds;
+}
+
+int32 UAITargetComponent::GetReservedTokens( UAIAttackerComponent* Reserver ) const
+{
+	verify( Reserver != nullptr );
+
+	const FAIReservedToken* Itr = ReservedTokens.Find( Reserver );
+	if ( Itr == nullptr ) return 0;
+
+	return Itr->Amount;
+}
+
+int32 UAITargetComponent::GetRemainingTokens( EAITokenSlot Slot ) const
+{
+	int32 RemainingTokens = MaxTokens[static_cast<int>( Slot )];
+
+#ifdef UE_WITH_CHEAT_MANAGER
+	// Override maximum tokens with a convar
+	const int32 TokenOverride = UConvarLibrary::GetAIPlayerTokenOverride();
+	if ( TokenOverride != -1 )
+	{
+		const AController* Controller = GetOwner()->GetInstigatorController();
+		if ( Controller != nullptr && Controller->IsPlayerController() )
+		{
+			RemainingTokens = TokenOverride;
+		}
+	}
+#endif
+
+	for ( const auto& Element : ReservedTokens )
+	{
+		const FAIReservedToken& Token = Element.Value;
+		if ( Slot != Token.Slot ) continue;
+
+		RemainingTokens -= Token.Amount;
+	}
+
+	return RemainingTokens;
+}
+
+float UAITargetComponent::GetTokenCooldown( EAITokenSlot Slot ) const
+{
+	return EndTokenCooldownTime[static_cast<int>( Slot )] - GetWorld()->GetTimeSeconds();
+}
+
+bool UAITargetComponent::ReserveGroupPlace( UAIAttackerComponent* Reserver, int32& GroupIndex )
+{
+	verify( Reserver != nullptr );
+
+	for ( int Index = 0; Index < GroupsSettings.Num(); Index++ )
+	{
+		const auto& GroupSettings = GroupsSettings[Index];
+
+		// If there are infinite places, reserve this group
+		if ( GroupSettings.MaxPlaces == 0 )
+		{
+			GroupIndex = Index;
+			ReservedGroupPlaces.Add( Reserver, GroupIndex );
+			Reserver->SetGroupPlace( GroupIndex );
+
+			return true;
+		}
+
+		// If there are no remaining places, skip to the next group
+		if ( GetRemainingGroupPlaces( Index ) <= 0 ) continue;
+	
+		GroupIndex = Index;
+		ReservedGroupPlaces.Add( Reserver, GroupIndex );
+		Reserver->SetGroupPlace( GroupIndex );
+
+		return true;
+	}
+
+	GroupIndex = -1;
+	return false;
+}
+
+void UAITargetComponent::MoveGroupPlace( UAIAttackerComponent* Reserver, int32 NewGroupIndex )
+{
+	verify( Reserver != nullptr );
+
+	ReservedGroupPlaces.Add( Reserver, NewGroupIndex );
+	Reserver->SetGroupPlace( NewGroupIndex );
+}
+
+bool UAITargetComponent::FreeGroupPlace( UAIAttackerComponent* Reserver )
+{
+	verify( Reserver != nullptr );
+
+	const int32 GroupIndex = GetReservedGroupPlace( Reserver );
+	if ( GroupIndex == -1 ) return false;
+
+	ReservedGroupPlaces.Remove( Reserver );
+	Reserver->SetGroupPlace( -1 );
+
+	// Don't move actors from groups if the group has infinite places or it was the last group
+	if ( GroupsSettings[GroupIndex].MaxPlaces == 0 ) return true;
+	if ( GroupIndex < GroupsSettings.Num() - 1 ) return true;
+
+	// Move the first actor from the next group to this group
+	// NOTE: Probably too much for current implementation
+	auto ActorsByPlaces = GetActorsByGroupPlaces();
+	auto Actors = ActorsByPlaces.Find( GroupIndex + 1 );
+	if ( Actors == nullptr ) return true;
+
+	MoveGroupPlace( Actors->Data[0], GroupIndex );
+
+	return true;
+}
+
+const FAITargetGroupSettings& UAITargetComponent::GetGroupSettings( int32 GroupIndex ) const
+{
+	verifyf(
+		GroupsSettings.IsValidIndex( GroupIndex ),
+		TEXT( "Out-of-bounds with index %d" ), GroupIndex
+	);
+	return GroupsSettings[GroupIndex];
+}
+
+int32 UAITargetComponent::GetReservedGroupPlace( UAIAttackerComponent* Reserver ) const
+{
+	verify( Reserver != nullptr );
+
+	auto Itr = ReservedGroupPlaces.Find( Reserver );
+	if ( Itr == nullptr ) return -1;
+
+	return *Itr;
+}
+
+int32 UAITargetComponent::GetRemainingGroupPlaces( int32 GroupIndex ) const
+{
+	int32 RemainingPlacesCount = 0;
+
+	for ( const auto& Pair : ReservedGroupPlaces )
+	{
+		if ( Pair.Value != GroupIndex ) continue;
+		
+		RemainingPlacesCount++;
+	}
+
+	return GroupsSettings[GroupIndex].MaxPlaces - RemainingPlacesCount;
+}
+
+TMap<int32, FAIReserverArray> UAITargetComponent::GetActorsByGroupPlaces() const
+{
+	TMap<int32, FAIReserverArray> ActorsByPlaces {};
+
+	for ( const auto& Pair : ReservedGroupPlaces )
+	{
+		UAIAttackerComponent* Reserver = Pair.Key;
+		const int32 GroupIndex = Pair.Value;
+
+		FAIReserverArray& Reservers = ActorsByPlaces.FindOrAdd( GroupIndex, {} );
+		Reservers.Data.Add( Reserver );
+	}
+
+	return ActorsByPlaces;
+}
+
+void UAITargetComponent::DeclareAttacker( UAIAttackerComponent* Attacker )
+{
+	DeclaredAttackers.Add( Attacker );
+	OnAttackersUpdate.Broadcast( this );
+}
+
+void UAITargetComponent::RetireAttacker( UAIAttackerComponent* Attacker )
+{
+	DeclaredAttackers.Remove( Attacker );
+	OnAttackersUpdate.Broadcast( this );
+}
+
+int32 UAITargetComponent::GetAttackersCount() const
+{
+	return DeclaredAttackers.Num();
+}
+
+void UAITargetComponent::GetAttackers( TArray<UAIAttackerComponent*>& Attackers ) const
+{
+	Attackers.Reserve( DeclaredAttackers.Num() );
+	for ( UAIAttackerComponent* Attacker : DeclaredAttackers )
+	{
+		Attackers.Add( Attacker );
+	}
+}
+
+void UAITargetComponent::FreeReservations( UAIAttackerComponent* Reserver )
+{
+	verify( Reserver != nullptr );
+
+	FreeTokens( Reserver );
+	FreeGroupPlace( Reserver );
+	RetireAttacker( Reserver );
+}

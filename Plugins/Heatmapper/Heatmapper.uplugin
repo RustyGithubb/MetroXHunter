@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Heatmapper",
+	"Description": "A tool to track spatially players data and to save these data into files.",
+	"Category": "Other",
+	"CreatedBy": "arkaht",
+	"CreatedByURL": "https://github.com/arkaht/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Heatmapper",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

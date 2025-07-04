@@ -1,0 +1,60 @@
+/*
+ * Implemented by Corentin Paya
+ */
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "InteractableComponent.generated.h"
+
+enum class E_InteractionType : uint8;
+class UInteractionComponent;
+
+/*
+ * The Interactable Component owns the interaction logic and needs to be attached to the interactable.
+ */
+UCLASS( BlueprintType, meta = ( BlueprintSpawnableComponent ) )
+class METROXHUNTER_API UInteractableComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	UInteractableComponent();
+	virtual void BeginPlay() override;
+
+	UFUNCTION( BlueprintCallable )
+	void OnPlayerOverlap( UInteractionComponent* InteractionComponent );
+	UFUNCTION( BlueprintCallable )
+	void OnPlayerOut( UInteractionComponent* InteractionComponent );
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnInteract );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
+	FOnInteract OnInteract;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnCancelInteract );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
+	FOnCancelInteract OnCancelInteract;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnTargeted );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
+	FOnTargeted OnTargeted;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE( FOnUntargeted );
+	UPROPERTY( BlueprintAssignable, BlueprintCallable, Category = "Interaction|Event" )
+	FOnUntargeted OnUntargeted;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
+	USoundBase* InteractSound = nullptr;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
+	bool bShouldPlayInteractSound = true;
+
+public:
+	AActor* Owner = nullptr;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Interaction" )
+	E_InteractionType InteractionType;
+
+	/*
+	 * If the player is under interaction with this interactable
+	 */
+	bool bIsUnderInteraction = false;
+};
